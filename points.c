@@ -9,9 +9,18 @@
 int numplots=0;
 PLOTDAT plots[MAXPLOTS];
 static int nsegs=0;
+static int fontnsegs=0;
 static int pennum=1;
 static int linenum=0;
 static int backstat=0;
+static double pad;
+static double fontsize;
+static double ticklen;
+static int symbolmode=1;
+static int linemode=0;
+static int symnum=1;
+static int autopenflag = 1;
+static int autosymflag = 1;
 
 DATUM *datum_new(x,y)
 double x,y;
@@ -83,7 +92,7 @@ void dumppoints() {
 	    if (p->cmd == NULL) {
 	        printf("%d: %g %g\n", i, p->x, p->y);
 	    } else {
-	        printf("%d: %s", i, p->cmd);
+	        printf("%d: %s\n", i, p->cmd);
 	    }
 	}
     }
@@ -138,10 +147,6 @@ main2() {
     savepoint(1.0,1.0);
     dumppoints();
 }
-
-static double pad;
-static double fontsize;
-static double ticklen;
 
 void gridtick(PLOTDAT *pd, double alpha, int x) {
     double tmp;
@@ -243,11 +248,13 @@ void render() {	// this is where the image gets drawn
     int i;
     double llx, lly, urx, ury, div, del;
     double xmax, xmin, ymax, ymin;
+    double x,y;
     double width, height;
     PLOTDAT *pd;
     DATUM *p;
     int debug=0;
     int penno;
+    int symno;
     double ticklen;
 
     xwin_size(&width, &height);
@@ -313,14 +320,26 @@ void render() {	// this is where the image gets drawn
           axislabel(pd,pd->yaxis,0);
       }
 
-      back(0);
-      jump();
-      pen(1);
+      // back(0);		
+      jump();	
+      pen(1);		// select red pen
+      symbol(0);	// select first symbol
+      autopenflag=1;
+      autosymflag=1;
+      symbolmode=0;
+      linemode=1;
+
       for (p=pd->data; p!=(DATUM *)0; p=p->next) {
   	 if (p->cmd == NULL) {
 	    // FIXME - needs to use actual xmax/min chosen by loose_label...
-	    draw((pd->urx-pd->llx)*(p->x-xmin)/(xmax-xmin)+pd->llx, 
-	         (pd->ury-pd->lly)*(p->y-pd->ymin)/(pd->ymax-pd->ymin)+pd->lly); 
+	    x =(pd->urx-pd->llx)*(p->x-xmin)/(xmax-xmin)+pd->llx;
+	    y =(pd->ury-pd->lly)*(p->y-pd->ymin)/(pd->ymax-pd->ymin)+pd->lly; 
+    	    if (symbolmode) {
+	    	do_symbol(symnum, x, y, fontsize);
+	    } 
+	    if (linemode) {
+		draw(x,y);
+	    }
 	 } else {
 	   if (strncmp(p->cmd,"jump",4)==0) {
 	       jump();
@@ -330,9 +349,38 @@ void render() {	// this is where the image gets drawn
 	       } else {
        		  pen(++pennum);
 	       }
+	   } else if (strncmp(p->cmd,"autopen",7)==0) {
+	       autopenflag=1;
+	   } else if (strncmp(p->cmd,"noautopen",9)==0) {
+	       autopenflag=0;
+	   } else if (strncmp(p->cmd,"autosymbol",10)==0) {
+	       autosymflag=1;
+	   } else if (strncmp(p->cmd,"noautosymbol",12)==0) {
+	       autosymflag=0;
 	   } else if (strncmp(p->cmd,"back",4)==0) {
+	       printf("calling back1\n");
 	       back(1);
-	   } else if (strncmp(p->cmd,"noback",7)==0) {
+	   } else if (strncmp(p->cmd,"symbol+line",11)==0) {
+		symbolmode = 1;
+		linemode = 1;
+	   } else if (strncmp(p->cmd,"symbol",6)==0) {	// must follow symbol+line...
+	       if (!symbolmode || !linemode) {
+		   symbolmode = 1;
+		   linemode = 0;
+	       }
+	       if (sscanf(p->cmd, "symbol %d", &symno)==1) {
+		  symbol(symno);
+	       } else {
+		  symbol(++symnum);
+	       }
+	   } else if (strncmp(p->cmd,"nosymbol",8)==0) {
+		symbolmode = 0;
+		linemode = 1;
+	   } else if (strncmp(p->cmd,"noline",6)==0) {
+		symbolmode = 1;
+		linemode = 0;
+	   } else if (strncmp(p->cmd,"noback",6)==0) {
+	       printf("calling back0\n");
 	       back(0);
 	   } 
 	 }
@@ -428,6 +476,17 @@ double theta;
     if (debug) mat_print(xp);
 }
 
+void do_symbol(c, x, y, size)
+int c;
+double x, y;
+double size;
+{
+    char s[2];
+    s[0]=(char) ((c%54)+33);
+    s[1]='\0';
+    do_note(s, x, y, MIRROR_OFF , size, 1.0, 0.0, 0.0, 1, 4);
+}
+
 void do_note(string, x, y, mirror, size, aspect, slant, rotation, id, jf)
 char *string;
 double x, y;
@@ -473,8 +532,6 @@ int jf;
     mat_slant(xp, slant);
     mat_rotate(xp, rotation);
 
-    jump(); 
-
     xp->dx += x;
     xp->dy += y;
 
@@ -484,12 +541,28 @@ int jf;
 
 void back(int x) {
    backstat = 0;
-   if (x) backstat=1;
+}
+
+void symbol(int sym_no) {
+   symnum = sym_no%54;
 }
 
 void pen(int pen_no) {
    pennum = pen_no%6;
    xwin_set_pen_line(pennum,linenum);
+}
+
+void fontjump() {
+   fontnsegs=0;
+}
+
+void fontdraw(double x, double y) {
+    static double xxold, yyold;
+    fontnsegs++;
+    if (fontnsegs > 1) {
+	xwin_draw_line(xxold, yyold, x, y);
+    }
+    xxold=x; yyold=y;
 }
 
 void jump() {
@@ -500,11 +573,11 @@ void draw(double x, double y) {
     static double xold, yold;
     if (!backstat && nsegs > 1 && x<xold) {
        nsegs=0;
-       pen(++pennum);
+       if (autopenflag)	pen(++pennum);
+       if (autosymflag) symbol(++symnum);
     }
     nsegs++;
     if (nsegs > 1) {
-	// printf("%g, %g, %g, %g\n", xold, yold, x, y);
 	xwin_draw_line(xold, yold, x, y);
     }
     xold=x; yold=y;

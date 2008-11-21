@@ -43,12 +43,7 @@ int ydef[2][MAXPOINT];
 
 int fillable[2] = {0,1};
 
-void writechar(c,x,y,xf,id)
-int c;
-double x;
-double y;
-XFORM *xf;
-int id;			/* font id */
+void writechar(int c,double x,double y,XFORM *xf,int id)
 {
     int i;
     double xp,yp,xt,yt;
@@ -61,17 +56,16 @@ int id;			/* font id */
 
     i = fonttab[id][c];
 
-    back(1);
-    jump();
+    fontjump();
     while (xdef[id][i] != -64 || ydef[id][i] != -64) {		/* -64,-64 == END */
 	if (xdef[id][i] != -64) {				/* end of polygon */
 	    xp = x + (0.8 * ( (double) xdef[id][i] / (double) dy[id]));
 	    yp = y + (0.8 * ( (double) ydef[id][i] / (double) dy[id]));
 	    xt = xp*xf->r11 + yp*xf->r21 + xf->dx;
 	    yt = xp*xf->r12 + yp*xf->r22 + xf->dy;
-	    draw(xt,yt); 
+	    fontdraw(xt,yt); 
 	} else {
-	    jump();
+	    fontjump();
 	}
 	i++;
     }

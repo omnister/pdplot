@@ -52,7 +52,7 @@ char **argv;
     initplot();
 
     loadfont("./NOTEDATA.F", 0);
-    loadfont("./NOTEDATA.F", 1);
+    loadfont("./SYMBOL.F", 1);
 
     while(getz(s,BUF_SIZE) != EOF) {
        line++;
