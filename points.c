@@ -16,11 +16,14 @@ static int backstat=0;
 static double pad;
 static double fontsize;
 static double ticklen;
+static int gridmode=1;
 static int symbolmode=1;
 static int linemode=0;
 static int symnum=1;
 static int autopenflag = 1;
 static int autosymflag = 1;
+
+static double symbolsize=1.0;
 
 DATUM *datum_new(x,y)
 double x,y;
@@ -33,6 +36,10 @@ double x,y;
     tmp->next = NULL;
     tmp->prev = tmp;    /* prev pointer points at last */
     return(tmp);
+}
+
+void grid(mode) {
+   gridmode=mode;
 }
 
 void nextygraph() {
@@ -150,28 +157,32 @@ main2() {
 
 void gridtick(PLOTDAT *pd, double alpha, int x) {
     double tmp;
-    xwin_set_pen_line(0,0);
-    if (x) { 			// xaxis grid lines
-	tmp = alpha*pd->urx+(1.0-alpha)*pd->llx;
-	xwin_draw_line( tmp, pd->lly, tmp, pd->lly+ticklen);
-	xwin_draw_line( tmp, pd->ury, tmp, pd->ury-ticklen);
-    } else { 			// yaxis grid lines
-	tmp = alpha*pd->lly+(1.0-alpha)*pd->ury;
-	xwin_draw_line( pd->llx, tmp, pd->llx+ticklen, tmp);
-	xwin_draw_line( pd->urx, tmp, pd->urx-ticklen, tmp);
+    if (gridmode) {
+	xwin_set_pen_line(0,0);
+	if (x) { 			// xaxis grid lines
+	    tmp = alpha*pd->urx+(1.0-alpha)*pd->llx;
+	    xwin_draw_line( tmp, pd->lly, tmp, pd->lly+ticklen);
+	    xwin_draw_line( tmp, pd->ury, tmp, pd->ury-ticklen);
+	} else { 			// yaxis grid lines
+	    tmp = alpha*pd->lly+(1.0-alpha)*pd->ury;
+	    xwin_draw_line( pd->llx, tmp, pd->llx+ticklen, tmp);
+	    xwin_draw_line( pd->urx, tmp, pd->urx-ticklen, tmp);
+	}
     }
 }
 
 void gridline(PLOTDAT *pd, double alpha, int x) {
     double tmp;
-    gridtick(pd, alpha, x);
-    xwin_set_pen_line(0,1);
-    if (x) { 			// xaxis grid lines
-	tmp = alpha*pd->urx+(1.0-alpha)*pd->llx;
-	xwin_draw_line( tmp, pd->lly, tmp, pd->ury);
-    } else { 			// yaxis grid lines
-	tmp = alpha*pd->lly+(1.0-alpha)*pd->ury;
-	xwin_draw_line( pd->llx, tmp, pd->urx, tmp);
+    if (gridmode) {
+	gridtick(pd, alpha, x);
+	xwin_set_pen_line(0,1);
+	if (x) { 			// xaxis grid lines
+	    tmp = alpha*pd->urx+(1.0-alpha)*pd->llx;
+	    xwin_draw_line( tmp, pd->lly, tmp, pd->ury);
+	} else { 			// yaxis grid lines
+	    tmp = alpha*pd->lly+(1.0-alpha)*pd->ury;
+	    xwin_draw_line( pd->llx, tmp, pd->urx, tmp);
+	}
     }
 }
 
@@ -256,6 +267,7 @@ void render() {	// this is where the image gets drawn
     int penno;
     int symno;
     double ticklen;
+    double tmp;
 
     xwin_size(&width, &height);
 
@@ -320,14 +332,16 @@ void render() {	// this is where the image gets drawn
           axislabel(pd,pd->yaxis,0);
       }
 
-      // back(0);		
+      back(0);		
       jump();	
       pen(1);		// select red pen
       symbol(0);	// select first symbol
       autopenflag=1;
       autosymflag=1;
+      gridmode=1;
       symbolmode=0;
       linemode=1;
+      symbolsize=1.0;
 
       for (p=pd->data; p!=(DATUM *)0; p=p->next) {
   	 if (p->cmd == NULL) {
@@ -335,7 +349,7 @@ void render() {	// this is where the image gets drawn
 	    x =(pd->urx-pd->llx)*(p->x-xmin)/(xmax-xmin)+pd->llx;
 	    y =(pd->ury-pd->lly)*(p->y-pd->ymin)/(pd->ymax-pd->ymin)+pd->lly; 
     	    if (symbolmode) {
-	    	do_symbol(symnum, x, y, fontsize);
+	    	do_symbol(symnum, x, y, fontsize*symbolsize);
 	    } 
 	    if (linemode) {
 		draw(x,y);
@@ -344,11 +358,15 @@ void render() {	// this is where the image gets drawn
 	   if (strncmp(p->cmd,"jump",4)==0) {
 	       jump();
 	   } else if (strncmp(p->cmd,"pen",3)==0) {
-	       if (sscanf(p->cmd, "pen %d", &penno)==1) {
+	       if (sscanf(p->cmd, "%*s %d", &penno)==1) {
 		  pen(penno);
 	       } else {
        		  pen(++pennum);
 	       }
+	   } else if (strncmp(p->cmd,"nogrid",6)==0) {
+	       grid(0);
+	   } else if (strncmp(p->cmd,"grid",4)==0) {
+	       grid(1);
 	   } else if (strncmp(p->cmd,"autopen",7)==0) {
 	       autopenflag=1;
 	   } else if (strncmp(p->cmd,"noautopen",9)==0) {
@@ -363,12 +381,22 @@ void render() {	// this is where the image gets drawn
 	   } else if (strncmp(p->cmd,"symbol+line",11)==0) {
 		symbolmode = 1;
 		linemode = 1;
+	   } else if (strncmp(p->cmd,"symbolsize",10)==0) {
+	       if (sscanf(p->cmd, "%*s %lg", &tmp)==1) {
+		   if (tmp >= 0.1 && tmp <= 10.0) {
+		       symbolsize=tmp;
+		   } else {
+		      fprintf(stderr,"bad argument to symbolsize cmd: %s\n", p->cmd);
+		   }
+	       } else {
+		   fprintf(stderr,"bad argument to symbolsize cmd: %s\n", p->cmd);
+	       }
 	   } else if (strncmp(p->cmd,"symbol",6)==0) {	// must follow symbol+line...
 	       if (!symbolmode || !linemode) {
 		   symbolmode = 1;
 		   linemode = 0;
 	       }
-	       if (sscanf(p->cmd, "symbol %d", &symno)==1) {
+	       if (sscanf(p->cmd, "%*s %d", &symno)==1) {
 		  symbol(symno);
 	       } else {
 		  symbol(++symnum);

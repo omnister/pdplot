@@ -82,13 +82,13 @@ char **argv;
 	   if (n==2) {
 	      savepoint(x,y);
 	   } else {
+	      // FIXME: should allow blank lines.
 	      fprintf(stderr,"%s: syntax error on line %d: \"%s\"\n", progname, line,s);
 	   }
        }
     }
     
     need_redraw++;
-    dumppoints();
 
     while(1) {		// no more input, but keep X alive
        procXevent();
