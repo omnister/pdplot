@@ -1,5 +1,7 @@
 OBJS=main.o points.o readfont.o xwin.o label.o
 
+CC=cc -ggdb -Wall
+
 bw: points.h $(OBJS)
 	cc -Wall -ggdb $(OBJS) -o bw -L/usr/X11R6/lib -lX11 -lm
 

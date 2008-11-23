@@ -10,6 +10,12 @@
 #include "eventnames.h"
 #include "xwin.h"
 
+void load_font(XFontStruct **font_info);
+void debug(char *s, int dbug);
+int init_colors();
+void getGC(Window win, GC *gc, XFontStruct *font_info);
+void doXevent(char *s);
+
 #define TICKSIZE 0.005  /* fraction of xsize+ysize for default ticks */
 #define MAX_COLORS 10
 #define MAX_LINETYPE 7
@@ -40,11 +46,10 @@ Window win;
 unsigned int width, height;
 GC gc,gcx;
 
-int initX() {
-    int x,y, xold, yold, xstart, ystart;
+void initX() {
+    int x,y;
     unsigned int border_width = 4;
     unsigned int display_width, display_height;
-    unsigned int icon_width, icon_height;
     char *window_name = "postplot";
     char *icon_name = "postplot";
     Pixmap icon_pixmap;
@@ -57,12 +62,6 @@ int initX() {
     int icount;
     XFontStruct *font_info;
     char *display_name = NULL;
-    int window_size = 0;    /* either BIG_ENOUGH or
-                    TOO_SMALL to display contents */
-
-    int xpositions[BUF_SIZE], ypositions[BUF_SIZE];
-    int i, count = 0;
-    Bool buffer_filled = False;
 
     int dbug=0;
 
@@ -107,10 +106,10 @@ int initX() {
     /* Get available icon sizes from window manager */
 
     if (XGetIconSizes(dpy, RootWindow(dpy, screen_num),
-            &size_list, &icount) == 0)
+            &size_list, &icount) == 0) {
         if (dbug) fprintf(stderr, 
 		"%s: WM didn't set icon sizes - using default.\n", progname);
-    else {
+    } else {
         /* should eventually create a pixmap here */
         ;
     }
@@ -273,11 +272,8 @@ void xwin_size(double *x, double *y) {
 
 int procXevent() {
 
-    int dbug=0;
-
     /* readline select stuff */
     int nf, nfds, cn, in;
-    int i;
 
     //struct timeval *timer = (struct timeval *) 0;       /* select blocks indefinitely */
     struct timeval timer;
@@ -327,7 +323,7 @@ int procXevent() {
 	}
 
 	if (FD_ISSET(cn, &tset)) {              /* pending X Event */
-	    doXevent(&s);
+	    doXevent(s);
 	}
 
 	if (FD_ISSET(in, &tset)) {      /* pending stdin */
@@ -336,9 +332,9 @@ int procXevent() {
     }
 }
 
-doXevent(char *s) {
+void doXevent(char *s) {
 
-    int x,y, xold, yold, xstart, ystart;
+    int x,y,  xstart, ystart;
     XEvent xe;
     unsigned long all = 0xffffffff;
     int dbug=0;
@@ -395,7 +391,7 @@ doXevent(char *s) {
     }
 }
 
-int getGC(win, gc, font_info)
+void getGC(win, gc, font_info)
 Window win;
 GC *gc;
 XFontStruct *font_info;
@@ -432,7 +428,7 @@ XFontStruct *font_info;
     XSetDashes(dpy, *gc, dash_offset, dash_list, list_length); 
 }
 
-load_font(font_info)
+void load_font(font_info)
 XFontStruct **font_info;
 {
     char *fontname = "9x15";
@@ -530,9 +526,9 @@ void xwin_draw_box(double x1, double y1, double x2, double y2)
     xwin_draw_line(x2, y1, x1, y1);
 }
 
-debug(char *s, int dbug)
+void debug(char *s, int dbug)
 {
     if (dbug) {
-	fprintf(stderr,"%s\n");
+	fprintf(stderr,"%s\n",s);
     }
 }

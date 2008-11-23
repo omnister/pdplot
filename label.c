@@ -15,7 +15,7 @@ static double nicenum();
 
 #define NTICK 9	/* desired number of tick marks */
 
-testmain(int ac, char ** av) {
+void testmain(int ac, char ** av) {
     double min, max;
     PLOTDAT foo;
     if (ac!=3) {
@@ -43,7 +43,7 @@ void loose_label(PLOTDAT *pd, double min, double max, int nticks, int axis) {
     graphmax = ceil(max/d)*d;
     nfrac = MAX(-floor(log10(d)),0);	/* # frac digits to show */
     // sprintf(str,"%%.%df", nfrac); 	/* simplest axis labels */
-    sprintf(str,"%%g", nfrac); 	/* simplest axis labels */
+    sprintf(str,"%%g"); 	
     // printf("graphmin=%g graphmax=%g increment=%g\n", graphmin, graphmax, d);
     for (x=graphmin+d; x<graphmax-0.5*d; x+=d) {
         sprintf(temp, str, x);

@@ -1,10 +1,15 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <ctype.h>
+#include <string.h>
 #include "xwin.h"
 #include "points.h"
+#include "readfont.h"
 
 #define BUF_SIZE 1000
 char *progname;
+
+int isblank(int c);	// for some reason, this is missing in ctype.h...
 
 // get a line of no more than n chars
 // return 0 on success, EOF on end of file
@@ -37,12 +42,11 @@ int main(argc,argv)
 int argc;
 char **argv;
 {
-    int c,n;
+    int n;
     double x,y;
     char s[BUF_SIZE];
     char *sp;
     int line=0;
-    int points=0;
     progname = argv[0];
     double xmin,xmax,ymin,ymax;
 
@@ -66,6 +70,20 @@ char **argv;
 	       need_redraw++;
 	   } else if (strncmp(sp,"clear",5)==0) {
 	       initplot();
+	   } else if (strncmp(sp,"xset",4)==0) {
+	       if (sscanf(sp+4,"%lg %lg", &xmin, &xmax ) != 2 || xmin > xmax) {
+	          fprintf(stderr, "bad xset values: sp\n");
+	       } else {
+	           fprintf(stderr, "xset values: %g %g\n", xmin, xmax);
+		   xset(xmin, xmax);	
+	       }
+	   } else if (strncmp(sp,"yset",4)==0) {
+	       if (sscanf(sp+4,"%lg %lg", &ymin, &ymax ) != 2 || ymin > ymax) {
+	          fprintf(stderr, "bad yset values: sp\n");
+	       } else {
+	           fprintf(stderr, "yset values: %g %g\n", ymin, ymax);
+		   yset(ymin, ymax);	
+	       }
 	   } else if (strncmp(sp,"xscale",6)==0) {
 	       xscale(sp+7,1.0);	// cheat on parsing scale for now
 	   } else if (strncmp(sp,"yscale",6)==0) {
@@ -82,8 +100,9 @@ char **argv;
 	   if (n==2) {
 	      savepoint(x,y);
 	   } else {
-	      // FIXME: should allow blank lines.
-	      fprintf(stderr,"%s: syntax error on line %d: \"%s\"\n", progname, line,s);
+	      if (*sp != '\0' && *sp != '\n') {
+		  fprintf(stderr,"%s: syntax error on line %d: \"%s\"\n", progname, line,s);
+	      }
 	   }
        }
     }

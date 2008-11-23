@@ -43,6 +43,8 @@ extern void savecmd(char *cmd);
 extern void dumppoints(void);
 extern void render(void);
 extern void title(char *);
+extern void xset(double xmin, double xmax);
+extern void yset(double ymin, double ymax);
 extern void xscale(char *, double scale);
 extern void yscale(char *, double scale);
 extern void draw(double x, double y);

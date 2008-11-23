@@ -3,6 +3,8 @@
 #include <string.h>
 #include <math.h>
 #include "points.h"
+#include "xwin.h"
+#include "readfont.h"
 
 #define MAXPLOTS 10
 
@@ -105,7 +107,7 @@ void dumppoints() {
     }
 }
 
-freedata(DATUM *dp) {
+void freedata(DATUM *dp) {
     DATUM *p;
     for (p=dp; p!=(DATUM *)0; p=p->next) {
         free(p);
@@ -139,7 +141,7 @@ void initplot(void) {
    }
 }
 
-main2() {
+void main2() {
     initplot();
     savepoint(1.0,2.0);
     savepoint(3.0,4.0);
@@ -232,6 +234,14 @@ void setbounds(PLOTDAT *pd) {		// FIXME: later on this should obey any xsets...
     }
 }
 
+void xset(double xmin, double xmax) {
+    ;
+}
+
+void yset(double ymin, double ymax) {
+    ;
+}
+
 void xscale(char *s, double scale) {
     if (plots[0].xaxis != NULL) {
         free(plots[0].xaxis);
@@ -278,7 +288,6 @@ void render() {	// this is where the image gets drawn
     fontsize = (height+width)/50.0;
     ticklen = (height+width)/200.0;
     pad=fontsize/4.0;
-    double alpha;
 
     // we allow each graph to be 5 units tall, and spacing between
     // graphs is one unit...
@@ -376,7 +385,6 @@ void render() {	// this is where the image gets drawn
 	   } else if (strncmp(p->cmd,"noautosymbol",12)==0) {
 	       autosymflag=0;
 	   } else if (strncmp(p->cmd,"back",4)==0) {
-	       printf("calling back1\n");
 	       back(1);
 	   } else if (strncmp(p->cmd,"symbol+line",11)==0) {
 		symbolmode = 1;
@@ -408,7 +416,6 @@ void render() {	// this is where the image gets drawn
 		symbolmode = 1;
 		linemode = 0;
 	   } else if (strncmp(p->cmd,"noback",6)==0) {
-	       printf("calling back0\n");
 	       back(0);
 	   } 
 	 }
@@ -568,7 +575,7 @@ int jf;
 }
 
 void back(int x) {
-   backstat = 0;
+   backstat = x;
 }
 
 void symbol(int sym_no) {
@@ -596,6 +603,10 @@ void fontdraw(double x, double y) {
 void jump() {
    nsegs=0;
 }
+
+// FIXME: a funny thing here: if I do a "pen <num>" command just prior
+// to a negative x motion in nonback mode, ap will NOT change
+// the color in the back motion, this present logic will.
 
 void draw(double x, double y) {
     static double xold, yold;
