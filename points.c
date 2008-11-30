@@ -19,11 +19,12 @@ static double pad;
 static double fontsize;
 static double ticklen;
 static int gridmode=1;
-static int symbolmode=1;
-static int linemode=0;
-static int symnum=1;
-static int autopenflag = 1;
-static int autosymflag = 1;
+static int boxmode=1;
+static int symbolmode=0;
+static int linemode=1;
+static int symnum=0;
+static int autopenflag=1;
+static int autosymflag=1;
 
 static double symbolsize=1.0;
 
@@ -38,6 +39,10 @@ double x,y;
     tmp->next = NULL;
     tmp->prev = tmp;    /* prev pointer points at last */
     return(tmp);
+}
+
+void box(mode) {
+    boxmode=mode;
 }
 
 void grid(mode) {
@@ -159,24 +164,22 @@ void main2() {
 
 void gridtick(PLOTDAT *pd, double alpha, int x) {
     double tmp;
-    if (gridmode) {
-	xwin_set_pen_line(0,0);
-	if (x) { 			// xaxis grid lines
-	    tmp = alpha*pd->urx+(1.0-alpha)*pd->llx;
-	    xwin_draw_line( tmp, pd->lly, tmp, pd->lly+ticklen);
-	    xwin_draw_line( tmp, pd->ury, tmp, pd->ury-ticklen);
-	} else { 			// yaxis grid lines
-	    tmp = alpha*pd->lly+(1.0-alpha)*pd->ury;
-	    xwin_draw_line( pd->llx, tmp, pd->llx+ticklen, tmp);
-	    xwin_draw_line( pd->urx, tmp, pd->urx-ticklen, tmp);
-	}
+    xwin_set_pen_line(0,0);
+    if (x) { 			// xaxis grid lines
+	tmp = alpha*pd->urx+(1.0-alpha)*pd->llx;
+	xwin_draw_line( tmp, pd->lly, tmp, pd->lly+ticklen);
+	xwin_draw_line( tmp, pd->ury, tmp, pd->ury-ticklen);
+    } else { 			// yaxis grid lines
+	tmp = alpha*pd->lly+(1.0-alpha)*pd->ury;
+	xwin_draw_line( pd->llx, tmp, pd->llx+ticklen, tmp);
+	xwin_draw_line( pd->urx, tmp, pd->urx-ticklen, tmp);
     }
 }
 
 void gridline(PLOTDAT *pd, double alpha, int x) {
     double tmp;
+    gridtick(pd, alpha, x);
     if (gridmode) {
-	gridtick(pd, alpha, x);
 	xwin_set_pen_line(0,1);
 	if (x) { 			// xaxis grid lines
 	    tmp = alpha*pd->urx+(1.0-alpha)*pd->llx;
@@ -214,32 +217,75 @@ void gridlabel(PLOTDAT *pd, char *str, double alpha, int x) {
     }
 }
 
-void setbounds(PLOTDAT *pd) {		// FIXME: later on this should obey any xsets...
+void setbounds(PLOTDAT *pd) {	
     DATUM *p; 
-    int i=0;
-    pd->xmin=pd->ymin=0.0;
-    pd->xmax=pd->ymax=1.0;
+    int ix=0;
+    int iy=0;
+    int xc=0;
+    int yc=0;
+    double xmax, xmin, ymax, ymin;
+
+    xmin=plots[0].xsetmin;	// xsets are global
+    xmax=plots[0].xsetmax;	
+    ymin=pd->ysetmin;		// ysets are per plot
+    ymax=pd->ysetmax;
+
+    if (xmin!=xmax) xc++;	// crop x
+    if (ymin!=ymax) yc++;	// crop y
+
+    if (xc) {
+	pd->xmin=xmin;
+	pd->xmax=xmax;
+    } else {
+	pd->xmin=pd->xmax=0.0;
+    }
+
+    if (yc) {
+	pd->ymin=ymin;
+	pd->ymax=ymax;
+    } else {
+	pd->ymin=pd->ymax=0.0;
+    }
+
+    // printf("------------------\n");
+    // printf("xmin: %g xmax: %g\n", xmin, xmax);
+    // printf("xc:%d, yc:%d, %g %g %g %g\n", xc, yc, pd->xmin, pd->xmax, pd->ymin, pd->ymax);
+    // printf("plots[0].xsetmin=%g max=%g\n", plots[0].xsetmin, plots[0].xsetmax);
+
     for (p=pd->data; p!=(DATUM *)0; p=p->next) {
   	if (p->cmd == NULL) {
-	    if (i++ == 0) {
-	      pd->xmin=pd->xmax=p->x;
-	      pd->ymin=pd->xmax=p->y;
-	    } else {
-	      if(p->x < pd->xmin) pd->xmin=p->x;
-	      if(p->x > pd->xmax) pd->xmax=p->x;
-	      if(p->y < pd->ymin) pd->ymin=p->y;
-	      if(p->y > pd->ymax) pd->ymax=p->y;
+	    if ((!xc && !yc) || (!xc && yc && p->y >= ymin && p->y <= ymax) ) {
+	        if (ix == 0) {	// initialize
+		    pd->xmin=pd->xmax=p->x;
+		    ix=1;
+	      	} else {	// accumulate
+		    if(p->x < pd->xmin) pd->xmin=p->x;
+		    if(p->x > pd->xmax) pd->xmax=p->x;
+		}
+	    }
+	    if ((!yc && !xc) || (!yc && xc && p->x >= xmin && p->x <= xmax) ) {
+	    	if (iy == 0) {	// initialize
+		    pd->ymin=pd->ymax=p->y;
+		    iy=1;
+	      	} else {	// accumulate
+		  if(p->y < pd->ymin) pd->ymin=p->y;
+		  if(p->y > pd->ymax) pd->ymax=p->y;
+		}
 	    }
 	}
     }
+    // printf("pd->xmin=%g, xmax=%g, ymin=%g, ymax=%g xc:%d, yc%d\n",
+    // pd->xmin, pd->xmax, pd->ymin, pd->ymax, xc, yc);
 }
 
 void xset(double xmin, double xmax) {
-    ;
+    plots[0].xsetmin = xmin;
+    plots[0].xsetmax = xmax;
 }
 
 void yset(double ymin, double ymax) {
-    ;
+    plots[numplots].ysetmin = ymin;
+    plots[numplots].ysetmax = ymax;
 }
 
 void xscale(char *s, double scale) {
@@ -276,8 +322,8 @@ void render() {	// this is where the image gets drawn
     int debug=0;
     int penno;
     int symno;
-    double ticklen;
     double tmp;
+    extern double ticklen;
 
     xwin_size(&width, &height);
 
@@ -295,7 +341,8 @@ void render() {	// this is where the image gets drawn
     // place for a title
     if (plots[0].title != NULL) {
 	xwin_set_pen_line(0,0);
-	do_note(plots[0].title, (llx+urx)/2.0, pad+ury, MIRROR_OFF, fontsize, 1.28, 0.0, 0.0, 0, 1);
+	do_note(plots[0].title, (llx+urx)/2.0, 
+	   pad+ury, MIRROR_OFF, fontsize, 1.28, 0.0, 0.0, 0, 1);
     }
     if (plots[0].xaxis != NULL) {
        xwin_set_pen_line(0,0);
@@ -328,13 +375,16 @@ void render() {	// this is where the image gets drawn
       pd->urx = urx;
       pd->ury = (lly+(5.0+6.0*(double)i)*del);
 
-      if (debug) printf("numplots = %d: %g %g %g %g\n", numplots, pd->llx, pd->lly, pd->urx, pd->ury);
+      if (debug) printf("numplots = %d: %g %g %g %g\n",
+      	numplots, pd->llx, pd->lly, pd->urx, pd->ury);
 
       xwin_set_pen_line(0,0);
-      xwin_draw_box(pd->llx, pd->lly, pd->urx, pd->ury);	// plot boundary
+      if (boxmode) {
+	  xwin_draw_box(pd->llx, pd->lly, pd->urx, pd->ury);	// plot boundary
+      }
 
-      loose_label(pd, pd->ymin, pd->ymax, 9, 0);		// each graph with own y
-      loose_label(pd, xmin, xmax, 9, 1);			// all graphs with same x 
+      loose_label(pd,&(pd->ymin),&(pd->ymax),18/(numplots+2),0, 1); // each graph own y
+      loose_label(pd,&(xmin),&(xmax),12, 1, (i==0));		   // all graphs same x 
 
       if (pd->yaxis != NULL) {
   	  xwin_set_pen_line(0,0);
@@ -347,9 +397,9 @@ void render() {	// this is where the image gets drawn
       symbol(0);	// select first symbol
       autopenflag=1;
       autosymflag=1;
-      gridmode=1;
-      symbolmode=0;
-      linemode=1;
+      // gridmode=1;
+      // symbolmode=0;
+      // linemode=1;
       symbolsize=1.0;
 
       for (p=pd->data; p!=(DATUM *)0; p=p->next) {
@@ -357,12 +407,12 @@ void render() {	// this is where the image gets drawn
 	    // FIXME - needs to use actual xmax/min chosen by loose_label...
 	    x =(pd->urx-pd->llx)*(p->x-xmin)/(xmax-xmin)+pd->llx;
 	    y =(pd->ury-pd->lly)*(p->y-pd->ymin)/(pd->ymax-pd->ymin)+pd->lly; 
+	    if (linemode) {
+		draw(x,y, pd->llx, pd->urx, pd->lly, pd->ury);
+	    }
     	    if (symbolmode) {
 	    	do_symbol(symnum, x, y, fontsize*symbolsize);
 	    } 
-	    if (linemode) {
-		draw(x,y);
-	    }
 	 } else {
 	   if (strncmp(p->cmd,"jump",4)==0) {
 	       jump();
@@ -372,10 +422,6 @@ void render() {	// this is where the image gets drawn
 	       } else {
        		  pen(++pennum);
 	       }
-	   } else if (strncmp(p->cmd,"nogrid",6)==0) {
-	       grid(0);
-	   } else if (strncmp(p->cmd,"grid",4)==0) {
-	       grid(1);
 	   } else if (strncmp(p->cmd,"autopen",7)==0) {
 	       autopenflag=1;
 	   } else if (strncmp(p->cmd,"noautopen",9)==0) {
@@ -608,7 +654,7 @@ void jump() {
 // to a negative x motion in nonback mode, ap will NOT change
 // the color in the back motion, this present logic will.
 
-void draw(double x, double y) {
+void draw(double x, double y, double xmin, double xmax, double ymin, double ymax) {
     static double xold, yold;
     if (!backstat && nsegs > 1 && x<xold) {
        nsegs=0;
@@ -617,7 +663,7 @@ void draw(double x, double y) {
     }
     nsegs++;
     if (nsegs > 1) {
-	xwin_draw_line(xold, yold, x, y);
+	clip(xold, yold, x, y, xmin, xmax, ymin, ymax);
     }
     xold=x; yold=y;
 }

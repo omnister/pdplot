@@ -24,12 +24,12 @@ void testmain(int ac, char ** av) {
     }
     min = atof(av[1]);
     max = atof(av[2]);
-    loose_label(&foo, min,max,NTICK,1);
+    loose_label(&foo, &min,&max,NTICK,1,1);
 }
 
 // nticks corresponds to maxxdiv, maxydiv in autoplot
 
-void loose_label(PLOTDAT *pd, double min, double max, int nticks, int axis) {
+void loose_label(PLOTDAT *pd, double *min, double *max, int nticks, int axis, int dolabel) {
     char str[6], temp[20];
     int nfrac;
     double d;	/* tick mark spacing */
@@ -37,10 +37,10 @@ void loose_label(PLOTDAT *pd, double min, double max, int nticks, int axis) {
     double range, x;
 
     /* we expect min!=max */
-    range = nicenum(max-min, 0);
+    range = nicenum(*max-*min, 0);
     d = nicenum(range/(double)(nticks+4),1);
-    graphmin = floor(min/d)*d;
-    graphmax = ceil(max/d)*d;
+    graphmin = floor(*min/d)*d;
+    graphmax = ceil(*max/d)*d;
     nfrac = MAX(-floor(log10(d)),0);	/* # frac digits to show */
     // sprintf(str,"%%.%df", nfrac); 	/* simplest axis labels */
     sprintf(str,"%%g"); 	
@@ -51,8 +51,12 @@ void loose_label(PLOTDAT *pd, double min, double max, int nticks, int axis) {
     }
     for (x=graphmin; x<graphmax+0.5*d; x+=d) {
         sprintf(temp, str, x);
-	gridlabel(pd, temp, (x-graphmin)/(graphmax-graphmin), axis);
+	if (dolabel) {
+	    gridlabel(pd, temp, (x-graphmin)/(graphmax-graphmin), axis);
+	}
     }
+    *min  = graphmin;
+    *max  = graphmax;
 }
 
 /*

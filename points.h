@@ -47,7 +47,7 @@ extern void xset(double xmin, double xmax);
 extern void yset(double ymin, double ymax);
 extern void xscale(char *, double scale);
 extern void yscale(char *, double scale);
-extern void draw(double x, double y);
+extern void draw(double x, double y, double xmin, double xmax, double ymin, double ymax);
 extern void jump(void);
 extern void fontdraw(double x, double y);
 extern void fontjump(void);
@@ -56,10 +56,13 @@ extern void symbol(int symno);
 extern void do_note();
 void do_symbol(int c, double x, double y, double size);
 extern void back(int backstat);
-extern void loose_label(PLOTDAT *pd, double min, double max, int nticks, int axis);
+extern void loose_label(PLOTDAT *pd, double *min, double *max, int nticks, int axis, int dolabel);
 extern void axislabel(PLOTDAT *pd, char *temp, int axis);
 extern void gridlabel(PLOTDAT *pd, char *temp, double alpha, int axis);
 extern void gridline(PLOTDAT *pd, double alpha, int axis);
+extern void box(int mode);
+extern void grid(int mode);
+extern void clip();
 
 #define MIRROR_OFF 0
 #define MIRROR_X   1

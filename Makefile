@@ -1,4 +1,4 @@
-OBJS=main.o points.o readfont.o xwin.o label.o
+OBJS=main.o points.o readfont.o xwin.o label.o clip.o
 
 CC=cc -ggdb -Wall
 

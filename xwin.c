@@ -297,6 +297,7 @@ int procXevent() {
  	if (need_redraw) {
             need_redraw = 0;
             XClearArea(dpy, win, 0, 0, 0, 0, False);
+	    XFlush(dpy);
 	    render();
 	    XFlush(dpy);
         }

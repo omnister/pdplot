@@ -5,6 +5,7 @@
 #include "xwin.h"
 #include "points.h"
 #include "readfont.h"
+#include <unistd.h>
 
 #define BUF_SIZE 1000
 char *progname;
@@ -49,8 +50,29 @@ char **argv;
     int line=0;
     progname = argv[0];
     double xmin,xmax,ymin,ymax;
+    int opt;
 
     setvbuf(stdin, NULL, _IONBF, 0);  // make stdin unbuffered 
+
+    while ((opt=getopt(argc, argv, "")) != -1) {
+        switch (opt) {
+	//case 'r':
+	// com_ci(optarg); // open rawfile 
+	// break;
+	default:	/* '?' */
+	   fprintf(stderr, "usage: %s [-r <rawfile>] <script>\n", argv[0]);
+	   exit(1);
+	}
+    }
+
+    if (optind >= argc) {	/* fake an argument list */
+	// static char *stdinonly[] = { "-" };
+	// gargv = stdinonly;
+	// gargc = 1;
+    } else {
+	// gargv = &argv[optind];
+	// gargc = --argc;
+    }
 
     initX();
     initplot();
@@ -66,10 +88,18 @@ char **argv;
 	       nextygraph();
 	   } else if (strncmp(sp,"dump",4)==0) {
 	       dumppoints();
+	   } else if (strncmp(sp,"grid",4)==0) {
+	       grid(1);
+	   } else if (strncmp(sp,"nogrid",6)==0) {
+	       grid(0);
+	   } else if (strncmp(sp,"box",3)==0) {
+	       box(1);
+	   } else if (strncmp(sp,"nobox",5)==0) {
+	       box(0);
 	   } else if (strncmp(sp,"plot",4)==0) {
 	       need_redraw++;
 	   } else if (strncmp(sp,"clear",5)==0) {
-	       initplot();
+	       initplot();	// FIXME: needs to set all globals: grid, frame ...
 	   } else if (strncmp(sp,"xset",4)==0) {
 	       if (sscanf(sp+4,"%lg %lg", &xmin, &xmax ) != 2 || xmin > xmax) {
 	          fprintf(stderr, "bad xset values: sp\n");

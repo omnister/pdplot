@@ -1,12 +1,13 @@
 #include <stdio.h>
+#include "xwin.h"
 
 
 /* Cohen-Sutherland 2-D Clipping Algorithm */
 /* See: Foley & Van Dam, p146-148 */
 
-clip(x1, y1, x2, y2, xmin, ymin, xmax, ymax)
+void clip(x1, y1, x2, y2, xmin, xmax, ymin, ymax)
 double x1, y1, x2, y2;
-double xmin, ymin, xmax, ymax;
+double xmin, xmax, ymin, ymax;
 {
 
     int debug=0;
@@ -17,10 +18,10 @@ double xmin, ymin, xmax, ymax;
     double tmp;
 
     if (x2 < x1) {	/* canonicalize the line */
-	tmp = x2; x2 = x1; x1 = tmp;
+//	tmp = x2; x2 = x1; x1 = tmp;
     }
     if (y2 < y1) {
-	tmp = y2; y2 = y1; y1 = tmp;
+//	tmp = y2; y2 = y1; y1 = tmp;
     }
 
     if (debug) printf("canonicalized: %g,%g %g,%g\n", x1, y1, x2, y2);
@@ -45,7 +46,7 @@ double xmin, ymin, xmax, ymax;
 	    if (debug) printf("trivial reject\n");
 	    done++;	/* trivial reject */
 	} else { 
-	    if (accept = !((code1 | code2))) {
+	    if ((accept = !((code1 | code2)))) {
 		if (debug) printf("trivial accept\n");
 	    	done++;
 	    } else {
@@ -76,14 +77,14 @@ double xmin, ymin, xmax, ymax;
     }
     if (debug) printf("accept = %d\n", accept);
     if (accept) {
-	// xwin_drawline() here...
-    	printf("%g %g\n", x1,y1);
-    	printf("%g %g\n", x2,y2);
-    	printf("jump\n");
+	xwin_draw_line(x1,y1,x2,y2);
+    	// printf("%g %g\n", x1,y1);
+    	// printf("%g %g\n", x2,y2);
+    	// printf("jump\n");
     }
 }
 
-testmain() {
+void cliptestmain() {
    char buf[128];
    double x1, y1, x2, y2;
 
