@@ -1,4 +1,0 @@
-startpoly()
-endpoly()
-draw()
-jump()

@@ -20,6 +20,8 @@ typedef struct plotdat {
      double xsetmax;
      double ysetmin;	// yset command
      double ysetmax;
+     int    xlogmode;	// log/lin scale mode
+     int    ylogmode;
      double xscale;	// xscale multiplying factor
      double yscale;	// yscale multiplying factor
      char * title;	// plot title (only stored in plots[0])
@@ -62,6 +64,7 @@ extern void gridlabel(PLOTDAT *pd, char *temp, double alpha, int axis);
 extern void gridline(PLOTDAT *pd, double alpha, int axis);
 extern void box(int mode);
 extern void grid(int mode);
+extern void logmode(int axis, int mode);
 extern void clip();
 
 #define MIRROR_OFF 0

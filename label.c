@@ -1,7 +1,8 @@
 /* 
- * label.c: demonstrate nice graph labeling
- * Paul Heckbert 2 Dec 88
- * --- typed in from "Graphic Gems in C"
+ * label.c: nice graph labeling
+ *     adapted from from:
+ *     "Graphic Gems in C"
+ *     Paul Heckbert 2 Dec 88
  */
 
 #include <stdio.h>
@@ -12,20 +13,6 @@
 #define MAX(a,b) (((a)>(b))?(a):(b))
 
 static double nicenum();
-
-#define NTICK 9	/* desired number of tick marks */
-
-void testmain(int ac, char ** av) {
-    double min, max;
-    PLOTDAT foo;
-    if (ac!=3) {
-    	fprintf(stderr,"usage: label <min> <max>\n");
-	exit(1);
-    }
-    min = atof(av[1]);
-    max = atof(av[2]);
-    loose_label(&foo, &min,&max,NTICK,1,1);
-}
 
 // nticks corresponds to maxxdiv, maxydiv in autoplot
 
@@ -89,4 +76,18 @@ int round;
     }
 
     return nf*pow(10.0, (double) exp);
+}
+
+#define NTICK 9	/* desired number of tick marks */
+
+void testmain(int ac, char ** av) {
+    double min, max;
+    PLOTDAT foo;
+    if (ac!=3) {
+    	fprintf(stderr,"usage: label <min> <max>\n");
+	exit(1);
+    }
+    min = atof(av[1]);
+    max = atof(av[2]);
+    loose_label(&foo, &min,&max,NTICK,1,1);
 }

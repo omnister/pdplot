@@ -8,6 +8,9 @@
 
 #define MAXPLOTS 10
 
+// initialized variables will get
+// overridden by initplot();
+
 int numplots=0;
 PLOTDAT plots[MAXPLOTS];
 static int nsegs=0;
@@ -83,7 +86,9 @@ void linkit(DATUM *d) // add a datum to the current list
 
 void savepoint(double x, double y)
 {
-    linkit(datum_new(x,y));
+    // scale the points as they are read
+    linkit(datum_new( x/plots[0].xscale,
+	y/plots[numplots].yscale));
 }
 
 void savecmd(char *cmd) {
@@ -137,13 +142,32 @@ void initplot(void) {
 	  freedata(dp->data);
 	  dp->data = NULL;
 	  free(dp->title);
+          dp->title = NULL;
 	  free(dp->xaxis);
+          dp->xaxis = NULL;
 	  free(dp->yaxis);
+          dp->yaxis = NULL;
       }
+      dp->xlogmode = dp->ylogmode = 0;
       dp->xsetmin = dp->xsetmax = 0.0;
       dp->ysetmin = dp->ysetmax = 0.0;
       dp->xscale = dp->yscale  = 1.0;
    }
+   // now reset all globals to default condition
+   numplots=0;
+   nsegs=0;
+   fontnsegs=0;
+   pennum=1;
+   linenum=0;
+   backstat=0;
+   gridmode=1;
+   boxmode=1;
+   symbolmode=0;
+   linemode=1;
+   symnum=0;
+   autopenflag=1;
+   autosymflag=1;
+   symbolsize=1.0;
 }
 
 void main2() {
@@ -160,6 +184,18 @@ void main2() {
     dumppoints();
     savepoint(1.0,1.0);
     dumppoints();
+}
+
+// set the axis mode 
+// axis: x = 0, y = 1
+// mode: lin = 0, log = 1, 20*log10(x)=2, 10*log10(x)=3 
+
+void logmode(int axis, int mode) {
+   if (axis) {
+	plots[numplots].ylogmode = mode;
+   } else {
+	plots[numplots].xlogmode = mode;
+   }
 }
 
 void gridtick(PLOTDAT *pd, double alpha, int x) {
@@ -223,6 +259,7 @@ void setbounds(PLOTDAT *pd) {
     int iy=0;
     int xc=0;
     int yc=0;
+    double xx, yy;
     double xmax, xmin, ymax, ymin;
 
     xmin=plots[0].xsetmin;	// xsets are global
@@ -254,22 +291,24 @@ void setbounds(PLOTDAT *pd) {
 
     for (p=pd->data; p!=(DATUM *)0; p=p->next) {
   	if (p->cmd == NULL) {
-	    if ((!xc && !yc) || (!xc && yc && p->y >= ymin && p->y <= ymax) ) {
+	    xx = p->x;
+	    yy = p->y;
+	    if ((!xc && !yc) || (!xc && yc && yy >= ymin && yy <= ymax) ) {
 	        if (ix == 0) {	// initialize
-		    pd->xmin=pd->xmax=p->x;
+		    pd->xmin=pd->xmax=xx;
 		    ix=1;
 	      	} else {	// accumulate
-		    if(p->x < pd->xmin) pd->xmin=p->x;
-		    if(p->x > pd->xmax) pd->xmax=p->x;
+		    if(xx < pd->xmin) pd->xmin=xx;
+		    if(xx > pd->xmax) pd->xmax=xx;
 		}
 	    }
-	    if ((!yc && !xc) || (!yc && xc && p->x >= xmin && p->x <= xmax) ) {
+	    if ((!yc && !xc) || (!yc && xc && xx >= xmin && xx <= xmax) ) {
 	    	if (iy == 0) {	// initialize
-		    pd->ymin=pd->ymax=p->y;
+		    pd->ymin=pd->ymax=yy;
 		    iy=1;
 	      	} else {	// accumulate
-		  if(p->y < pd->ymin) pd->ymin=p->y;
-		  if(p->y > pd->ymax) pd->ymax=p->y;
+		  if(yy < pd->ymin) pd->ymin=yy;
+		  if(yy > pd->ymax) pd->ymax=yy;
 		}
 	    }
 	}
@@ -404,7 +443,6 @@ void render() {	// this is where the image gets drawn
 
       for (p=pd->data; p!=(DATUM *)0; p=p->next) {
   	 if (p->cmd == NULL) {
-	    // FIXME - needs to use actual xmax/min chosen by loose_label...
 	    x =(pd->urx-pd->llx)*(p->x-xmin)/(xmax-xmin)+pd->llx;
 	    y =(pd->ury-pd->lly)*(p->y-pd->ymin)/(pd->ymax-pd->ymin)+pd->lly; 
 	    if (linemode) {

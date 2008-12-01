@@ -170,7 +170,7 @@ void loadfont(char *file, int id)
 	fprintf(stderr, "error: fopen call failed\n");
 	exit(1);
     } else {
-    	printf("loading %s\n",file);
+    	// printf("loading %s\n",file);
     }
 
     line=0;

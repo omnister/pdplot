@@ -15,6 +15,7 @@ void debug(char *s, int dbug);
 int init_colors();
 void getGC(Window win, GC *gc, XFontStruct *font_info);
 void doXevent(char *s);
+void xwin_top();
 
 #define TICKSIZE 0.005  /* fraction of xsize+ysize for default ticks */
 #define MAX_COLORS 10
@@ -270,6 +271,12 @@ void xwin_size(double *x, double *y) {
    *y=(double) height;
 }
 
+void redraw() {
+    XClearArea(dpy, win, 0, 0, 0, 0, False);
+    render();
+    XFlush(dpy);
+}
+
 int procXevent() {
 
     /* readline select stuff */
@@ -296,10 +303,7 @@ int procXevent() {
     while(1) {
  	if (need_redraw) {
             need_redraw = 0;
-            XClearArea(dpy, win, 0, 0, 0, 0, False);
-	    XFlush(dpy);
-	    render();
-	    XFlush(dpy);
+	    redraw();
         }
 
 	/* if some event resulted in text in buffer 's' */
@@ -352,6 +356,7 @@ void doXevent(char *s) {
             if (xe.xexpose.count != 0)
                 break;
             if (xe.xexpose.window == win) {
+	       redraw();
             } 
             break;
         case ConfigureNotify:
@@ -359,9 +364,7 @@ void doXevent(char *s) {
 	    width = xe.xconfigure.width;
 	    height = xe.xconfigure.height;
 	    if (XEventsQueued(dpy, QueuedAfterFlush) == 0) {
-            	XClearArea(dpy, win, 0, 0, 0, 0, False);
-		render();
-	        XFlush(dpy);
+	        redraw();
 	    }
             break;
         case ButtonRelease:
@@ -377,9 +380,7 @@ void doXevent(char *s) {
 	case ReparentNotify:
 	    break;
 	case MapNotify:
-	    XClearArea(dpy, win, 0, 0, 0, 0, False);
-	    render();
-	    XFlush(dpy);
+	    redraw();
 	    break;
         case KeyPress:
             debug("got KeyPress",dbug);
@@ -390,6 +391,10 @@ void doXevent(char *s) {
             break;
         }
     }
+}
+
+void xwin_top() {
+ XRaiseWindow(dpy, win);
 }
 
 void getGC(win, gc, font_info)
