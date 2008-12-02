@@ -89,6 +89,9 @@ char **argv;
        if (isalpha(*sp)) {		// first non-white char is alpha, so a cmd
 	   if (strncmp(sp,"nextygraph",10)==0) {
 	       nextygraph();
+	   } else if (strncmp(sp,"linxy",4)==0) {
+	       logmode(0,0);
+	       logmode(1,0);
 	   } else if (strncmp(sp,"linx",4)==0) {
 	       logmode(0,0);
 	   } else if (strncmp(sp,"liny",4)==0) {
@@ -147,16 +150,20 @@ char **argv;
 		   yset(ymin, ymax);	
 	       }
 	   } else if (strncmp(sp,"xscale",6)==0) {
-	       if (sscanf(sp,"xscale %lg %s", &tmp, scratch ) != 2) {
-	          fprintf(stderr, "bad xscale values: sp\n");
-	       } else {
+	       if (sscanf(sp,"xscale %lg %[^#]", &tmp, scratch ) == 2) {
 	       	  xscale(scratch,tmp);	
+	       } else if (sscanf(sp,"xscale %[^#]", scratch ) == 1) {
+	       	  xscale(scratch,1.0);	
+	       } else {
+		  fprintf(stderr, "bad xscale values: %s\n", sp);
 	       }
 	   } else if (strncmp(sp,"yscale",6)==0) {
-	       if (sscanf(sp,"yscale %lg %s", &tmp, scratch ) != 2) {
-	          fprintf(stderr, "bad yscale values: sp\n");
-	       } else {
+	       if (sscanf(sp,"yscale %lg %[^#]", &tmp, scratch ) == 2) {
 	       	  yscale(scratch,tmp);	
+	       } else if (sscanf(sp,"yscale %[^#]", scratch ) == 1) {
+	       	  yscale(scratch,1.0);	
+	       } else {
+		  fprintf(stderr, "bad yscale values: %s\n", sp);
 	       }
 	   } else if (strncmp(sp,"title",5)==0) {
 	       title(sp+6);
@@ -178,7 +185,6 @@ char **argv;
 	   }
        }
     }
-    need_redraw++;
     ungetc(procXevent(), stdin);
     sleep(1);
   }

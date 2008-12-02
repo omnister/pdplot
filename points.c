@@ -84,6 +84,12 @@ void linkit(DATUM *d) // add a datum to the current list
     }
 }
 
+
+// Just save the scaled points.  then you
+// don't have to bother about scaling again.
+// However, this means that points read before
+// the x or yscale will not get scaled.
+
 void savepoint(double x, double y)
 {
     // scale the points as they are read
@@ -121,7 +127,7 @@ void freedata(DATUM *dp) {
     DATUM *p;
     for (p=dp; p!=(DATUM *)0; p=p->next) {
         free(p);
-	// make sure and free cmd strings
+	// FIXME: make sure and free cmd strings
     }
 }
 
@@ -190,11 +196,54 @@ void main2() {
 // axis: x = 0, y = 1
 // mode: lin = 0, log = 1, 20*log10(x)=2, 10*log10(x)=3 
 
+double logscale(double x, int axis) {
+    int mode;
+    int debug=0;
+
+    if (axis) {		// y
+      	mode = plots[numplots].ylogmode;
+    } else {		// x
+        mode = plots[0].xlogmode;
+    }
+
+    if (debug) printf("mode: %d, val_in: %g", mode, x);
+
+    switch (mode) {
+    case 0: 		// linear mode, do nothing
+        break;
+    case 1: 		// just log the data and rearrange the labels
+	if (x>0.0) {
+	    x = log10(x);
+	} else {
+	    x = 0.0;
+	}
+        break;
+    case 2: 		// 20*log(x)
+	if (x>0.0) {
+	    x = 20.0*log10(x);
+	} else {
+	    x = 0.0;
+	}
+        break;
+    case 3:		// 10*log(x)
+	if (x>0.0) {
+	    x = 10.0*log10(x);
+	} else {
+	    x = 0.0;
+	}
+        break;
+    default:
+        break;
+    }
+    if (debug) printf(" val_out: %g\n", x);
+    return(x);
+}
+
 void logmode(int axis, int mode) {
    if (axis) {
 	plots[numplots].ylogmode = mode;
    } else {
-	plots[numplots].xlogmode = mode;
+	plots[0].xlogmode = mode;
    }
 }
 
@@ -291,8 +340,8 @@ void setbounds(PLOTDAT *pd) {
 
     for (p=pd->data; p!=(DATUM *)0; p=p->next) {
   	if (p->cmd == NULL) {
-	    xx = p->x;
-	    yy = p->y;
+	    xx = logscale(p->x,0);
+	    yy = logscale(p->y,1);
 	    if ((!xc && !yc) || (!xc && yc && yy >= ymin && yy <= ymax) ) {
 	        if (ix == 0) {	// initialize
 		    pd->xmin=pd->xmax=xx;
@@ -422,15 +471,18 @@ void render() {	// this is where the image gets drawn
 	  xwin_draw_box(pd->llx, pd->lly, pd->urx, pd->ury);	// plot boundary
       }
 
-      loose_label(pd,&(pd->ymin),&(pd->ymax),18/(numplots+2),0, 1); // each graph own y
-      loose_label(pd,&(xmin),&(xmax),12, 1, (i==0));		   // all graphs same x 
+      // each graph has its own y
+      loose_label(pd,&(pd->ymin),&(pd->ymax),18/(numplots+2),0, 1, pd->ylogmode); 
+
+      // all graphs have same same x 
+      loose_label(pd,&(xmin),&(xmax),12, 1, (i==0), plots[0].xlogmode);		   
 
       if (pd->yaxis != NULL) {
   	  xwin_set_pen_line(0,0);
           axislabel(pd,pd->yaxis,0);
       }
 
-      back(0);		
+      back(0);		// defaults on a per graph basis...		
       jump();	
       pen(1);		// select red pen
       symbol(0);	// select first symbol
@@ -443,8 +495,8 @@ void render() {	// this is where the image gets drawn
 
       for (p=pd->data; p!=(DATUM *)0; p=p->next) {
   	 if (p->cmd == NULL) {
-	    x =(pd->urx-pd->llx)*(p->x-xmin)/(xmax-xmin)+pd->llx;
-	    y =(pd->ury-pd->lly)*(p->y-pd->ymin)/(pd->ymax-pd->ymin)+pd->lly; 
+	    x =(pd->urx-pd->llx)*(logscale(p->x,0)-xmin)/(xmax-xmin)+pd->llx;
+	    y =(pd->ury-pd->lly)*(logscale(p->y,1)-pd->ymin)/(pd->ymax-pd->ymin)+pd->lly; 
 	    if (linemode) {
 		draw(x,y, pd->llx, pd->urx, pd->lly, pd->ury);
 	    }
@@ -617,8 +669,8 @@ double rotation;
 int id;
 int jf;
 {
-    // printf("do_note called with string %s, (%g,%g), m:%d sl:%g a:%g sz:%g r:%g, id:%d, jf:%d\n",
-    //		string, x, y, mirror, size, aspect, slant, rotation, id, jf);
+    // printf("do_note: %s, (%g,%g), m:%d sl:%g a:%g sz:%g r:%g, id:%d, jf:%d\n",
+    //	string, x, y, mirror, size, aspect, slant, rotation, id, jf);
 
     XFORM *xp;
     /* create a unit xform matrix */
@@ -687,10 +739,6 @@ void fontdraw(double x, double y) {
 void jump() {
    nsegs=0;
 }
-
-// FIXME: a funny thing here: if I do a "pen <num>" command just prior
-// to a negative x motion in nonback mode, ap will NOT change
-// the color in the back motion, this present logic will.
 
 void draw(double x, double y, double xmin, double xmax, double ymin, double ymax) {
     static double xold, yold;

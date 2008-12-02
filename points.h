@@ -58,7 +58,7 @@ extern void symbol(int symno);
 extern void do_note();
 void do_symbol(int c, double x, double y, double size);
 extern void back(int backstat);
-extern void loose_label(PLOTDAT *pd, double *min, double *max, int nticks, int axis, int dolabel);
+extern void loose_label(PLOTDAT *pd, double *min, double *max, int nticks, int axis, int dolabel, int logmode);
 extern void axislabel(PLOTDAT *pd, char *temp, int axis);
 extern void gridlabel(PLOTDAT *pd, char *temp, double alpha, int axis);
 extern void gridline(PLOTDAT *pd, double alpha, int axis);

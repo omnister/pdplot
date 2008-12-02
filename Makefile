@@ -1,12 +1,34 @@
 OBJS=main.o points.o readfont.o xwin.o label.o clip.o
 
+FONTS=SYMBOL.F NOTEDATA.F
+
+TARS=main.c points.c readfont.c xwin.c label.c clip.c points.h \
+xwin.h readfont.h eventnames.h ${FONTS} pd
+
 CC=cc -ggdb -Wall
 
-bw: points.h $(OBJS)
-	cc -Wall -ggdb $(OBJS) -o bw -L/usr/X11R6/lib -lX11 -lm
+BINDIR = /usr/local/bin
+LIBDIR = /usr/local/lib/pdplot
+
+pdplot: points.h $(OBJS)
+	cc -Wall -ggdb $(OBJS) -o pdplot -L/usr/X11R6/lib -lX11 -lm
 
 clean: 
-	rm -f *.o bw
+	rm -f *.o pdplot
+
+install: pd pdplot pd.1 ${FONTS}
+	-/bin/mv -f ${BINDIR}/pd ${BINDIR}/pd.old
+	-/bin/cp pd $(BINDIR)/pd 
+	-/bin/cp pdplot $(BINDIR)/pdplot
+	if [ ! -d ${LIBDIR} ] ; \
+            then mkdir ${LIBDIR} || exit 1 ; \
+	else \
+             exit 0 ; \
+	fi
+	-/bin/cp ${FONTS} ${LIBDIR}
+
+
+
 
 tar: $(TARS)
 	(  d=`date +%F`;\

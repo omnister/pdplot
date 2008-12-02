@@ -16,34 +16,54 @@ static double nicenum();
 
 // nticks corresponds to maxxdiv, maxydiv in autoplot
 
-void loose_label(PLOTDAT *pd, double *min, double *max, int nticks, int axis, int dolabel) {
+void loose_label(PLOTDAT *pd, double *min, double *max, int nticks, int axis, int dolabel, int logmode) {
     char str[6], temp[20];
     int nfrac;
     double d;	/* tick mark spacing */
     double graphmin, graphmax;
     double range, x;
 
-    /* we expect min!=max */
-    range = nicenum(*max-*min, 0);
-    d = nicenum(range/(double)(nticks+4),1);
-    graphmin = floor(*min/d)*d;
-    graphmax = ceil(*max/d)*d;
-    nfrac = MAX(-floor(log10(d)),0);	/* # frac digits to show */
-    // sprintf(str,"%%.%df", nfrac); 	/* simplest axis labels */
-    sprintf(str,"%%g"); 	
-    // printf("graphmin=%g graphmax=%g increment=%g\n", graphmin, graphmax, d);
-    for (x=graphmin+d; x<graphmax-0.5*d; x+=d) {
-        sprintf(temp, str, x);
-	gridline(pd, (x-graphmin)/(graphmax-graphmin), axis);
-    }
-    for (x=graphmin; x<graphmax+0.5*d; x+=d) {
-        sprintf(temp, str, x);
-	if (dolabel) {
-	    gridlabel(pd, temp, (x-graphmin)/(graphmax-graphmin), axis);
+    if (logmode != 1) {	// just do linear scaling
+
+	range = nicenum(*max-*min, 0); 	/* we expect min!=max */
+	d = nicenum(range/(double)(nticks+4),1);
+	graphmin = floor(*min/d)*d;
+	graphmax = ceil(*max/d)*d;
+	nfrac = MAX(-floor(log10(d)),0);	/* # frac digits to show */
+	// sprintf(str,"%%.%df", nfrac); 	/* simplest axis labels */
+	sprintf(str,"%%g"); 	
+
+	// printf("graphmin=%g graphmax=%g increment=%g\n", graphmin, graphmax, d);
+	for (x=graphmin+d; x<graphmax-0.5*d; x+=d) {
+	    gridline(pd, (x-graphmin)/(graphmax-graphmin), axis);
 	}
+	for (x=graphmin; x<graphmax+0.5*d; x+=d) {
+	    sprintf(temp, str, x);
+	    if (dolabel) {
+		gridlabel(pd, temp, (x-graphmin)/(graphmax-graphmin), axis);
+	    }
+	}
+	*min  = graphmin;
+	*max  = graphmax;
+
+    } else {	// log mode, so do scaling by decades
+
+	graphmin = floor(*min);
+	graphmax =  ceil(*max);
+
+	for (x=graphmin+1; x<graphmax-0.5; x++) {
+	    gridline(pd, (x-graphmin)/(graphmax-graphmin), axis);
+	}
+	for (x=graphmin; x<graphmax+0.5; x++) {
+	    sprintf(temp, "%g", pow(10.0,x));
+	    if (dolabel) {
+		gridlabel(pd, temp, (x-graphmin)/(graphmax-graphmin), axis);
+	    }
+	}
+
+	*min = graphmin;
+	*max = graphmax;
     }
-    *min  = graphmin;
-    *max  = graphmax;
 }
 
 /*
@@ -89,5 +109,5 @@ void testmain(int ac, char ** av) {
     }
     min = atof(av[1]);
     max = atof(av[2]);
-    loose_label(&foo, &min,&max,NTICK,1,1);
+    loose_label(&foo, &min,&max,NTICK,1,1,0);
 }
