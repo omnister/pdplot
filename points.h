@@ -66,6 +66,7 @@ extern void box(int mode);
 extern void grid(int mode);
 extern void logmode(int axis, int mode);
 extern void clip();
+extern void iso(int mode);
 
 #define MIRROR_OFF 0
 #define MIRROR_X   1

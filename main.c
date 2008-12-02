@@ -79,8 +79,8 @@ char **argv;
     initX();
     initplot();
 
-    loadfont("./NOTEDATA.F", 0);
-    loadfont("./SYMBOL.F", 1);
+    loadfont("/usr/local/lib/pdplot/NOTEDATA.F", 0);
+    loadfont("/usr/local/lib/pdplot/SYMBOL.F", 1);
 
   while (1) {
     while(getz(s,BUF_SIZE) != EOF) {
@@ -130,11 +130,15 @@ char **argv;
 	       box(1);
 	   } else if (strncmp(sp,"nobox",5)==0) {
 	       box(0);
+	   } else if (strncmp(sp,"noisotropic",11)==0) {
+	       iso(0);
+	   } else if (strncmp(sp,"isotropic",9)==0) {
+	       iso(1);
 	   } else if (strncmp(sp,"plot",4)==0) {
 	       need_redraw++;
 	       xwin_top();
 	   } else if (strncmp(sp,"clear",5)==0) {
-	       initplot();	// FIXME: needs to set all globals: grid, frame ...
+	       initplot();	
 	   } else if (strncmp(sp,"xset",4)==0) {
 	       if (sscanf(sp+4,"%lg %lg", &xmin, &xmax ) != 2 || xmin > xmax) {
 	          fprintf(stderr, "bad xset values: sp\n");
@@ -167,6 +171,12 @@ char **argv;
 	       }
 	   } else if (strncmp(sp,"title",5)==0) {
 	       title(sp+6);
+	   } else if (strncmp(sp,"style",5)==0) {
+       	       sp=skipblanks(sp+6);
+	       if (sp[0] == 'p') {
+	       	  grid(0); 
+		  // FIXME: set charsize to 1.6 here
+	       }
 	   } else if (strncmp(sp,"exit",4)==0) {
 	       exit(2);
 	   } else {
@@ -188,8 +198,5 @@ char **argv;
     ungetc(procXevent(), stdin);
     sleep(1);
   }
-    while(1) {		// no more input, but keep X alive
-       procXevent();
-    }
-    exit(1);
+  exit(1);
 }

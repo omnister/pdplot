@@ -28,6 +28,7 @@ static int linemode=1;
 static int symnum=0;
 static int autopenflag=1;
 static int autosymflag=1;
+static int isotropic=0;
 
 static double symbolsize=1.0;
 
@@ -44,11 +45,15 @@ double x,y;
     return(tmp);
 }
 
-void box(mode) {
+void iso(int mode) {
+    isotropic=mode;
+}
+
+void box(int mode) {
     boxmode=mode;
 }
 
-void grid(mode) {
+void grid(int mode) {
    gridmode=mode;
 }
 
@@ -471,6 +476,29 @@ void render() {	// this is where the image gets drawn
 	  xwin_draw_box(pd->llx, pd->lly, pd->urx, pd->ury);	// plot boundary
       }
 
+      double uppx, uppy;  	// units per pixel
+      double del, max, min, mid;
+
+      if (isotropic) {
+	  uppx=(xmax - xmin)/(pd->urx - pd->llx);
+          uppy=(pd->ymax - pd->ymin)/(pd->ury - pd->lly);
+	  if (uppx > uppy) {
+	      del = pd->ymax-pd->ymin;
+	      mid = (pd->ymax+pd->ymin)/2.0;
+	      max = mid + del*(uppx/uppy)/2.0;
+	      min = mid - del*(uppx/uppy)/2.0;
+	      pd->ymax=max;
+	      pd->ymin=min;
+	  } else {
+	      del = xmax-xmin;
+	      mid = (xmax+xmin)/2.0;
+	      max = mid + del*(uppy/uppx)/2.0;
+	      min = mid - del*(uppy/uppx)/2.0;
+	      xmax=max;
+	      xmin=min;
+	  }
+      }
+
       // each graph has its own y
       loose_label(pd,&(pd->ymin),&(pd->ymax),18/(numplots+2),0, 1, pd->ylogmode); 
 
@@ -489,8 +517,8 @@ void render() {	// this is where the image gets drawn
       autopenflag=1;
       autosymflag=1;
       // gridmode=1;
-      // symbolmode=0;
-      // linemode=1;
+      symbolmode=0;
+      linemode=1;
       symbolsize=1.0;
 
       for (p=pd->data; p!=(DATUM *)0; p=p->next) {
