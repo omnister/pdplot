@@ -19,7 +19,6 @@ static int pennum=1;
 static int linenum=0;
 static int backstat=0;
 static double pad;
-static double fontsize;
 static double ticklen;
 static int gridmode=1;
 static int scalemode=1;
@@ -33,6 +32,7 @@ static int autosymflag=1;
 static int isotropic=0;
 static int dimgrid=0;
 
+static double fontsize;
 static double charsize=1.0; 	// scales all characters	!x
 static double symbolsize=1.0;	// scales symbols		!x
 static double ticksize=1.0;	// scales ticks			!x
@@ -458,7 +458,7 @@ void render() {	// this is where the image gets drawn
     int i;
     double llx, lly, urx, ury, div, del;
     double xmax, xmin, ymax, ymin;
-    double x,y;
+    double x,y,xx,yy;
     double width, height;
     PLOTDAT *pd;
     DATUM *p;
@@ -468,6 +468,7 @@ void render() {	// this is where the image gets drawn
     double tmp;
     extern double ticklen;
     extern double ticksize;
+    char buf[128];
 
     xwin_size(&width, &height);
 
@@ -564,7 +565,7 @@ void render() {	// this is where the image gets drawn
 
       // back(0);		// defaults on a per graph basis...		
       jump();	
-      pen(1);		// select red pen
+      pen(2);		// select red pen
       symbol(0);	// select first symbol
       autopenflag=1;
       autosymflag=1;
@@ -642,6 +643,15 @@ void render() {	// this is where the image gets drawn
 		   } else {
 		      fprintf(stderr,"bad argument to labelsize cmd: %s\n", p->cmd);
 		   }
+	       } else {
+		   fprintf(stderr,"bad argument to labelsize cmd: %s\n", p->cmd);
+	       }
+	   } else if (strncmp(p->cmd,"label",5)==0) {
+	       if (sscanf(p->cmd, "%*s %lg %lg %[^#]", &x, &y, buf)==3) {
+		    xx =(pd->urx-pd->llx)*(logscale(x,0)-xmin)/(xmax-xmin)+pd->llx;
+		    yy =(pd->ury-pd->lly)*(logscale(y,1)-pd->ymin)/(pd->ymax-pd->ymin)+pd->lly; 
+		    do_note(buf, xx, yy, MIRROR_OFF , 0.6*fontsize*charsize*labelsize,
+		    1.0, 0.0, 0.0, 0, 0);
 	       } else {
 		   fprintf(stderr,"bad argument to labelsize cmd: %s\n", p->cmd);
 	       }
