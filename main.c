@@ -89,7 +89,15 @@ char **argv;
        if (isalpha(*sp)) {		// first non-white char is alpha, so a cmd
 	   if (strncmp(sp,"nextygraph",10)==0) {
 	       nextygraph();
+	   } else if (strncmp(sp,"noframe",7)==0) {
+	       grid(0);
+	       box(0);
+	       scale(0);
+	       tick(0);
+	   } else if (strncmp(sp,"dimgrid",7)==0) {
+	       dim(1);
 	   } else if (strncmp(sp,"linxy",4)==0) {
+	       logmode(0,0);
 	       logmode(0,0);
 	       logmode(1,0);
 	   } else if (strncmp(sp,"linx",4)==0) {
@@ -139,6 +147,12 @@ char **argv;
 	       xwin_top();
 	   } else if (strncmp(sp,"clear",5)==0) {
 	       initplot();	
+	   } else if (strncmp(sp,"ticklength",10)==0) {
+	       if (sscanf(sp+10,"%lg", &tmp) != 1 || tmp < 0.1 || tmp > 10.0) {
+		  tickset(-1.0);
+	       } else {
+		   tickset(tmp);	
+	       }
 	   } else if (strncmp(sp,"xset",4)==0) {
 	       if (sscanf(sp+4,"%lg %lg", &xmin, &xmax ) != 2 || xmin > xmax) {
 	          fprintf(stderr, "bad xset values: sp\n");
@@ -169,6 +183,8 @@ char **argv;
 	       } else {
 		  fprintf(stderr, "bad yscale values: %s\n", sp);
 	       }
+	   } else if (strncmp(sp,"titlesize",9)==0) {	
+	       savecmd(sp); 	// prevent "title" from eating titlesize
 	   } else if (strncmp(sp,"title",5)==0) {
 	       title(sp+6);
 	   } else if (strncmp(sp,"style",5)==0) {

@@ -65,8 +65,12 @@ extern void gridline(PLOTDAT *pd, double alpha, int axis);
 extern void box(int mode);
 extern void grid(int mode);
 extern void logmode(int axis, int mode);
+extern void scale(int mode);
+extern void tick(int mode);
 extern void clip();
+extern void dim(int mode);
 extern void iso(int mode);
+extern void tickset(double scale);
 
 #define MIRROR_OFF 0
 #define MIRROR_X   1

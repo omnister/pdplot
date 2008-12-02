@@ -182,14 +182,14 @@ int init_colors()
     int default_depth;
     Visual *default_visual;
     static char *name[] = {
-	"white",        /* FIXME: eventually should be black */
+	"black",
+	"white",   
 	"red",
 	"green",
-	"#7272ff",	/* brighten up our blues a la Ken.P. :-)*/
+	"#7575ff",	/* brighten up our blues a la Ken.P. :-)*/
 	"cyan",
 	"magenta",
 	"yellow",
-	"white",
 	"#b0b0b0",
 	"#505050"
     };

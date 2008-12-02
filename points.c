@@ -22,6 +22,8 @@ static double pad;
 static double fontsize;
 static double ticklen;
 static int gridmode=1;
+static int scalemode=1;
+static int tickmode=1;
 static int boxmode=1;
 static int symbolmode=0;
 static int linemode=1;
@@ -29,8 +31,15 @@ static int symnum=0;
 static int autopenflag=1;
 static int autosymflag=1;
 static int isotropic=0;
+static int dimgrid=0;
 
-static double symbolsize=1.0;
+static double charsize=1.0; 	// scales all characters	!x
+static double symbolsize=1.0;	// scales symbols		!x
+static double ticksize=1.0;	// scales ticks			!x
+static double scalesize=1.0;    // scales axis labels		!x
+static double tagsize=1.0;      // scales grid tick values	!
+static double titlesize=1.0;    // scales title			!
+static double labelsize=1.0;    // scales label
 
 DATUM *datum_new(x,y)
 double x,y;
@@ -45,12 +54,28 @@ double x,y;
     return(tmp);
 }
 
+void dim(int mode) {
+    dimgrid=mode; 
+}
+
 void iso(int mode) {
     isotropic=mode;
 }
 
+void tick(int mode) {
+   tickmode=mode;
+}
+
+void scale(int mode) {
+   scalemode=mode;
+}
+
 void box(int mode) {
     boxmode=mode;
+}
+
+void tickset(double scale) {
+   ticksize=scale; 
 }
 
 void grid(int mode) {
@@ -178,7 +203,18 @@ void initplot(void) {
    symnum=0;
    autopenflag=1;
    autosymflag=1;
-   symbolsize=1.0;
+   isotropic=0;
+   dimgrid=0;
+   scalemode=1;
+   tickmode=1;
+
+   charsize=1.0;     // scales all characters
+   symbolsize=1.0;   // scales symbols
+   ticksize=1.0;     // scales ticks
+   scalesize=1.0;    // scales axis labels
+   tagsize=1.0;      // scales grid tick values
+   titlesize=1.0;    // scales title
+   labelsize=1.0;    // scales label
 }
 
 void main2() {
@@ -254,15 +290,17 @@ void logmode(int axis, int mode) {
 
 void gridtick(PLOTDAT *pd, double alpha, int x) {
     double tmp;
-    xwin_set_pen_line(0,0);
-    if (x) { 			// xaxis grid lines
-	tmp = alpha*pd->urx+(1.0-alpha)*pd->llx;
-	xwin_draw_line( tmp, pd->lly, tmp, pd->lly+ticklen);
-	xwin_draw_line( tmp, pd->ury, tmp, pd->ury-ticklen);
-    } else { 			// yaxis grid lines
-	tmp = alpha*pd->lly+(1.0-alpha)*pd->ury;
-	xwin_draw_line( pd->llx, tmp, pd->llx+ticklen, tmp);
-	xwin_draw_line( pd->urx, tmp, pd->urx-ticklen, tmp);
+    xwin_set_pen_line(1,0);
+    if (tickmode && ticklen>0) {
+	if (x) { 			// xaxis grid lines
+	    tmp = alpha*pd->urx+(1.0-alpha)*pd->llx;
+	    xwin_draw_line( tmp, pd->lly, tmp, pd->lly+ticklen);
+	    xwin_draw_line( tmp, pd->ury, tmp, pd->ury-ticklen);
+	} else { 			// yaxis grid lines
+	    tmp = alpha*pd->lly+(1.0-alpha)*pd->ury;
+	    xwin_draw_line( pd->llx, tmp, pd->llx+ticklen, tmp);
+	    xwin_draw_line( pd->urx, tmp, pd->urx-ticklen, tmp);
+	}
     }
 }
 
@@ -270,7 +308,11 @@ void gridline(PLOTDAT *pd, double alpha, int x) {
     double tmp;
     gridtick(pd, alpha, x);
     if (gridmode) {
-	xwin_set_pen_line(0,1);
+	if (dimgrid) {
+	    xwin_set_pen_line(9,1);
+	} else {
+	    xwin_set_pen_line(1,1);
+	}
 	if (x) { 			// xaxis grid lines
 	    tmp = alpha*pd->urx+(1.0-alpha)*pd->llx;
 	    xwin_draw_line( tmp, pd->lly, tmp, pd->ury);
@@ -283,27 +325,35 @@ void gridline(PLOTDAT *pd, double alpha, int x) {
 
 void axislabel(PLOTDAT *pd, char *str, int x) {
     double tmp,mid;
-    xwin_set_pen_line(0,0);
-    if (x) { 			// xaxis label
-	tmp = pd->lly-pad-fontsize;
-	mid = (pd->llx+pd->urx)/2.0;
-        do_note(str, mid, tmp, MIRROR_OFF, fontsize*.6, 1.0, 0.0, 0.0, 0, 4);
-    } else { 			// yaxis label
-	tmp = pd->llx-pad-2.0*fontsize;
-	mid = (pd->lly+pd->ury)/2.0;
-        do_note(str, tmp, mid , MIRROR_OFF, fontsize*.6, 1.0, 0.0, 90.0, 0, 4);
+    xwin_set_pen_line(1,0);
+    if (scalemode) {
+	if (x) { 			// xaxis label
+	    tmp = pd->lly-pad-fontsize;
+	    mid = (pd->llx+pd->urx)/2.0;
+	    do_note(str, mid, tmp, MIRROR_OFF, 
+	    	scalesize*charsize*fontsize*.6, 1.0, 0.0, 0.0, 0, 4);
+	} else { 			// yaxis label
+	    tmp = pd->llx-pad-2.0*fontsize;
+	    mid = (pd->lly+pd->ury)/2.0;
+	    do_note(str, tmp, mid , MIRROR_OFF, 
+	    	scalesize*charsize*fontsize*.6, 1.0, 0.0, 90.0, 0, 4);
+	}
     }
 }
 
 void gridlabel(PLOTDAT *pd, char *str, double alpha, int x) {
     double tmp;
-    xwin_set_pen_line(0,0);
-    if (x) { 			// xaxis label
-	tmp = alpha*pd->urx+(1.0-alpha)*pd->llx;
-        do_note(str, tmp, pd->lly-pad, MIRROR_OFF, fontsize*.6, 1.0, 0.0, 0.0, 0, 7);
-    } else { 			// yaxis label
-	tmp = alpha*pd->ury+(1.0-alpha)*pd->lly;
-        do_note(str, pd->llx-pad, tmp, MIRROR_OFF, fontsize*.6, 1.0, 0.0, 0.0, 0, 5);
+    xwin_set_pen_line(1,0);
+    if (scalemode) {
+	if (x) { 			// xaxis label
+	    tmp = alpha*pd->urx+(1.0-alpha)*pd->llx;
+	    do_note(str, tmp, pd->lly-pad, MIRROR_OFF,
+	    	fontsize*.6*charsize*tagsize, 1.0, 0.0, 0.0, 0, 7);
+	} else { 			// yaxis label
+	    tmp = alpha*pd->ury+(1.0-alpha)*pd->lly;
+	    do_note(str, pd->llx-pad, tmp, MIRROR_OFF,
+	    	fontsize*.6*charsize*tagsize, 1.0, 0.0, 0.0, 0, 5);
+	}
     }
 }
 
@@ -417,6 +467,7 @@ void render() {	// this is where the image gets drawn
     int symno;
     double tmp;
     extern double ticklen;
+    extern double ticksize;
 
     xwin_size(&width, &height);
 
@@ -425,20 +476,21 @@ void render() {	// this is where the image gets drawn
     urx=0.95*width;
     ury=0.9*height;
     fontsize = (height+width)/50.0;
-    ticklen = (height+width)/200.0;
+    ticklen = ticksize*(height+width)/200.0;
     pad=fontsize/4.0;
 
     // we allow each graph to be 5 units tall, and spacing between
     // graphs is one unit...
 
     // place for a title
-    if (plots[0].title != NULL) {
-	xwin_set_pen_line(0,0);
+    if (plots[0].title != NULL && scalemode) {
+	xwin_set_pen_line(1,0);
 	do_note(plots[0].title, (llx+urx)/2.0, 
-	   pad+ury, MIRROR_OFF, fontsize, 1.28, 0.0, 0.0, 0, 1);
+	   pad+ury, MIRROR_OFF, fontsize*charsize*titlesize,
+	   1.28, 0.0, 0.0, 0, 1);
     }
     if (plots[0].xaxis != NULL) {
-       xwin_set_pen_line(0,0);
+       xwin_set_pen_line(1,0);
        axislabel(&plots[numplots],plots[0].xaxis,1);
     }
 
@@ -471,7 +523,7 @@ void render() {	// this is where the image gets drawn
       if (debug) printf("numplots = %d: %g %g %g %g\n",
       	numplots, pd->llx, pd->lly, pd->urx, pd->ury);
 
-      xwin_set_pen_line(0,0);
+      xwin_set_pen_line(1,0);
       if (boxmode) {
 	  xwin_draw_box(pd->llx, pd->lly, pd->urx, pd->ury);	// plot boundary
       }
@@ -506,11 +558,11 @@ void render() {	// this is where the image gets drawn
       loose_label(pd,&(xmin),&(xmax),12, 1, (i==0), plots[0].xlogmode);		   
 
       if (pd->yaxis != NULL) {
-  	  xwin_set_pen_line(0,0);
+  	  xwin_set_pen_line(1,0);
           axislabel(pd,pd->yaxis,0);
       }
 
-      back(0);		// defaults on a per graph basis...		
+      // back(0);		// defaults on a per graph basis...		
       jump();	
       pen(1);		// select red pen
       symbol(0);	// select first symbol
@@ -553,6 +605,56 @@ void render() {	// this is where the image gets drawn
 	   } else if (strncmp(p->cmd,"symbol+line",11)==0) {
 		symbolmode = 1;
 		linemode = 1;
+	   } else if (strncmp(p->cmd,"charsize",8)==0) {
+	       if (sscanf(p->cmd, "%*s %lg", &tmp)==1) {
+		   if (tmp >= 0.1 && tmp <= 10.0) {
+		       charsize=tmp;
+		   } else {
+		      fprintf(stderr,"bad argument to symbolsize cmd: %s\n", p->cmd);
+		   }
+	       } else {
+		   fprintf(stderr,"bad argument to charsize cmd: %s\n", p->cmd);
+	       }
+	   } else if (strncmp(p->cmd,"tagsize",7)==0) {
+	       if (sscanf(p->cmd, "%*s %lg", &tmp)==1) {
+		   if (tmp >= 0.1 && tmp <= 10.0) {
+		       tagsize=tmp;
+		   } else {
+		      fprintf(stderr,"bad argument to tagsize cmd: %s\n", p->cmd);
+		   }
+	       } else {
+		   fprintf(stderr,"bad argument to tagsize cmd: %s\n", p->cmd);
+	       }
+	   } else if (strncmp(p->cmd,"titlesize",9)==0) {
+	       if (sscanf(p->cmd, "%*s %lg", &tmp)==1) {
+		   if (tmp >= 0.1 && tmp <= 10.0) {
+		       titlesize=tmp;
+		   } else {
+		      fprintf(stderr,"bad argument to titlesize cmd: %s\n", p->cmd);
+		   }
+	       } else {
+		   fprintf(stderr,"bad argument to titlesize cmd: %s\n", p->cmd);
+	       }
+	   } else if (strncmp(p->cmd,"labelsize",9)==0) {
+	       if (sscanf(p->cmd, "%*s %lg", &tmp)==1) {
+		   if (tmp >= 0.1 && tmp <= 10.0) {
+		       labelsize=tmp;
+		   } else {
+		      fprintf(stderr,"bad argument to labelsize cmd: %s\n", p->cmd);
+		   }
+	       } else {
+		   fprintf(stderr,"bad argument to labelsize cmd: %s\n", p->cmd);
+	       }
+	   } else if (strncmp(p->cmd,"scalesize",9)==0) {
+	       if (sscanf(p->cmd, "%*s %lg", &tmp)==1) {
+		   if (tmp >= 0.1 && tmp <= 10.0) {
+		       scalesize=tmp;
+		   } else {
+		      fprintf(stderr,"bad argument to scalesize cmd: %s\n", p->cmd);
+		   }
+	       } else {
+		   fprintf(stderr,"bad argument to scalesize cmd: %s\n", p->cmd);
+	       }
 	   } else if (strncmp(p->cmd,"symbolsize",10)==0) {
 	       if (sscanf(p->cmd, "%*s %lg", &tmp)==1) {
 		   if (tmp >= 0.1 && tmp <= 10.0) {
@@ -747,7 +849,11 @@ void symbol(int sym_no) {
 }
 
 void pen(int pen_no) {
-   pennum = pen_no%6;
+   if (pen_no >= 8) {
+       pennum = pen_no%8+1;
+   } else {
+       pennum = pen_no;
+   }
    xwin_set_pen_line(pennum,linenum);
 }
 
