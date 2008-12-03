@@ -58,7 +58,8 @@ extern void symbol(int symno);
 extern void do_note();
 void do_symbol(int c, double x, double y, double size);
 extern void back(int backstat);
-extern void loose_label(PLOTDAT *pd, double *min, double *max, int nticks, int axis, int dolabel, int logmode);
+extern void loose_label(PLOTDAT *pd, double *min, double *max, int nticks, int axis,\
+	int dolabel, int logmode, int dryrun);
 extern void axislabel(PLOTDAT *pd, char *temp, int axis);
 extern void gridlabel(PLOTDAT *pd, char *temp, double alpha, int axis);
 extern void gridline(PLOTDAT *pd, double alpha, int axis);
@@ -71,6 +72,7 @@ extern void clip();
 extern void dim(int mode);
 extern void iso(int mode);
 extern void tickset(double scale);
+extern void setcharsize(double size);
 
 #define MIRROR_OFF 0
 #define MIRROR_X   1

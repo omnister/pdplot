@@ -16,7 +16,8 @@ static double nicenum();
 
 // nticks corresponds to maxxdiv, maxydiv in autoplot
 
-void loose_label(PLOTDAT *pd, double *min, double *max, int nticks, int axis, int dolabel, int logmode) {
+void loose_label(PLOTDAT *pd, double *min, double *max, int nticks, int axis, int dolabel,
+int logmode, int dryrun) {
     char str[6], temp[20];
     int nfrac;
     double d;	/* tick mark spacing */
@@ -33,14 +34,16 @@ void loose_label(PLOTDAT *pd, double *min, double *max, int nticks, int axis, in
 	// sprintf(str,"%%.%df", nfrac); 	/* simplest axis labels */
 	sprintf(str,"%%g"); 	
 
-	// printf("graphmin=%g graphmax=%g increment=%g\n", graphmin, graphmax, d);
-	for (x=graphmin+d; x<graphmax-0.5*d; x+=d) {
-	    gridline(pd, (x-graphmin)/(graphmax-graphmin), axis);
-	}
-	for (x=graphmin; x<graphmax+0.5*d; x+=d) {
-	    sprintf(temp, str, x);
-	    if (dolabel) {
-		gridlabel(pd, temp, (x-graphmin)/(graphmax-graphmin), axis);
+	if (!dryrun) {
+	    // printf("graphmin=%g graphmax=%g increment=%g\n", graphmin, graphmax, d);
+	    for (x=graphmin+d; x<graphmax-0.5*d; x+=d) {
+		gridline(pd, (x-graphmin)/(graphmax-graphmin), axis);
+	    }
+	    for (x=graphmin; x<graphmax+0.5*d; x+=d) {
+		sprintf(temp, str, x);
+		if (dolabel) {
+		    gridlabel(pd, temp, (x-graphmin)/(graphmax-graphmin), axis);
+		}
 	    }
 	}
 	*min  = graphmin;
@@ -51,13 +54,15 @@ void loose_label(PLOTDAT *pd, double *min, double *max, int nticks, int axis, in
 	graphmin = floor(*min);
 	graphmax =  ceil(*max);
 
-	for (x=graphmin+1; x<graphmax-0.5; x++) {
-	    gridline(pd, (x-graphmin)/(graphmax-graphmin), axis);
-	}
-	for (x=graphmin; x<graphmax+0.5; x++) {
-	    sprintf(temp, "%g", pow(10.0,x));
-	    if (dolabel) {
-		gridlabel(pd, temp, (x-graphmin)/(graphmax-graphmin), axis);
+	if (!dryrun) {
+	    for (x=graphmin+1; x<graphmax-0.5; x++) {
+		gridline(pd, (x-graphmin)/(graphmax-graphmin), axis);
+	    }
+	    for (x=graphmin; x<graphmax+0.5; x++) {
+		sprintf(temp, "%g", pow(10.0,x));
+		if (dolabel) {
+		    gridlabel(pd, temp, (x-graphmin)/(graphmax-graphmin), axis);
+		}
 	    }
 	}
 
@@ -109,5 +114,5 @@ void testmain(int ac, char ** av) {
     }
     min = atof(av[1]);
     max = atof(av[2]);
-    loose_label(&foo, &min,&max,NTICK,1,1,0);
+    loose_label(&foo, &min,&max,NTICK,1,1,0,0);
 }

@@ -33,12 +33,12 @@ static int isotropic=0;
 static int dimgrid=0;
 
 static double fontsize;
-static double charsize=1.0; 	// scales all characters	!x
-static double symbolsize=1.0;	// scales symbols		!x
-static double ticksize=1.0;	// scales ticks			!x
-static double scalesize=1.0;    // scales axis labels		!x
-static double tagsize=1.0;      // scales grid tick values	!
-static double titlesize=1.0;    // scales title			!
+static double charsize=1.0; 	// scales all characters
+static double symbolsize=1.0;	// scales symbols
+static double ticksize=1.0;	// scales ticks	
+static double scalesize=1.0;    // scales axis labels
+static double tagsize=1.0;      // scales grid tick values
+static double titlesize=1.0;    // scales title	
 static double labelsize=1.0;    // scales label
 
 DATUM *datum_new(x,y)
@@ -80,6 +80,10 @@ void tickset(double scale) {
 
 void grid(int mode) {
    gridmode=mode;
+}
+
+void setcharsize(double size) {
+   charsize=size;
 }
 
 void nextygraph() {
@@ -524,39 +528,42 @@ void render() {	// this is where the image gets drawn
       if (debug) printf("numplots = %d: %g %g %g %g\n",
       	numplots, pd->llx, pd->lly, pd->urx, pd->ury);
 
+      double uppx, uppy;  	// units per pixel
+      double del, max, min, mid;
+
+      if (isotropic) {
+
+	  // do a dry run on labels to get exact scales
+	  loose_label(pd,&(pd->ymin),&(pd->ymax),18/(numplots+2),0, 1, pd->ylogmode, 1); 
+	  loose_label(pd,&(xmin),&(xmax),12, 1, (i==0), plots[0].xlogmode, 1);		   
+
+	  uppx=(xmax - xmin)/(pd->urx - pd->llx);
+          uppy=(pd->ymax - pd->ymin)/(pd->ury - pd->lly);
+	  if (uppx > uppy) {
+	      del = pd->ury-pd->lly;
+	      mid = (pd->ury+pd->lly)/2.0;
+	      max = mid + del/(2.0*uppx/uppy);
+	      min = mid - del/(2.0*uppx/uppy);
+	      pd->ury=max;
+	      pd->lly=min;
+	  } else {
+	      del = pd->urx-pd->llx;
+	      mid = (pd->urx+pd->llx)/2.0;
+	      max = mid + del/(2.0*uppy/uppx);
+	      min = mid - del/(2.0*uppy/uppx);
+	      pd->urx=max;
+	      pd->llx=min;
+	  }
+      }
+
       xwin_set_pen_line(1,0);
       if (boxmode) {
 	  xwin_draw_box(pd->llx, pd->lly, pd->urx, pd->ury);	// plot boundary
       }
 
-      double uppx, uppy;  	// units per pixel
-      double del, max, min, mid;
-
-      if (isotropic) {
-	  uppx=(xmax - xmin)/(pd->urx - pd->llx);
-          uppy=(pd->ymax - pd->ymin)/(pd->ury - pd->lly);
-	  if (uppx > uppy) {
-	      del = pd->ymax-pd->ymin;
-	      mid = (pd->ymax+pd->ymin)/2.0;
-	      max = mid + del*(uppx/uppy)/2.0;
-	      min = mid - del*(uppx/uppy)/2.0;
-	      pd->ymax=max;
-	      pd->ymin=min;
-	  } else {
-	      del = xmax-xmin;
-	      mid = (xmax+xmin)/2.0;
-	      max = mid + del*(uppy/uppx)/2.0;
-	      min = mid - del*(uppy/uppx)/2.0;
-	      xmax=max;
-	      xmin=min;
-	  }
-      }
-
-      // each graph has its own y
-      loose_label(pd,&(pd->ymin),&(pd->ymax),18/(numplots+2),0, 1, pd->ylogmode); 
-
-      // all graphs have same same x 
-      loose_label(pd,&(xmin),&(xmax),12, 1, (i==0), plots[0].xlogmode);		   
+      // now run labels with possibly tweaked urxy, llxy for isotropic plot
+      loose_label(pd,&(pd->ymin),&(pd->ymax),18/(numplots+2),0, 1, pd->ylogmode, 0); 
+      loose_label(pd,&(xmin),&(xmax),12, 1, (i==0), plots[0].xlogmode, 0);		   
 
       if (pd->yaxis != NULL) {
   	  xwin_set_pen_line(1,0);
@@ -611,7 +618,7 @@ void render() {	// this is where the image gets drawn
 		   if (tmp >= 0.1 && tmp <= 10.0) {
 		       charsize=tmp;
 		   } else {
-		      fprintf(stderr,"bad argument to symbolsize cmd: %s\n", p->cmd);
+		      fprintf(stderr,"bad argument to charsize cmd: %s\n", p->cmd);
 		   }
 	       } else {
 		   fprintf(stderr,"bad argument to charsize cmd: %s\n", p->cmd);

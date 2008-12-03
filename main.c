@@ -191,7 +191,7 @@ char **argv;
        	       sp=skipblanks(sp+6);
 	       if (sp[0] == 'p') {
 	       	  grid(0); 
-		  // FIXME: set charsize to 1.6 here
+		  setcharsize(1.6);
 	       }
 	   } else if (strncmp(sp,"exit",4)==0) {
 	       exit(2);
