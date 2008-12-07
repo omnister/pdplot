@@ -6,6 +6,7 @@
 #include "points.h"
 #include "readfont.h"
 #include <unistd.h>
+#include "symbol.h"
 
 #define BUF_SIZE 1000
 char *progname;
@@ -77,6 +78,7 @@ char **argv;
     }
 
     initX();
+    initsym();
     initplot();
 
     loadfont("/usr/local/lib/pdplot/NOTEDATA.F", 0);

@@ -1,8 +1,8 @@
-OBJS=main.o points.o readfont.o xwin.o label.o clip.o
+OBJS=main.o points.o readfont.o xwin.o label.o clip.o symbol.o
 
 FONTS=SYMBOL.F NOTEDATA.F
 
-TARS=main.c points.c readfont.c xwin.c label.c clip.c points.h \
+TARS=main.c points.c readfont.c xwin.c label.c clip.c points.h symbol.c symbol.h \
 xwin.h readfont.h eventnames.h ${FONTS} pd
 
 CC=cc -ggdb -Wall
@@ -58,10 +58,14 @@ depend: ${OBJ}
 #-----------------------------------------------------------------
 # DO NOT PUT ANY DEPENDENCIES AFTER THE NEXT LINE -- they will go away
 # DO NOT DELETE OR MODIFY THIS LINE -- make depend uses it
+clip.o: xwin.h
 label.o: points.h
 main.o: points.h
+main.o: readfont.h
 main.o: xwin.h
 points.o: points.h
+points.o: readfont.h
+points.o: xwin.h
 readfont.o: points.h
 readfont.o: readfont.h
 xwin.o: eventnames.h

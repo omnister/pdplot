@@ -5,6 +5,7 @@
 #include "points.h"
 #include "xwin.h"
 #include "readfont.h"
+#include "symbol.h"
 
 #define MAXPLOTS 10
 
@@ -473,6 +474,7 @@ void render() {	// this is where the image gets drawn
     extern double ticklen;
     extern double ticksize;
     char buf[128];
+    Symbol *sym;
 
     xwin_size(&width, &height);
 
@@ -563,12 +565,12 @@ void render() {	// this is where the image gets drawn
       back(0);		// defaults on a per graph basis...		
       jump();	
       pen(2);		// select red pen
-      symbol(0);	// select first symbol
+      symbol(1);	// select first symbol
       autopenflag=1;
       autosymflag=1;
       // gridmode=1;
       // symbolmode=0;
-      // linemode=1;
+      linemode=1;
       symbolsize=1.0;
 
       for (p=pd->data; p!=(DATUM *)0; p=p->next) {
@@ -601,8 +603,8 @@ void render() {	// this is where the image gets drawn
 	   } else if (strncmp(p->cmd,"back",4)==0) {
 	       back(1);
 	   } else if (strncmp(p->cmd,"symbol+line",11)==0) {
-		symbolmode = 1;
-		linemode = 1;
+	       symbolmode = 1;
+	       linemode = 1;
 	   } else if (strncmp(p->cmd,"charsize",8)==0) {
 	       if (sscanf(p->cmd, "%*s %lg", &tmp)==1) {
 		   if (tmp >= 0.1 && tmp <= 10.0) {
@@ -678,9 +680,15 @@ void render() {	// this is where the image gets drawn
 		   linemode = 0;
 	       }
 	       if (sscanf(p->cmd, "%*s %d", &symno)==1) {
-		  symbol(symno);
+		   symbol(symno);
 	       } else {
-		  symbol(++symnum);
+		  if (sscanf(p->cmd, "%*s %s", buf)==1) {
+		      if ((sym=lookup(buf)) != 0) {
+			  symbol(sym->index);
+		      } else {
+			  symbol(++symnum);
+		      }
+		  }
 	       }
 	   } else if (strncmp(p->cmd,"nosymbol",8)==0) {
 		symbolmode = 0;
@@ -799,7 +807,7 @@ double x, y;
 double size;
 {
     char s[2];
-    s[0]=(char) ((c%54)+33);
+    s[0]=(char) ((c%54)+32);
     s[1]='\0';
     do_note(s, x, y, MIRROR_OFF , size, 1.0, 0.0, 0.0, 1, 4);
 }
