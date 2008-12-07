@@ -302,8 +302,8 @@ int procXevent() {
 
     while(1) {
  	if (need_redraw) {
-            need_redraw = 0;
 	    redraw();
+            need_redraw = 0;
         }
 
 	/* if some event resulted in text in buffer 's' */
@@ -356,7 +356,7 @@ void doXevent(char *s) {
             if (xe.xexpose.count != 0)
                 break;
             if (xe.xexpose.window == win) {
-	       redraw();
+	       if (!need_redraw) redraw();
             } 
             break;
         case ConfigureNotify:
@@ -364,7 +364,7 @@ void doXevent(char *s) {
 	    width = xe.xconfigure.width;
 	    height = xe.xconfigure.height;
 	    if (XEventsQueued(dpy, QueuedAfterFlush) == 0) {
-	        redraw();
+	       if (!need_redraw) redraw();
 	    }
             break;
         case ButtonRelease:
@@ -380,7 +380,7 @@ void doXevent(char *s) {
 	case ReparentNotify:
 	    break;
 	case MapNotify:
-	    redraw();
+	    if (!need_redraw) redraw();
 	    break;
         case KeyPress:
             debug("got KeyPress",dbug);

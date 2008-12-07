@@ -531,12 +531,11 @@ void render() {	// this is where the image gets drawn
       double uppx, uppy;  	// units per pixel
       double del, max, min, mid;
 
+      // do a dry run on labels to get exact scales
+      loose_label(pd,&(pd->ymin),&(pd->ymax),20/(numplots+2),0, 1, pd->ylogmode, 1); 
+      loose_label(pd,&(xmin),&(xmax),8, 1, (i==0), plots[0].xlogmode, 1);		   
+
       if (isotropic) {
-
-	  // do a dry run on labels to get exact scales
-	  loose_label(pd,&(pd->ymin),&(pd->ymax),18/(numplots+2),0, 1, pd->ylogmode, 1); 
-	  loose_label(pd,&(xmin),&(xmax),12, 1, (i==0), plots[0].xlogmode, 1);		   
-
 	  uppx=(xmax - xmin)/(pd->urx - pd->llx);
           uppy=(pd->ymax - pd->ymin)/(pd->ury - pd->lly);
 	  if (uppx > uppy) {
@@ -556,29 +555,20 @@ void render() {	// this is where the image gets drawn
 	  }
       }
 
-      xwin_set_pen_line(1,0);
-      if (boxmode) {
-	  xwin_draw_box(pd->llx, pd->lly, pd->urx, pd->ury);	// plot boundary
-      }
-
-      // now run labels with possibly tweaked urxy, llxy for isotropic plot
-      loose_label(pd,&(pd->ymin),&(pd->ymax),18/(numplots+2),0, 1, pd->ylogmode, 0); 
-      loose_label(pd,&(xmin),&(xmax),12, 1, (i==0), plots[0].xlogmode, 0);		   
-
       if (pd->yaxis != NULL) {
   	  xwin_set_pen_line(1,0);
           axislabel(pd,pd->yaxis,0);
       }
 
-      // back(0);		// defaults on a per graph basis...		
+      back(0);		// defaults on a per graph basis...		
       jump();	
       pen(2);		// select red pen
       symbol(0);	// select first symbol
       autopenflag=1;
       autosymflag=1;
       // gridmode=1;
-      symbolmode=0;
-      linemode=1;
+      // symbolmode=0;
+      // linemode=1;
       symbolsize=1.0;
 
       for (p=pd->data; p!=(DATUM *)0; p=p->next) {
@@ -703,6 +693,15 @@ void render() {	// this is where the image gets drawn
 	   } 
 	 }
       }
+
+      xwin_set_pen_line(1,0);
+      if (boxmode) {
+	  xwin_draw_box(pd->llx, pd->lly, pd->urx, pd->ury);	// plot boundary
+      }
+
+      // now run labels with possibly tweaked urxy, llxy for isotropic plot
+      loose_label(pd,&(pd->ymin),&(pd->ymax),20/(numplots+2),0, 1, pd->ylogmode, 0); 
+      loose_label(pd,&(xmin),&(xmax),8, 1, (i==0), plots[0].xlogmode, 0);		   
     }
 }
 

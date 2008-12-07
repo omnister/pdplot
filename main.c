@@ -192,6 +192,9 @@ char **argv;
 	       if (sp[0] == 'p') {
 	       	  grid(0); 
 		  setcharsize(1.6);
+	       } else if (sp[0] == 'w') {
+	          grid(1);
+		  setcharsize(1.0);
 	       }
 	   } else if (strncmp(sp,"exit",4)==0) {
 	       exit(2);

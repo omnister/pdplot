@@ -83,7 +83,7 @@ void writestring(char *s, XFORM *xf, int id, int jf)
     double height=0.8;
     xoff = yoff = 0.0;
 
-    switch (jf) {
+    switch (jf) {	// justification
         case 0:		/* SW */
 	    xoff = 0.0;
 	    yoff = 0.0;
@@ -129,17 +129,45 @@ void writestring(char *s, XFORM *xf, int id, int jf)
 
     /* void writechar(c,x,y,xf,id) */
 
+    /*
+      autoplot formatting escape commands:
+      [x] backspace one char  \<
+      [x] forward one char    \>
+      [ ] begin subscript     \[
+      [ ] end subscript       \]
+      [ ] begin superscript   \{
+      [ ] end superscript     \}
+    */
+
     while(*s != 0) {
-	if (*s != '\n') {
+	if (*s == '\n') {
+	    xoffset=0.0;
+	    yoffset+=1.0; 
+	} else if (*s == '\\' && *(s+1) == '<') {	// backspace
+	    xoffset-=1.0;
+	    ++s;
+	} else if (*s == '\\' && *(s+1) == '>') {	// fwdspace
+	    xoffset+=1.0;
+	    ++s;
+	} else if (*s == '\\' && *(s+1) == '{') {	// start super
+	    yoffset-=0.5;
+	    ++s;
+	} else if (*s == '\\' && *(s+1) == '}') {	// stop super
+	    yoffset+=0.5;
+	    ++s;
+	} else if (*s == '\\' && *(s+1) == '[') {	// start sub
+	    yoffset+=0.5;
+	    ++s;
+	} else if (*s == '\\' && *(s+1) == ']') {	// stop sub
+	    yoffset-=0.5;
+	    ++s;
+	} else {
 	    writechar(*s,
 	        (((double)(dx[id]))*0.80*xoffset)/((double)(dy[id]))+xoff,
 		-yoffset+yoff,xf,id);
 	    if (debug) printf("writing %c, dx:%d dy:%d id:%d\n",
 	    	*s, dx[id], dy[id], id);
 	    xoffset+=1.0;
-	} else {
-	    xoffset=0.0;
-	    yoffset+=1.0; 
 	}
 	++s;
     }
