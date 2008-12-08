@@ -71,7 +71,7 @@ extern void scale(int mode);
 extern void tick(int mode);
 extern void clip();
 extern void dim(int mode);
-extern void iso(int mode);
+extern void iso(int mode, double scale);
 extern void tickset(double scale);
 extern void setcharsize(double size);
 extern void button(double x, double y, int buttonno, int state);

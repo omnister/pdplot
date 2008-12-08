@@ -32,6 +32,7 @@ static int autopenflag=1;
 static int autolineflag=0;
 static int autosymflag=1;
 static int isotropic=0;
+static double isoscale=1.0;
 static int dimgrid=1;
 static int symline=0;
 
@@ -61,8 +62,9 @@ void dim(int mode) {
     dimgrid=mode; 
 }
 
-void iso(int mode) {
+void iso(int mode, double scale) {
     isotropic=mode;
+    isoscale=scale;
 }
 
 void tick(int mode) {
@@ -252,6 +254,7 @@ void initplot(void) {
    autolineflag=0;
    autosymflag=1;
    isotropic=0;
+   isoscale=1.0;
    dimgrid=1;
    symline=0;
    scalemode=1;
@@ -587,7 +590,7 @@ void render() {	// this is where the image gets drawn
 
       if (isotropic) {
 	  uppx=(xmax - xmin)/(pd->urx - pd->llx);
-          uppy=(pd->ymax - pd->ymin)/(pd->ury - pd->lly);
+          uppy=isoscale*(pd->ymax - pd->ymin)/(pd->ury - pd->lly);
 	  if (uppx > uppy) {
 	      del = pd->ury-pd->lly;
 	      mid = (pd->ury+pd->lly)/2.0;

@@ -143,9 +143,13 @@ char **argv;
 	   } else if (strncmp(sp,"nobox",5)==0) {
 	       box(0);
 	   } else if (strncmp(sp,"noisotropic",11)==0) {
-	       iso(0);
+	       iso(0,1.0);
 	   } else if (strncmp(sp,"isotropic",9)==0) {
-	       iso(1);
+	       if (sscanf(sp+9,"%lg", &tmp) != 1) {
+		   iso(1,1.0);
+	       } else {
+		   iso(1,tmp);
+	       }
 	   } else if (strncmp(sp,"plot",4)==0) {
 	       need_redraw++;
 	       xwin_top();

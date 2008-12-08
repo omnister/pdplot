@@ -1,0 +1,108 @@
+#! /bin/ksh
+#
+# pd --- user script to send data to pdplot daemon
+#
+usage="usage:  pd [-n] [-k] [-r] [-d N] [-w window_name] [file...]"
+gopts='knrd:w:'
+#
+#   -n	    don't clear the existing data
+#   -k	    kill the pdplot daemon, remove the pipe
+#   -r	    refresh the window
+#   -d N    debug level N (default 0)
+#   -w name specify the name of the window
+
+clear="clear"
+kill=0
+cmd=""
+debug=""
+given_name=""
+
+set -f
+set -- `getopt "$gopts" "$@"`; ret=$?
+set +f
+if [ $ret != 0 ] ; then
+    echo "$usage" 1>&2; exit 2
+fi
+while [ $# -gt 0 ] ; do
+    case $1 in
+	-n )	clear=""; shift ;;
+	-r )	cmd="plot"; shift ;;
+	-k )	kill=1; shift ;;
+	-d )	debug="-d $2"; shift 2 ;;
+	-w )	given_name=$2; shift 2 ;;
+	-- )	shift; break ;;
+	#### These cases should never be executed:
+	-* )	echo "$0: script error: option '$1' not handled" 1>&2; exit 2;;
+	* )	echo "$0: getopts error parsing option '$1'" 1>&2; exit 2;;
+    esac
+done
+
+# Now only filenames are left:
+files=$*
+
+pdplot=pdplot
+
+if [ -z "$given_name" ] ; then given_name=$(basename $0) ; fi
+
+displayhost=${DISPLAY%%[.:]*}
+if [ "$displayhost" = `hostname` ] ; then
+    window="$given_name"
+else
+    window="`hostname`.$given_name"
+fi
+
+pipedir=/var/spool/sockets/pdplot
+pipe=$pipedir/$window.$DISPLAY
+function psgrep
+{
+    ps -ef | sed '/grep/d' | grep "$pdplot"
+}
+
+if [ "$DISPLAY" = "" ] ; then	
+    echo 'pd: $DISPLAY is not set' 1>&2
+    exit 2
+elif [ "$DISPLAY" = `hostname`:0.0 ] ; then
+    displayarg=""
+else
+    displayarg="-D $DISPLAY"
+fi
+if [ ! -d $pipedir ] ; then
+    echo "pd: creating $pipedir" 1>&2
+    mkdir $pipedir
+    chmod 777 $pipedir
+fi
+if [ $kill = 1 ] ; then
+    if [ ! -p $pipe ] ; then
+	rm -f $pipe
+    fi
+    psgrep | awk '{print "kill " $2}' | sh
+    ps=`psgrep`
+    if [ "$ps" != "" ] ; then
+	echo "Process still alive:\n$ps"
+    fi
+    exit 0
+fi
+if [ ! -p $pipe ] ; then
+    echo "pd: creating $pipe" 1>&2
+    \rm -f $pipe
+    /usr/bin/mkfifo -m 666 $pipe 2>/dev/null
+fi
+
+if psgrep >/dev/null ; then
+    true    # already running
+else
+    echo "pd: starting pd daemon" 1>&2
+    #$pdplot $displayarg -X $window $debug <$pipe & 
+    $pdplot <$pipe & 
+fi
+
+if [ "$cmd" != "" ] ; then
+    echo "$cmd" >$pipe
+else
+    {
+    echo "$clear"
+    cat $files
+    echo "plot"
+    } >$pipe
+fi
+
