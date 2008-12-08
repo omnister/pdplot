@@ -32,7 +32,7 @@ and <pound>:
 int getxy();
 int eatwhite();
 int getint();
-int line=1;
+int linecnt=1;
 
 int dx[2];		/* size of font cell */
 int dy[2];		/* size of font cell */	
@@ -61,6 +61,7 @@ void writechar(int c,double x,double y,XFORM *xf,int id)
 	if (xdef[id][i] != -64) {				/* end of polygon */
 	    xp = x + (0.8 * ( (double) xdef[id][i] / (double) dy[id]));
 	    yp = y + (0.8 * ( (double) ydef[id][i] / (double) dy[id]));
+	    if (id) yp+=.1;	// correct baseline between two fonts
 	    xt = xp*xf->r11 + yp*xf->r21 + xf->dx;
 	    yt = xp*xf->r12 + yp*xf->r22 + xf->dy;
 	    fontdraw(xt,yt); 
@@ -71,6 +72,49 @@ void writechar(int c,double x,double y,XFORM *xf,int id)
     }
 }
 
+int chartoindex(int c) {
+   switch (c) {
+   case 'D': return(90);
+   case 'O': return(101);
+   case 'F': return(92);
+   case 'G': return(93);
+   case 'Y': return(108);
+   case 'I':			// iota
+   case 'C': return(96);
+   case 'L': return(98);
+   case 'W': return(109);
+   case 'P': return(102);
+   case 'H': return(103);
+   case 'S': return(105);
+   case 'X': return(110);
+   case 'Q': return(111);
+   case 'a': return(119);
+   case 'b': return(120);
+   case 'd': return(122);
+   case 'e': return(123);
+   case 'f': return(124);
+   case 'g': return(125);
+   case 'y': return(126);
+   case 'i': return(127);
+   case 'c': return(128);
+   case 'k': return(129);
+   case 'l': return(130);
+   case 'm': return(131);
+   case 'n': return(132);
+   case 'o': return(133);
+   case 'p': return(134);
+   case '@': return(135);
+   case 'r': return(136);
+   case 's': return(137);
+   case 't': return(138);
+   case 'u': return(140);
+   case 'w': return(141);
+   case 'x': return(142);
+   case 'q': return(143);
+   case 'z': return(144);
+   default: return(32);
+   };
+}
 
 void writestring(char *s, XFORM *xf, int id, int jf)
 {
@@ -161,6 +205,19 @@ void writestring(char *s, XFORM *xf, int id, int jf)
 	} else if (*s == '\\' && *(s+1) == ']') {	// stop sub
 	    yoffset-=0.5;
 	    ++s;
+	} else if (*s == '\\' && *(s+1) == '\\') {	// literal backslash
+	    writechar('\\',
+	        (((double)(dx[id]))*0.80*xoffset)/((double)(dy[id]))+xoff,
+		-yoffset+yoff,xf,id);
+	    xoffset+=1.0;
+	    ++s;
+	} else if (*s == '\\' && *(s+1)!='\0') {	// possible greek
+	    // printf("inside greek, char = %c, index=%d\n", *(s+1), chartoindex(*(s+1)));
+	    writechar(chartoindex(*(s+1)),
+	        (((double)(dx[0]))*0.80*xoffset)/((double)(dy[0]))+xoff,
+		-yoffset+yoff,xf,1);
+	    xoffset+=1.0;
+	    ++s;
 	} else {
 	    writechar(*s,
 	        (((double)(dx[id]))*0.80*xoffset)/((double)(dy[id]))+xoff,
@@ -182,7 +239,7 @@ void loadfont(char *file, int id)
     int done;
     int next;
     int lit;
-    extern int line;
+    extern int linecnt;
     int index=0;	/* index into font table */
     int debug=0;
 
@@ -201,7 +258,7 @@ void loadfont(char *file, int id)
     	// printf("loading %s\n",file);
     }
 
-    line=0;
+    linecnt=0;
     done=0;
 
     /* note reversed order of arguments */
@@ -215,7 +272,7 @@ void loadfont(char *file, int id)
 
     while (!done) {
 	if (next == '\n') {
-	    line++;
+	    linecnt++;
 	    getc(fp);
 	    if (x==-64 && y==-64) {
 		if ((lit=eatwhite(fp)) != EOF) {
@@ -232,7 +289,7 @@ void loadfont(char *file, int id)
 
 	if (!done) {
 	    next=getxy(fp,&x,&y);
-	    /* printf("line %d: got %d, %d next=%c\n", line, x,y,next);  */
+	    /* printf("line %d: got %d, %d next=%c\n", linecnt, x,y,next);  */
 	    xdef[id][index] = x;
 	    ydef[id][index] = y;
 	    index++;
@@ -248,12 +305,12 @@ int *px;
 int *py;
 {
     int c;
-    extern int line;
+    extern int linecnt;
 
     c=eatwhite(fp);
     /* printf("eating white, next=%c\n",c); */
     if(getint(fp,px) != 1) {
-	fprintf(stderr,"error at line %d: expected a digit\n", line);
+	fprintf(stderr,"error at line %d: expected a digit\n", linecnt);
 	exit(3);
     };		
 
@@ -261,12 +318,12 @@ int *py;
     if ((c=getc(fp)) != ',') {
 	ungetc(c,fp);
 	/* make comma optional to read graffy fonts */
-	/* fprintf(stderr,"error at line %d: expected a comma\n", line); exit(2); */
+	/* fprintf(stderr,"error at line %d: expected a comma\n", linecnt); exit(2); */
     }
 
     eatwhite(fp);
     if(getint(fp,py) != 1) {
-	fprintf(stderr,"error at line %d: expected a digit\n", line);
+	fprintf(stderr,"error at line %d: expected a digit\n", linecnt);
 	exit(3);
     };		
 

@@ -17,7 +17,7 @@ PLOTDAT plots[MAXPLOTS];
 static int nsegs=0;
 static int fontnsegs=0;
 static int pennum=1;
-static int linenum=0;
+int linenum=1;
 static int backstat=0;
 static double pad;
 static double ticklen;
@@ -29,9 +29,11 @@ static int symbolmode=0;
 static int linemode=1;
 static int symnum=0;
 static int autopenflag=1;
+static int autolineflag=0;
 static int autosymflag=1;
 static int isotropic=0;
-static int dimgrid=0;
+static int dimgrid=1;
+static int symline=0;
 
 static double fontsize;
 static double charsize=1.0; 	// scales all characters
@@ -85,6 +87,46 @@ void grid(int mode) {
 
 void setcharsize(double size) {
    charsize=size;
+}
+
+void button(double x, double y, int buttonno, int state) {
+    int i;
+    PLOTDAT *pd;
+    int debug=0;
+    static double x1,y1,x2,y2;
+    static int npts=0;
+    char buf[256];
+    if (state) {
+	for (i=0; i<=numplots; i++) {
+	  pd = &(plots[numplots-i]); 		// compute bounding box for each graph 
+	  if (debug) printf("==============================\n");
+	  if (debug) printf("ll=%g %g ur=%g %g\n", pd->llx, pd->lly, pd->urx, pd->ury);
+	  if (debug) printf("min=%g %g max=%g %g\n", pd->xmin, pd->ymin, pd->xmax, pd->ymax);
+	  if (x >= pd->llx && x <= pd->urx && y >= pd->lly && y <= pd->ury) {
+	       x1= pd->xmin+(pd->xmax-pd->xmin)*(x-pd->llx)/(pd->urx-pd->llx);
+	       y1= pd->ymin+(pd->ymax-pd->ymin)*(pd->ury-y)/(pd->ury-pd->lly);
+	       if ((x2-x1) == 0.0  && (y2-y1) == 0.0) npts=0;
+	       if (npts++ < 1) {
+		  sprintf(buf,"x=%.3g y=%.3g", x1, y1);
+	       } else {
+		  if ((x1-x2) == 0) {
+		      sprintf(buf,"x=%.3g y=%.3g dx=%.3g dy=%.3g", x1, y1, x1-x2, y1-y2);
+		  } else {
+		      sprintf(buf,"x=%.3g y=%.3g dx=%.3g dy=%.3g 1/dx = %.3g dy/dx = %.3g",
+		      	x1, y1, x1-x2, y1-y2,1.0/(x1-x2), (y1-y2)/(x1-x2));
+		  }
+	       }
+	       xwin_set_pen_line(1,1);
+	       xwin_annotate(buf);
+	       x2=x1; y2=y1;
+	       if (debug) printf("plot %d: (%g,%g)->(%g,%g) %d %d\n", i,
+		    x, y, x1, y1,
+		    buttonno, state);
+	       return;
+	  }
+	}
+	if (debug) printf("In plot frame: %g %g %d %d\n",  x, y, buttonno, state);
+    }
 }
 
 void nextygraph() {
@@ -199,7 +241,7 @@ void initplot(void) {
    nsegs=0;
    fontnsegs=0;
    pennum=1;
-   linenum=0;
+   linenum=1;
    backstat=0;
    gridmode=1;
    boxmode=1;
@@ -207,9 +249,11 @@ void initplot(void) {
    linemode=1;
    symnum=0;
    autopenflag=1;
+   autolineflag=0;
    autosymflag=1;
    isotropic=0;
-   dimgrid=0;
+   dimgrid=1;
+   symline=0;
    scalemode=1;
    tickmode=1;
 
@@ -295,7 +339,7 @@ void logmode(int axis, int mode) {
 
 void gridtick(PLOTDAT *pd, double alpha, int x) {
     double tmp;
-    xwin_set_pen_line(1,0);
+    xwin_set_pen_line(1,1);
     if (tickmode && ticklen>0) {
 	if (x) { 			// xaxis grid lines
 	    tmp = alpha*pd->urx+(1.0-alpha)*pd->llx;
@@ -314,9 +358,9 @@ void gridline(PLOTDAT *pd, double alpha, int x) {
     gridtick(pd, alpha, x);
     if (gridmode) {
 	if (dimgrid) {
-	    xwin_set_pen_line(9,1);
+	    xwin_set_pen_line(15,3);
 	} else {
-	    xwin_set_pen_line(1,1);
+	    xwin_set_pen_line(1,3);
 	}
 	if (x) { 			// xaxis grid lines
 	    tmp = alpha*pd->urx+(1.0-alpha)*pd->llx;
@@ -330,7 +374,7 @@ void gridline(PLOTDAT *pd, double alpha, int x) {
 
 void axislabel(PLOTDAT *pd, char *str, int x) {
     double tmp,mid;
-    xwin_set_pen_line(1,0);
+    xwin_set_pen_line(1,1);
     if (scalemode) {
 	if (x) { 			// xaxis label
 	    tmp = pd->lly-pad-fontsize;
@@ -348,7 +392,7 @@ void axislabel(PLOTDAT *pd, char *str, int x) {
 
 void gridlabel(PLOTDAT *pd, char *str, double alpha, int x) {
     double tmp;
-    xwin_set_pen_line(1,0);
+    xwin_set_pen_line(1,1);
     if (scalemode) {
 	if (x) { 			// xaxis label
 	    tmp = alpha*pd->urx+(1.0-alpha)*pd->llx;
@@ -469,6 +513,7 @@ void render() {	// this is where the image gets drawn
     DATUM *p;
     int debug=0;
     int penno;
+    int lineno;
     int symno;
     double tmp;
     extern double ticklen;
@@ -491,13 +536,13 @@ void render() {	// this is where the image gets drawn
 
     // place for a title
     if (plots[0].title != NULL && scalemode) {
-	xwin_set_pen_line(1,0);
+	xwin_set_pen_line(1,1);
 	do_note(plots[0].title, (llx+urx)/2.0, 
 	   pad+ury, MIRROR_OFF, fontsize*charsize*titlesize,
 	   1.28, 0.0, 0.0, 0, 1);
     }
     if (plots[0].xaxis != NULL) {
-       xwin_set_pen_line(1,0);
+       xwin_set_pen_line(1,1);
        axislabel(&plots[numplots],plots[0].xaxis,1);
     }
 
@@ -534,8 +579,11 @@ void render() {	// this is where the image gets drawn
       double del, max, min, mid;
 
       // do a dry run on labels to get exact scales
+
+      if (debug) printf("calling ll: %g %g %g %g\n", xmin, pd->ymin, xmax, pd->ymax);
       loose_label(pd,&(pd->ymin),&(pd->ymax),20/(numplots+2),0, 1, pd->ylogmode, 1); 
       loose_label(pd,&(xmin),&(xmax),8, 1, (i==0), plots[0].xlogmode, 1);		   
+      if (debug) printf("%g %g %g %g\n", xmin, pd->ymin, xmax, pd->ymax);
 
       if (isotropic) {
 	  uppx=(xmax - xmin)/(pd->urx - pd->llx);
@@ -558,7 +606,7 @@ void render() {	// this is where the image gets drawn
       }
 
       if (pd->yaxis != NULL) {
-  	  xwin_set_pen_line(1,0);
+  	  xwin_set_pen_line(1,1);
           axislabel(pd,pd->yaxis,0);
       }
 
@@ -569,20 +617,18 @@ void render() {	// this is where the image gets drawn
       autopenflag=1;
       autosymflag=1;
       // gridmode=1;
-      // symbolmode=0;
       linemode=1;
       symbolsize=1.0;
+      if (i==0) {
+	   symbolmode=0;
+	   autolineflag=0;
+      }
 
       for (p=pd->data; p!=(DATUM *)0; p=p->next) {
   	 if (p->cmd == NULL) {
 	    x =(pd->urx-pd->llx)*(logscale(p->x,0)-xmin)/(xmax-xmin)+pd->llx;
 	    y =(pd->ury-pd->lly)*(logscale(p->y,1)-pd->ymin)/(pd->ymax-pd->ymin)+pd->lly; 
-	    if (linemode) {
-		draw(x,y, pd->llx, pd->urx, pd->lly, pd->ury);
-	    }
-    	    if (symbolmode) {
-	    	do_symbol(symnum, x, y, fontsize*symbolsize);
-	    } 
+	    draw(x,y, pd->llx, pd->urx, pd->lly, pd->ury);
 	 } else {
 	   if (strncmp(p->cmd,"jump",4)==0) {
 	       jump();
@@ -600,9 +646,20 @@ void render() {	// this is where the image gets drawn
 	       autosymflag=1;
 	   } else if (strncmp(p->cmd,"noautosymbol",12)==0) {
 	       autosymflag=0;
+	   } else if (strncmp(p->cmd,"line",4)==0) {
+	       if (sscanf(p->cmd, "%*s %d", &lineno)==1) {
+		  line(lineno);
+	       } else {
+       		  line(++linenum);
+	       }
+	   } else if (strncmp(p->cmd,"autoline",7)==0) {
+	       autolineflag=1;
+	   } else if (strncmp(p->cmd,"noautoline",9)==0) {
+	       autolineflag=0;
 	   } else if (strncmp(p->cmd,"back",4)==0) {
 	       back(1);
 	   } else if (strncmp(p->cmd,"symbol+line",11)==0) {
+	       symline++;
 	       symbolmode = 1;
 	       linemode = 1;
 	   } else if (strncmp(p->cmd,"charsize",8)==0) {
@@ -646,11 +703,16 @@ void render() {	// this is where the image gets drawn
 		   fprintf(stderr,"bad argument to labelsize cmd: %s\n", p->cmd);
 	       }
 	   } else if (strncmp(p->cmd,"label",5)==0) {
-	       if (sscanf(p->cmd, "%*s %lg %lg %[^#]", &x, &y, buf)==3) {
+	       if (sscanf(p->cmd, "%*s %lg%% %lg%% %[^#]", &x, &y, buf)==3) {
+		    xx =(pd->urx-pd->llx)*(x/100.0)+pd->llx;
+		    yy =(pd->ury-pd->lly)*(y/100.0)+pd->lly; 
+		    do_note(buf, xx, yy, MIRROR_OFF , 0.6*fontsize*charsize*labelsize,
+		    1.0, 0.0, 0.0, 0, 3);
+	       } else if (sscanf(p->cmd, "%*s %lg %lg %[^#]", &x, &y, buf)==3) {
 		    xx =(pd->urx-pd->llx)*(logscale(x,0)-xmin)/(xmax-xmin)+pd->llx;
 		    yy =(pd->ury-pd->lly)*(logscale(y,1)-pd->ymin)/(pd->ymax-pd->ymin)+pd->lly; 
 		    do_note(buf, xx, yy, MIRROR_OFF , 0.6*fontsize*charsize*labelsize,
-		    1.0, 0.0, 0.0, 0, 0);
+		    1.0, 0.0, 0.0, 0, 3);
 	       } else {
 		   fprintf(stderr,"bad argument to labelsize cmd: %s\n", p->cmd);
 	       }
@@ -674,10 +736,12 @@ void render() {	// this is where the image gets drawn
 	       } else {
 		   fprintf(stderr,"bad argument to symbolsize cmd: %s\n", p->cmd);
 	       }
-	   } else if (strncmp(p->cmd,"symbol",6)==0) {	// must follow symbol+line...
-	       if (!symbolmode || !linemode) {
+	   } else if (strncmp(p->cmd,"symbol",6)==0) {	
+	       if (!symline) {   // must follow symbol+line to keep line
 		   symbolmode = 1;
 		   linemode = 0;
+	       } else {
+		   symbolmode = 1;
 	       }
 	       if (sscanf(p->cmd, "%*s %d", &symno)==1) {
 		   symbol(symno);
@@ -702,14 +766,16 @@ void render() {	// this is where the image gets drawn
 	 }
       }
 
-      xwin_set_pen_line(1,0);
+      xwin_set_pen_line(1,1);
       if (boxmode) {
 	  xwin_draw_box(pd->llx, pd->lly, pd->urx, pd->ury);	// plot boundary
       }
 
       // now run labels with possibly tweaked urxy, llxy for isotropic plot
+      if (debug) printf("calling ll: %g %g %g %g\n", xmin, pd->ymin, xmax, pd->ymax);
       loose_label(pd,&(pd->ymin),&(pd->ymax),20/(numplots+2),0, 1, pd->ylogmode, 0); 
       loose_label(pd,&(xmin),&(xmax),8, 1, (i==0), plots[0].xlogmode, 0);		   
+      if (debug) printf("%g %g %g %g\n", xmin, pd->ymin, xmax, pd->ymax);
     }
 }
 
@@ -807,7 +873,7 @@ double x, y;
 double size;
 {
     char s[2];
-    s[0]=(char) ((c%54)+32);
+    s[0]=(char) ((c%55)+32);
     s[1]='\0';
     do_note(s, x, y, MIRROR_OFF , size, 1.0, 0.0, 0.0, 1, 4);
 }
@@ -869,12 +935,21 @@ void back(int x) {
 }
 
 void symbol(int sym_no) {
-   symnum = sym_no%54;
+   symnum = sym_no%55;
+}
+
+void line(int line_no) {
+   if (line_no >= 6) {
+       linenum = line_no%6+1;
+   } else {
+       linenum = line_no;
+   }
+   xwin_set_pen_line(pennum,linenum);
 }
 
 void pen(int pen_no) {
-   if (pen_no >= 8) {
-       pennum = pen_no%8+1;
+   if (pen_no >= 15) {
+       pennum = pen_no%15+1;
    } else {
        pennum = pen_no;
    }
@@ -902,12 +977,20 @@ void draw(double x, double y, double xmin, double xmax, double ymin, double ymax
     static double xold, yold;
     if (!backstat && nsegs > 1 && x<xold) {
        nsegs=0;
-       if (autopenflag)	pen(++pennum);
+       if (autopenflag)	 pen(++pennum);
+       if (autolineflag) line(++linenum);
+    }
+    if (symbolmode) {
+      do_symbol(symnum, x, y, fontsize*symbolsize);
+    } 
+    if (nsegs==0) {
        if (autosymflag) symbol(++symnum);
     }
     nsegs++;
     if (nsegs > 1) {
-	clip(xold, yold, x, y, xmin, xmax, ymin, ymax);
+	if (linemode) {
+	    clip(xold, yold, x, y, xmin, xmax, ymin, ymax);
+	}
     }
     xold=x; yold=y;
 }

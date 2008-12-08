@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include "xwin.h"
+#include "points.h"
 
 
 /* Cohen-Sutherland 2-D Clipping Algorithm */
@@ -77,7 +78,12 @@ double xmin, xmax, ymin, ymax;
     }
     if (debug) printf("accept = %d\n", accept);
     if (accept) {
-	xwin_draw_line(x1,y1,x2,y2);
+	if (linenum != 0) {
+	    xwin_draw_line(x1,y1,x2,y2);
+	} else {
+	    xwin_draw_point(x1,y1);
+	    xwin_draw_point(x2,y2);
+	}
     	// printf("%g %g\n", x1,y1);
     	// printf("%g %g\n", x2,y2);
     	// printf("jump\n");

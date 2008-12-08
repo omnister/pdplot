@@ -62,12 +62,15 @@ clip.o: xwin.h
 label.o: points.h
 main.o: points.h
 main.o: readfont.h
+main.o: symbol.h
 main.o: xwin.h
 points.o: points.h
 points.o: readfont.h
+points.o: symbol.h
 points.o: xwin.h
 readfont.o: points.h
 readfont.o: readfont.h
+symbol.o: symbol.h
 xwin.o: eventnames.h
 xwin.o: points.h
 xwin.o: xwin.h

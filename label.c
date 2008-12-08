@@ -28,8 +28,13 @@ int logmode, int dryrun) {
 
 	range = nicenum(*max-*min, 0); 	/* we expect min!=max */
 	d = nicenum(range/(double)(nticks+4),1);
-	graphmin = floor(*min/d)*d;
-	graphmax = ceil(*max/d)*d;
+	if (dryrun) {
+	    graphmin = floor(*min/d)*d;
+	    graphmax = ceil(*max/d)*d;
+	} else {
+	    graphmin = *min;
+	    graphmax = *max;
+	}
 	nfrac = MAX(-floor(log10(d)),0);	/* # frac digits to show */
 	// sprintf(str,"%%.%df", nfrac); 	/* simplest axis labels */
 	sprintf(str,"%%g"); 	
@@ -40,6 +45,7 @@ int logmode, int dryrun) {
 		gridline(pd, (x-graphmin)/(graphmax-graphmin), axis);
 	    }
 	    for (x=graphmin; x<graphmax+0.5*d; x+=d) {
+		x  = (d/100.0)*rint(x/(d/100.0));
 		sprintf(temp, str, x);
 		if (dolabel) {
 		    gridlabel(pd, temp, (x-graphmin)/(graphmax-graphmin), axis);
@@ -51,8 +57,13 @@ int logmode, int dryrun) {
 
     } else {	// log mode, so do scaling by decades
 
-	graphmin = floor(*min);
-	graphmax =  ceil(*max);
+	if (dryrun) {
+	    graphmin = floor(*min);
+	    graphmax =  ceil(*max);
+	} else {
+	    graphmin = *min;
+	    graphmax = *max;
+	}
 
 	if (!dryrun) {
 	    for (x=graphmin+1; x<graphmax-0.5; x++) {

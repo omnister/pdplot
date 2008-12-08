@@ -54,6 +54,7 @@ extern void jump(void);
 extern void fontdraw(double x, double y);
 extern void fontjump(void);
 extern void pen(int penno);
+extern void line(int lineno);
 extern void symbol(int symno);
 extern void do_note();
 void do_symbol(int c, double x, double y, double size);
@@ -73,6 +74,8 @@ extern void dim(int mode);
 extern void iso(int mode);
 extern void tickset(double scale);
 extern void setcharsize(double size);
+extern void button(double x, double y, int buttonno, int state);
+extern int linenum;
 
 #define MIRROR_OFF 0
 #define MIRROR_X   1

@@ -6,9 +6,9 @@
 #include <stdio.h>
 #include <errno.h>
 #include <math.h>
-#include "points.h"
 #include "eventnames.h"
 #include "xwin.h"
+#include "points.h"
 
 void load_font(XFontStruct **font_info);
 void debug(char *s, int dbug);
@@ -18,7 +18,7 @@ void doXevent(char *s);
 void xwin_top();
 
 #define TICKSIZE 0.005  /* fraction of xsize+ysize for default ticks */
-#define MAX_COLORS 10
+#define MAX_COLORS 16
 #define MAX_LINETYPE 7
 unsigned long colors[MAX_COLORS];    /* will hold pixel values for colors */
 
@@ -182,17 +182,24 @@ int init_colors()
     int default_depth;
     Visual *default_visual;
     static char *name[] = {
-	"black",
-	"white",   
-	"red",
-	"green",
-	"#7575ff",	/* brighten up our blues a la Ken.P. :-)*/
-	"cyan",
-	"magenta",
-	"yellow",
-	"#b0b0b0",
-	"#505050"
+	"#000000", // blk
+	"#ffffff", // wht
+	"#ff0000", // red
+	"#00ff00", // grn
+	"#5050ff", // blu	/* brighten up our blues a la Ken.P. :-)*/
+	"#00ffff", // aqu
+	"#ff00ff", // mag
+	"#ffff00", // yel
+	"#ff7f7f", // pnk
+	"#7fff7f", // lime
+	"#7f7fff", // pale blue
+	"#007f7f", // blue-green
+	"#7f007f", // pur
+	"#7f7f00", // khaki
+	"#b0b0b0", // light grey
+	"#707070"  // dark grey
     };
+
 
     XColor exact_def;
     Colormap default_cmap;
@@ -339,18 +346,13 @@ int procXevent() {
 
 void doXevent(char *s) {
 
-    int x,y,  xstart, ystart;
+    double x,y;
     XEvent xe;
     unsigned long all = 0xffffffff;
     int dbug=0;
 
     while (XCheckMaskEvent(dpy, all, &xe)) { /* pending X Event */
         switch (xe.type) {
-        case MotionNotify:
-            debug("got Motion",dbug);
-            x = xe.xmotion.x;
-            y = xe.xmotion.y;
-            break;
         case Expose:
             debug("got Expose",dbug);
             if (xe.xexpose.count != 0)
@@ -367,14 +369,21 @@ void doXevent(char *s) {
 	       if (!need_redraw) redraw();
 	    }
             break;
+        case MotionNotify:
+            debug("got Motion",dbug);
+            // x = (double) xe.xmotion.x;
+            // y = (double) xe.xmotion.y;
+            break;
         case ButtonRelease:
-            x = xe.xmotion.x;
-            y = xe.xmotion.y;
+            x = (double) xe.xmotion.x;
+            y = (double) xe.xmotion.y;
+	    button(x,y,xe.xbutton.button,0);
             debug("got ButtonRelease",dbug);
             break;
         case ButtonPress:
-            x=xstart = xe.xmotion.x;
-            y=ystart = xe.xmotion.y;
+            x= (double) xe.xmotion.x;
+            y= (double) xe.xmotion.y;
+	    button(x,y,xe.xbutton.button,1);
             debug("got ButtonPress",dbug);
             break;
 	case ReparentNotify:
@@ -446,6 +455,22 @@ XFontStruct **font_info;
     }
 }
 
+void xwin_draw_point(double x, double y)
+{
+    XDrawPoint(dpy, win, gc, 
+    	(int) rint(x),
+	height-(int) rint(y));
+    XDrawPoint(dpy, win, gc, 
+    	(int) rint(x)+1,
+	height-(int) rint(y)+1);
+    XDrawPoint(dpy, win, gc, 
+    	(int) rint(x)+1,
+	height-(int) rint(y));
+    XDrawPoint(dpy, win, gc, 
+    	(int) rint(x),
+	height-(int) rint(y)+1);
+}
+
 void xwin_draw_line(x1, y1, x2, y2)
 double x1,y1,x2,y2;
 {
@@ -466,16 +491,16 @@ void xwin_set_pen_line(int pen, int line)
     /* FIXME: should avoid accessing out of bounds of colors[]
      * also should cache different pen colors to avoid having to keep
      * sending messages to server.  Currently this is enforced because
-     * only db::set_pen() calls here, and uses pen%5 as the argument 
      */
 
     static int oldpen=(-9999); /* optimize out unnecessary Xserver calls */
     static int oldlinetype=(-9999);
 
-    if (pen == oldpen) return;
     pen = abs(pen)%MAX_COLORS;
 
-    XSetForeground(dpy, gc, colors[pen]);	/* for lines */
+    if (pen != oldpen) {
+	XSetForeground(dpy, gc, colors[pen]);	/* for lines */
+    }
 
     if (line == oldlinetype) return;
     line = abs(line)%MAX_LINETYPE;
@@ -491,31 +516,34 @@ void xwin_set_pen_line(int pen, int line)
 
     switch (line) {
        case 0:     line_style = LineSolid;     break;	/* solid */
-       case 1:     line_style = LineOnOffDash; break;	/* dotted */
-       case 2:     line_style = LineOnOffDash; break;   /* broken */
-       case 3:     line_style = LineOnOffDash; break;   /* dot center */
-       case 4:     line_style = LineOnOffDash; break;   /* dash center */
-       case 5:     line_style = LineOnOffDash; break;   /* long dash */
-       case 6:     line_style = LineOnOffDash; break;   /* long dotted */
+       case 1:     line_style = LineSolid;     break;	/* solid */
+       case 2:     line_style = LineOnOffDash; break;	/* dotted */
+       case 3:     line_style = LineOnOffDash; break;   /* broken */
+       case 4:     line_style = LineOnOffDash; break;   /* dot center */
+       case 5:     line_style = LineOnOffDash; break;   /* dash center */
+       case 6:     line_style = LineOnOffDash; break;   /* long dash */
+       case 7:     line_style = LineOnOffDash; break;   /* long dotted */
        default:
 	   printf("line type %d out of range\n", line);
     }        
     
     switch (line) {
        case 0:				
-       case 1:     dash_list[0]=2; dash_list[1]=2; dash_n=2; break;
-
+       case 1:				
        case 2:     dash_list[0]=7; dash_list[1]=5; dash_n=2; break;
 
-       case 3:     dash_list[0]=7; dash_list[1]=2;
-                   dash_list[2]=1; dash_list[3]=2; dash_n=4; break;
+       case 3:     dash_list[0]=2; dash_list[1]=2; dash_n=2; break;
 
        case 4:     dash_list[0]=7; dash_list[1]=2;
                    dash_list[2]=3; dash_list[3]=2; dash_n=4; break;
 
-       case 5:     dash_list[0]=9; dash_list[1]=5; dash_n=2; break;
+       case 5:     dash_list[0]=7; dash_list[1]=2;
+                   dash_list[2]=1; dash_list[3]=2; dash_n=4; break;
 
-       case 6:     dash_list[0]=4; dash_list[1]=4; dash_n=2; break;
+
+       case 6:     dash_list[0]=9; dash_list[1]=5; dash_n=2; break;
+
+       case 7:     dash_list[0]=4; dash_list[1]=4; dash_n=2; break;
     }
 
     dash_offset=0;
@@ -530,6 +558,16 @@ void xwin_draw_box(double x1, double y1, double x2, double y2)
     xwin_draw_line(x1, y2, x2, y2);
     xwin_draw_line(x2, y2, x2, y1);
     xwin_draw_line(x2, y1, x1, y1);
+}
+
+void xwin_annotate(char *buf) {
+   double size;
+   size = (double) ((width+height)/80);
+   XClearArea(dpy, win, 0, height-(int)(size*1.5), width, 20, False);
+    do_note(buf, (double) width/2, (double) 5, MIRROR_OFF,
+                    size, 1.0, 0.0, 0.0, 0, 1);
+
+   // XDrawImageString(dpy, win, gc, 20, height-5, buf, strlen(buf));
 }
 
 void debug(char *s, int dbug)

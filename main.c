@@ -96,6 +96,8 @@ char **argv;
 	       box(0);
 	       scale(0);
 	       tick(0);
+	   } else if (strncmp(sp,"brightgrid",10)==0) {
+	       dim(0);
 	   } else if (strncmp(sp,"dimgrid",7)==0) {
 	       dim(1);
 	   } else if (strncmp(sp,"linxy",4)==0) {
