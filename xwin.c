@@ -284,8 +284,7 @@ void redraw() {
     XFlush(dpy);
 }
 
-int procXevent() {
-
+int procXevent(char *s, int n) {
     /* readline select stuff */
     int nf, nfds, cn, in;
 
@@ -295,7 +294,7 @@ int procXevent() {
     timer.tv_usec = 0;
 
     fd_set rset, tset;
-    static char *s = NULL;
+    // static char *s = NULL;
   
     /* courtesy g_plt_X11.c code from gnuplot */
     cn = ConnectionNumber(dpy);
@@ -313,15 +312,6 @@ int procXevent() {
             need_redraw = 0;
         }
 
-	/* if some event resulted in text in buffer 's' */
-	/* feed it back to readline routine */
-
-	if (s!=NULL && *s!='\0') {
-	    return((int) *(s++));
-	} else {
-	    s = NULL;
-	}
-
 	tset = rset;
 	nf = select(nfds, &tset, (fd_set *) 0, (fd_set *) 0, &timer);
 	if (nf < 0) {
@@ -335,11 +325,15 @@ int procXevent() {
 	}
 
 	if (FD_ISSET(cn, &tset)) {              /* pending X Event */
-	    doXevent(s);
+	    doXevent(NULL);			// ignore returned string for now
 	}
 
 	if (FD_ISSET(in, &tset)) {      /* pending stdin */
-	    return(getc(stdin));
+	    if (fgets(s,n,stdin) == NULL)  {
+	       return EOF;
+	    } else {
+	       return 1;
+	    }
 	}
     }
 }
@@ -358,15 +352,23 @@ void doXevent(char *s) {
             if (xe.xexpose.count != 0)
                 break;
             if (xe.xexpose.window == win) {
-	       if (!need_redraw) redraw();
+	       //if (!need_redraw) redraw();
+	       need_redraw++;
             } 
             break;
+	case ReparentNotify:
+	    break;
+	case MapNotify:
+	    // if (!need_redraw) redraw();
+	    need_redraw++;
+	    break;
         case ConfigureNotify:
             debug("got Configure Notify",dbug);
 	    width = xe.xconfigure.width;
 	    height = xe.xconfigure.height;
 	    if (XEventsQueued(dpy, QueuedAfterFlush) == 0) {
-	       if (!need_redraw) redraw();
+	        // if (!need_redraw) redraw();
+    		need_redraw++;
 	    }
             break;
         case MotionNotify:
@@ -386,11 +388,6 @@ void doXevent(char *s) {
 	    button(x,y,xe.xbutton.button,1);
             debug("got ButtonPress",dbug);
             break;
-	case ReparentNotify:
-	    break;
-	case MapNotify:
-	    if (!need_redraw) redraw();
-	    break;
         case KeyPress:
             debug("got KeyPress",dbug);
             break;

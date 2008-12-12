@@ -5,13 +5,14 @@ FONTS=SYMBOL.F NOTEDATA.F
 TARS=main.c points.c readfont.c xwin.c label.c clip.c points.h symbol.c symbol.h \
 xwin.h readfont.h eventnames.h ${FONTS} pd
 
-CC=cc -ggdb -Wall
+#CC=cc -ggdb -Wall
+CC=cc -pg -Wall
 
 BINDIR = /usr/local/bin
 LIBDIR = /usr/local/lib/pdplot
 
 pdplot: points.h $(OBJS)
-	cc -Wall -ggdb $(OBJS) -o pdplot -L/usr/X11R6/lib -lX11 -lm
+	$(CC) $(OBJS) -o pdplot -L/usr/X11R6/lib -lX11 -lm
 
 clean: 
 	rm -f *.o pdplot
@@ -58,6 +59,7 @@ depend: ${OBJ}
 #-----------------------------------------------------------------
 # DO NOT PUT ANY DEPENDENCIES AFTER THE NEXT LINE -- they will go away
 # DO NOT DELETE OR MODIFY THIS LINE -- make depend uses it
+clip.o: points.h
 clip.o: xwin.h
 label.o: points.h
 main.o: points.h
@@ -68,6 +70,7 @@ points.o: points.h
 points.o: readfont.h
 points.o: symbol.h
 points.o: xwin.h
+postscript.o: postscript.h
 readfont.o: points.h
 readfont.o: readfont.h
 symbol.o: symbol.h

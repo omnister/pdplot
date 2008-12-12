@@ -18,17 +18,7 @@ int isblank(int c);	// for some reason, this is missing in ctype.h...
 // chop of any trailing newline
 
 int getz(char *s, int n) {	
-    int c;
-    int i=0;
-    while((c=procXevent())!='\n' && i++<n && c!=EOF) {
-       *(s++)=c;
-    }
-    *s='\0';
-    if (c==EOF) {
-       return(EOF);
-    } else {
-       return(0);
-    }
+    return procXevent( s, n);
 }
 
 // return a pointer to the first 
@@ -222,7 +212,7 @@ char **argv;
 	   }
        }
     }
-    ungetc(procXevent(), stdin);
+    // ungetc(procXevent(), stdin);
     sleep(1);
   }
   exit(1);

@@ -2,7 +2,7 @@
 #define TICKSIZE 0.005  /* fraction of xsize+ysize for default ticks */
 
 void initX(void);
-int procXevent(void); 
+int procXevent(char *s, int n); 
 void xwin_draw_line(double x1, double y1, double x2, double y2);
 void xwin_draw_point(double x1, double y1);
 void xwin_draw_box(double x1, double y1, double x2, double y2);
