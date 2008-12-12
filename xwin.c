@@ -307,11 +307,6 @@ int procXevent(char *s, int n) {
     nfds = (cn > in) ? cn + 1 : in + 1;
 
     while(1) {
- 	if (need_redraw) {
-	    redraw();
-            need_redraw = 0;
-        }
-
 	tset = rset;
 	nf = select(nfds, &tset, (fd_set *) 0, (fd_set *) 0, &timer);
 	if (nf < 0) {
@@ -324,6 +319,11 @@ int procXevent(char *s, int n) {
 	    XFlush(dpy);
 	}
 
+ 	if (need_redraw) {
+	    redraw();
+            need_redraw = 0;
+        }
+
 	if (FD_ISSET(cn, &tset)) {              /* pending X Event */
 	    doXevent(NULL);			// ignore returned string for now
 	}
@@ -335,6 +335,7 @@ int procXevent(char *s, int n) {
 	       return 1;
 	    }
 	}
+
     }
 }
 

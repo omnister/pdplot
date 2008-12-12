@@ -212,7 +212,6 @@ char **argv;
 	   }
        }
     }
-    // ungetc(procXevent(), stdin);
     sleep(1);
   }
   exit(1);

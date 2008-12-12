@@ -2,15 +2,28 @@
 #include "xwin.h"
 #include "points.h"
 
+static double xmin = 0.0;
+static double xmax = 0.0;
+static double ymin = 0.0;
+static double ymax = 0.0;
 
 /* Cohen-Sutherland 2-D Clipping Algorithm */
 /* See: Foley & Van Dam, p146-148 */
 
-void clip(x1, y1, x2, y2, xmin, xmax, ymin, ymax)
+void clip_set(xn, xx, yn, yx)
+double xn, xx, yn, yx;
+{
+    xmin = xn;
+    xmax = xx;
+    ymin = yn;
+    ymax = yx;
+}
+
+void clip(x1, y1, x2, y2)
 double x1, y1, x2, y2;
-double xmin, xmax, ymin, ymax;
 {
 
+    extern double xmin, xmax, ymin, ymax;
     int debug=0;
     int done=0;
     int accept=0;

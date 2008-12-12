@@ -49,7 +49,7 @@ extern void xset(double xmin, double xmax);
 extern void yset(double ymin, double ymax);
 extern void xscale(char *, double scale);
 extern void yscale(char *, double scale);
-extern void draw(double x, double y, double xmin, double xmax, double ymin, double ymax);
+extern void draw(double x, double y);
 extern void jump(void);
 extern void fontdraw(double x, double y);
 extern void fontjump(void);
@@ -70,12 +70,14 @@ extern void logmode(int axis, int mode);
 extern void scale(int mode);
 extern void tick(int mode);
 extern void clip();
+extern void clip_set(double xn, double xx, double yn, double yx);
 extern void dim(int mode);
 extern void iso(int mode, double scale);
 extern void tickset(double scale);
 extern void setcharsize(double size);
 extern void button(double x, double y, int buttonno, int state);
 extern int linenum;
+
 
 #define MIRROR_OFF 0
 #define MIRROR_X   1

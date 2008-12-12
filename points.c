@@ -11,6 +11,7 @@
 
 // initialized variables will get
 // overridden by initplot();
+void fontclip(int mode);
 
 int numplots=0;
 PLOTDAT plots[MAXPLOTS];
@@ -628,10 +629,11 @@ void render() {	// this is where the image gets drawn
       }
 
       for (p=pd->data; p!=(DATUM *)0; p=p->next) {
+	 clip_set(pd->llx, pd->urx, pd->lly, pd->ury);
   	 if (p->cmd == NULL) {
 	    x =(pd->urx-pd->llx)*(logscale(p->x,0)-xmin)/(xmax-xmin)+pd->llx;
 	    y =(pd->ury-pd->lly)*(logscale(p->y,1)-pd->ymin)/(pd->ymax-pd->ymin)+pd->lly; 
-	    draw(x,y, pd->llx, pd->urx, pd->lly, pd->ury);
+	    draw(x,y);
 	 } else {
 	   if (strncmp(p->cmd,"jump",4)==0) {
 	       jump();
@@ -878,7 +880,9 @@ double size;
     char s[2];
     s[0]=(char) ((c%55)+32);
     s[1]='\0';
+    fontclip(1);	// turn on clipping
     do_note(s, x, y, MIRROR_OFF , size, 1.0, 0.0, 0.0, 1, 4);
+    fontclip(0);	// turn off clipping
 }
 
 void do_note(string, x, y, mirror, size, aspect, slant, rotation, id, jf)
@@ -963,11 +967,22 @@ void fontjump() {
    fontnsegs=0;
 }
 
+static int clipmode=0;
+
+void fontclip(int mode) {
+   clipmode=mode;
+};
+
 void fontdraw(double x, double y) {
     static double xxold, yyold;
+    extern int clipmode;
     fontnsegs++;
     if (fontnsegs > 1) {
-	xwin_draw_line(xxold, yyold, x, y);
+	if (clipmode) {
+	    clip(xxold, yyold, x, y);
+	} else {
+	    xwin_draw_line(xxold, yyold, x, y);
+	}
     }
     xxold=x; yyold=y;
 }
@@ -976,7 +991,7 @@ void jump() {
    nsegs=0;
 }
 
-void draw(double x, double y, double xmin, double xmax, double ymin, double ymax) {
+void draw(double x, double y) {
     static double xold, yold;
     if (!backstat && nsegs > 1 && x<xold) {
        nsegs=0;
@@ -992,7 +1007,7 @@ void draw(double x, double y, double xmin, double xmax, double ymin, double ymax
     nsegs++;
     if (nsegs > 1) {
 	if (linemode) {
-	    clip(xold, yold, x, y, xmin, xmax, ymin, ymax);
+	    clip(xold, yold, x, y);
 	}
     }
     xold=x; yold=y;
