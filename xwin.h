@@ -10,6 +10,7 @@ void xwin_set_pen_line(int pen, int line);
 void xwin_size(double *x, double *y);
 void xwin_top();
 void xwin_annotate(char *buf);
+void xwin_display(int mode);
 
 extern char *progname;
 extern int need_redraw;		// setting TRUE causes redraw

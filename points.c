@@ -410,68 +410,27 @@ void gridlabel(PLOTDAT *pd, char *str, double alpha, int x) {
     }
 }
 
-void setbounds(PLOTDAT *pd) {	
+void setbounds(PLOTDAT *pd) {		// simply set pd->[yx]minmax to bounds
     DATUM *p; 
     int ix=0;
-    int iy=0;
-    int xc=0;
-    int yc=0;
     double xx, yy;
-    double xmax, xmin, ymax, ymin;
-
-    xmin=plots[0].xsetmin;	// xsets are global
-    xmax=plots[0].xsetmax;	
-    ymin=pd->ysetmin;		// ysets are per plot
-    ymax=pd->ysetmax;
-
-    if (xmin!=xmax) xc++;	// crop x
-    if (ymin!=ymax) yc++;	// crop y
-
-    if (xc) {
-	pd->xmin=xmin;
-	pd->xmax=xmax;
-    } else {
-	pd->xmin=pd->xmax=0.0;
-    }
-
-    if (yc) {
-	pd->ymin=ymin;
-	pd->ymax=ymax;
-    } else {
-	pd->ymin=pd->ymax=0.0;
-    }
-
-    // printf("------------------\n");
-    // printf("xmin: %g xmax: %g\n", xmin, xmax);
-    // printf("xc:%d, yc:%d, %g %g %g %g\n", xc, yc, pd->xmin, pd->xmax, pd->ymin, pd->ymax);
-    // printf("plots[0].xsetmin=%g max=%g\n", plots[0].xsetmin, plots[0].xsetmax);
 
     for (p=pd->data; p!=(DATUM *)0; p=p->next) {
   	if (p->cmd == NULL) {
 	    xx = logscale(p->x,0);
 	    yy = logscale(p->y,1);
-	    if ((!xc && !yc) || (!xc && yc && yy >= ymin && yy <= ymax) ) {
-	        if (ix == 0) {	// initialize
-		    pd->xmin=pd->xmax=xx;
-		    ix=1;
-	      	} else {	// accumulate
-		    if(xx < pd->xmin) pd->xmin=xx;
-		    if(xx > pd->xmax) pd->xmax=xx;
-		}
-	    }
-	    if ((!yc && !xc) || (!yc && xc && xx >= xmin && xx <= xmax) ) {
-	    	if (iy == 0) {	// initialize
-		    pd->ymin=pd->ymax=yy;
-		    iy=1;
-	      	} else {	// accumulate
-		  if(yy < pd->ymin) pd->ymin=yy;
-		  if(yy > pd->ymax) pd->ymax=yy;
-		}
+	    if (ix == 0) {	// initialize
+		pd->xmin=pd->xmax=xx;
+		pd->ymin=pd->ymax=yy;
+		ix=1;
+	    } else {	// accumulate
+		if(xx < pd->xmin) pd->xmin=xx;
+		if(xx > pd->xmax) pd->xmax=xx;
+		if(yy < pd->ymin) pd->ymin=yy;
+		if(yy > pd->ymax) pd->ymax=yy;
 	    }
 	}
     }
-    // printf("pd->xmin=%g, xmax=%g, ymin=%g, ymax=%g xc:%d, yc%d\n",
-    // pd->xmin, pd->xmax, pd->ymin, pd->ymax, xc, yc);
 }
 
 void xset(double xmin, double xmax) {
@@ -507,23 +466,150 @@ void title(char *s) {
     plots[0].title = strsave(s);
 }
 
-void render() {	// this is where the image gets drawn
-    int i;
-    double llx, lly, urx, ury, div, del;
-    double xmax, xmin, ymax, ymin;
-    double x,y,xx,yy;
-    double width, height;
-    PLOTDAT *pd;
-    DATUM *p;
-    int debug=0;
+void do_command(PLOTDAT *pd, char *s) {
     int penno;
     int lineno;
     int symno;
     double tmp;
-    extern double ticklen;
-    extern double ticksize;
     char buf[128];
     Symbol *sym;
+
+   if (strncmp(s,"jump",4)==0) {
+       jump();
+   } else if (strncmp(s,"pen",3)==0) {
+       if (sscanf(s, "%*s %d", &penno)==1) {
+	  pen(penno);
+       } else {
+	  pen(++pennum);
+       }
+   } else if (strncmp(s,"autopen",7)==0) {
+       autopenflag=1;
+   } else if (strncmp(s,"noautopen",9)==0) {
+       autopenflag=0;
+   } else if (strncmp(s,"autosymbol",10)==0) {
+       autosymflag=1;
+   } else if (strncmp(s,"noautosymbol",12)==0) {
+       autosymflag=0;
+   } else if (strncmp(s,"line",4)==0) {
+       if (sscanf(s, "%*s %d", &lineno)==1) {
+	  line(lineno);
+       } else {
+	  line(++linenum);
+       }
+   } else if (strncmp(s,"autoline",7)==0) {
+       autolineflag=1;
+   } else if (strncmp(s,"noautoline",9)==0) {
+       autolineflag=0;
+   } else if (strncmp(s,"back",4)==0) {
+       back(1);
+   } else if (strncmp(s,"symbol+line",11)==0) {
+       symline++;
+       symbolmode = 1;
+       linemode = 1;
+   } else if (strncmp(s,"charsize",8)==0) {
+       if (sscanf(s, "%*s %lg", &tmp)==1) {
+	   if (tmp >= 0.1 && tmp <= 10.0) {
+	       charsize=tmp;
+	   } else {
+	      fprintf(stderr,"bad argument to charsize cmd: %s\n", s);
+	   }
+       } else {
+	   fprintf(stderr,"bad argument to charsize cmd: %s\n", s);
+       }
+   } else if (strncmp(s,"tagsize",7)==0) {
+       if (sscanf(s, "%*s %lg", &tmp)==1) {
+	   if (tmp >= 0.1 && tmp <= 10.0) {
+	       tagsize=tmp;
+	   } else {
+	      fprintf(stderr,"bad argument to tagsize cmd: %s\n", s);
+	   }
+       } else {
+	   fprintf(stderr,"bad argument to tagsize cmd: %s\n", s);
+       }
+   } else if (strncmp(s,"titlesize",9)==0) {
+       if (sscanf(s, "%*s %lg", &tmp)==1) {
+	   if (tmp >= 0.1 && tmp <= 10.0) {
+	       titlesize=tmp;
+	   } else {
+	      fprintf(stderr,"bad argument to titlesize cmd: %s\n", s);
+	   }
+       } else {
+	   fprintf(stderr,"bad argument to titlesize cmd: %s\n", s);
+       }
+   } else if (strncmp(s,"labelsize",9)==0) {
+       if (sscanf(s, "%*s %lg", &tmp)==1) {
+	   if (tmp >= 0.1 && tmp <= 10.0) {
+	       labelsize=tmp;
+	   } else {
+	      fprintf(stderr,"bad argument to labelsize cmd: %s\n", s);
+	   }
+       } else {
+	   fprintf(stderr,"bad argument to labelsize cmd: %s\n", s);
+       }
+   } else if (strncmp(s,"scalesize",9)==0) {
+       if (sscanf(s, "%*s %lg", &tmp)==1) {
+	   if (tmp >= 0.1 && tmp <= 10.0) {
+	       scalesize=tmp;
+	   } else {
+	      fprintf(stderr,"bad argument to scalesize cmd: %s\n", s);
+	   }
+       } else {
+	   fprintf(stderr,"bad argument to scalesize cmd: %s\n", s);
+       }
+   } else if (strncmp(s,"symbolsize",10)==0) {
+       if (sscanf(s, "%*s %lg", &tmp)==1) {
+	   if (tmp >= 0.1 && tmp <= 10.0) {
+	       symbolsize=tmp;
+	   } else {
+	      fprintf(stderr,"bad argument to symbolsize cmd: %s\n", s);
+	   }
+       } else {
+	   fprintf(stderr,"bad argument to symbolsize cmd: %s\n", s);
+       }
+   } else if (strncmp(s,"symbol",6)==0) {	
+       if (!symline) {   // must follow symbol+line to keep line
+	   symbolmode = 1;
+	   linemode = 0;
+       } else {
+	   symbolmode = 1;
+       }
+       if (sscanf(s, "%*s %d", &symno)==1) {
+	   symbol(symno);
+       } else {
+	  if (sscanf(s, "%*s %s", buf)==1) {
+	      if ((sym=lookup(buf)) != 0) {
+		  symbol(sym->index);
+	      } else {
+		  symbol(++symnum);
+	      }
+	  }
+       }
+   } else if (strncmp(s,"nosymbol",8)==0) {
+	symbolmode = 0;
+	linemode = 1;
+   } else if (strncmp(s,"noline",6)==0) {
+	symbolmode = 1;
+	linemode = 0;
+   } else if (strncmp(s,"noback",6)==0) {
+       back(0);
+   } 
+}
+
+void render() 	// this is where the image gets drawn
+{		
+    int i;
+    double llx, lly, urx, ury, div, del;
+    double width, height;
+    PLOTDAT *pd;
+    DATUM *p;
+    int debug=0;
+    extern double ticklen;
+    extern double ticksize;
+    double x,y;
+    double xold, yold;
+    double xmin, xmax, ymin, ymax;
+    char buf[128];
+    double xx,yy;
 
     xwin_size(&width, &height);
 
@@ -550,21 +636,58 @@ void render() {	// this is where the image gets drawn
        axislabel(&plots[numplots],plots[0].xaxis,1);
     }
 
+    // now we do a dry run through the dataset using the bounds
+    // calculation code in clip to set plot boundaries w.r.t.  xset,
+    // yset commands
+
+    xwin_display(0);	// turn off display
+
     for (i=0; i<=numplots; i++) {
-      pd = &(plots[numplots-i]); 		// compute bounding box for each graph 
-      setbounds(pd);
-      if (i==0) {
-	  xmin=pd->xmin;
-	  xmax=pd->xmax;
-	  ymin=pd->ymin;
-	  ymax=pd->ymax;
-      } else {
-	  if(xmin > pd->xmin) xmin=pd->xmin;
-	  if(xmax < pd->xmax) xmax=pd->xmax;
-	  if(ymin > pd->ymin) ymin=pd->ymin;
-	  if(ymax < pd->ymax) ymax=pd->ymax;
+      pd = &(plots[numplots-i]); 
+
+      setbounds(pd);		// update pd->xy(min/max) to data		
+
+      xmin=pd->xmin;
+      xmax=pd->xmax;
+      ymin=pd->ymin;
+      ymax=pd->ymax;
+
+      if (plots[0].xsetmin != plots[0].xsetmax) {	
+         xmin = plots[0].xsetmin;
+	 xmax = plots[0].xsetmax;
       }
+      if (pd->ysetmin != pd->ysetmax) {
+         ymin = pd->ysetmin;
+	 ymax = pd->ysetmax;
+      }
+      pd->boundsflag=0;
+      nsegs=0;
+      for (p=pd->data; p!=(DATUM *)0; p=p->next) {
+	  clip_set(xmin, xmax, ymin, ymax);
+	  if (p->cmd == NULL) {
+	     x=logscale(p->x,0);
+	     y=logscale(p->y,1);
+	     if (!backstat && nsegs > 1 && x<xold) nsegs=0;
+	     nsegs++;
+	     if (linemode && nsegs > 1) {
+	         clip(pd, xold, yold, x, y);
+	     }
+	     if (symbolmode) {
+	         clip(pd, x, y, x, y);
+	     }
+	     xold=x; yold=y;
+	     // draw(pd, logscale(p->x,0),logscale(p->y,1));
+	  } else {
+		do_command(pd, p->cmd);
+	  }
+       }
+       pd->xmin = pd->bbxmin;
+       pd->xmax = pd->bbxmax;
+       pd->ymin = pd->bbymin;
+       pd->ymax = pd->bbymax;
     }
+
+    xwin_display(1);	// turn display on
 
     for (i=0; i<=numplots; i++) {
       pd = &(plots[numplots-i]); 		// compute bounding box for each graph 
@@ -629,145 +752,26 @@ void render() {	// this is where the image gets drawn
       }
 
       for (p=pd->data; p!=(DATUM *)0; p=p->next) {
-	 clip_set(pd->llx, pd->urx, pd->lly, pd->ury);
+	 // clip_set(pd->llx, pd->urx, pd->lly, pd->ury);
+	 clip_set(xmin, xmax, pd->ymin, pd->ymax);
   	 if (p->cmd == NULL) {
-	    x =(pd->urx-pd->llx)*(logscale(p->x,0)-xmin)/(xmax-xmin)+pd->llx;
-	    y =(pd->ury-pd->lly)*(logscale(p->y,1)-pd->ymin)/(pd->ymax-pd->ymin)+pd->lly; 
-	    draw(x,y);
+	    draw(pd, logscale(p->x,0),logscale(p->y,1));
+         } else if (strncmp(p->cmd,"label ",6)==0) {
+	     if (sscanf(p->cmd, "%*s %lg%% %lg%% %[^#]", &x, &y, buf)==3) {
+	        xx=(pd->urx-pd->llx)*(x/100.0)+pd->llx;
+		yy=(pd->ury-pd->lly)*(y/100.0)+pd->lly; 
+		do_note(buf, xx, yy, MIRROR_OFF , 0.6*fontsize*charsize*labelsize,
+		   1.0, 0.0, 0.0, 0, 3);
+	     } else if (sscanf(p->cmd, "%*s %lg %lg %[^#]", &x, &y, buf)==3) {
+		xx=(pd->urx-pd->llx)*(logscale(x,0)-xmin)/(xmax-xmin)+pd->llx;
+		yy=(pd->ury-pd->lly)*(logscale(y,1)-pd->ymin)/(pd->ymax-pd->ymin)+pd->lly; 
+		do_note(buf, xx, yy, MIRROR_OFF , 0.6*fontsize*charsize*labelsize,
+		    1.0, 0.0, 0.0, 0, 3);
+	     } else { 
+	        fprintf(stderr,"bad argument to label cmd: %s\n", p->cmd);
+	     }
 	 } else {
-	   if (strncmp(p->cmd,"jump",4)==0) {
-	       jump();
-	   } else if (strncmp(p->cmd,"pen",3)==0) {
-	       if (sscanf(p->cmd, "%*s %d", &penno)==1) {
-		  pen(penno);
-	       } else {
-       		  pen(++pennum);
-	       }
-	   } else if (strncmp(p->cmd,"autopen",7)==0) {
-	       autopenflag=1;
-	   } else if (strncmp(p->cmd,"noautopen",9)==0) {
-	       autopenflag=0;
-	   } else if (strncmp(p->cmd,"autosymbol",10)==0) {
-	       autosymflag=1;
-	   } else if (strncmp(p->cmd,"noautosymbol",12)==0) {
-	       autosymflag=0;
-	   } else if (strncmp(p->cmd,"line",4)==0) {
-	       if (sscanf(p->cmd, "%*s %d", &lineno)==1) {
-		  line(lineno);
-	       } else {
-       		  line(++linenum);
-	       }
-	   } else if (strncmp(p->cmd,"autoline",7)==0) {
-	       autolineflag=1;
-	   } else if (strncmp(p->cmd,"noautoline",9)==0) {
-	       autolineflag=0;
-	   } else if (strncmp(p->cmd,"back",4)==0) {
-	       back(1);
-	   } else if (strncmp(p->cmd,"symbol+line",11)==0) {
-	       symline++;
-	       symbolmode = 1;
-	       linemode = 1;
-	   } else if (strncmp(p->cmd,"charsize",8)==0) {
-	       if (sscanf(p->cmd, "%*s %lg", &tmp)==1) {
-		   if (tmp >= 0.1 && tmp <= 10.0) {
-		       charsize=tmp;
-		   } else {
-		      fprintf(stderr,"bad argument to charsize cmd: %s\n", p->cmd);
-		   }
-	       } else {
-		   fprintf(stderr,"bad argument to charsize cmd: %s\n", p->cmd);
-	       }
-	   } else if (strncmp(p->cmd,"tagsize",7)==0) {
-	       if (sscanf(p->cmd, "%*s %lg", &tmp)==1) {
-		   if (tmp >= 0.1 && tmp <= 10.0) {
-		       tagsize=tmp;
-		   } else {
-		      fprintf(stderr,"bad argument to tagsize cmd: %s\n", p->cmd);
-		   }
-	       } else {
-		   fprintf(stderr,"bad argument to tagsize cmd: %s\n", p->cmd);
-	       }
-	   } else if (strncmp(p->cmd,"titlesize",9)==0) {
-	       if (sscanf(p->cmd, "%*s %lg", &tmp)==1) {
-		   if (tmp >= 0.1 && tmp <= 10.0) {
-		       titlesize=tmp;
-		   } else {
-		      fprintf(stderr,"bad argument to titlesize cmd: %s\n", p->cmd);
-		   }
-	       } else {
-		   fprintf(stderr,"bad argument to titlesize cmd: %s\n", p->cmd);
-	       }
-	   } else if (strncmp(p->cmd,"labelsize",9)==0) {
-	       if (sscanf(p->cmd, "%*s %lg", &tmp)==1) {
-		   if (tmp >= 0.1 && tmp <= 10.0) {
-		       labelsize=tmp;
-		   } else {
-		      fprintf(stderr,"bad argument to labelsize cmd: %s\n", p->cmd);
-		   }
-	       } else {
-		   fprintf(stderr,"bad argument to labelsize cmd: %s\n", p->cmd);
-	       }
-	   } else if (strncmp(p->cmd,"label",5)==0) {
-	       if (sscanf(p->cmd, "%*s %lg%% %lg%% %[^#]", &x, &y, buf)==3) {
-		    xx =(pd->urx-pd->llx)*(x/100.0)+pd->llx;
-		    yy =(pd->ury-pd->lly)*(y/100.0)+pd->lly; 
-		    do_note(buf, xx, yy, MIRROR_OFF , 0.6*fontsize*charsize*labelsize,
-		    1.0, 0.0, 0.0, 0, 3);
-	       } else if (sscanf(p->cmd, "%*s %lg %lg %[^#]", &x, &y, buf)==3) {
-		    xx =(pd->urx-pd->llx)*(logscale(x,0)-xmin)/(xmax-xmin)+pd->llx;
-		    yy =(pd->ury-pd->lly)*(logscale(y,1)-pd->ymin)/(pd->ymax-pd->ymin)+pd->lly; 
-		    do_note(buf, xx, yy, MIRROR_OFF , 0.6*fontsize*charsize*labelsize,
-		    1.0, 0.0, 0.0, 0, 3);
-	       } else {
-		   fprintf(stderr,"bad argument to labelsize cmd: %s\n", p->cmd);
-	       }
-	   } else if (strncmp(p->cmd,"scalesize",9)==0) {
-	       if (sscanf(p->cmd, "%*s %lg", &tmp)==1) {
-		   if (tmp >= 0.1 && tmp <= 10.0) {
-		       scalesize=tmp;
-		   } else {
-		      fprintf(stderr,"bad argument to scalesize cmd: %s\n", p->cmd);
-		   }
-	       } else {
-		   fprintf(stderr,"bad argument to scalesize cmd: %s\n", p->cmd);
-	       }
-	   } else if (strncmp(p->cmd,"symbolsize",10)==0) {
-	       if (sscanf(p->cmd, "%*s %lg", &tmp)==1) {
-		   if (tmp >= 0.1 && tmp <= 10.0) {
-		       symbolsize=tmp;
-		   } else {
-		      fprintf(stderr,"bad argument to symbolsize cmd: %s\n", p->cmd);
-		   }
-	       } else {
-		   fprintf(stderr,"bad argument to symbolsize cmd: %s\n", p->cmd);
-	       }
-	   } else if (strncmp(p->cmd,"symbol",6)==0) {	
-	       if (!symline) {   // must follow symbol+line to keep line
-		   symbolmode = 1;
-		   linemode = 0;
-	       } else {
-		   symbolmode = 1;
-	       }
-	       if (sscanf(p->cmd, "%*s %d", &symno)==1) {
-		   symbol(symno);
-	       } else {
-		  if (sscanf(p->cmd, "%*s %s", buf)==1) {
-		      if ((sym=lookup(buf)) != 0) {
-			  symbol(sym->index);
-		      } else {
-			  symbol(++symnum);
-		      }
-		  }
-	       }
-	   } else if (strncmp(p->cmd,"nosymbol",8)==0) {
-		symbolmode = 0;
-		linemode = 1;
-	   } else if (strncmp(p->cmd,"noline",6)==0) {
-		symbolmode = 1;
-		linemode = 0;
-	   } else if (strncmp(p->cmd,"noback",6)==0) {
-	       back(0);
-	   } 
+	    do_command(pd, p->cmd);
 	 }
       }
 
@@ -783,6 +787,7 @@ void render() {	// this is where the image gets drawn
       if (debug) printf("%g %g %g %g\n", xmin, pd->ymin, xmax, pd->ymax);
     }
 }
+
 
 //------------------------------------------------------------------------------
 // Core drawing functions
@@ -978,11 +983,11 @@ void fontdraw(double x, double y) {
     extern int clipmode;
     fontnsegs++;
     if (fontnsegs > 1) {
-	if (clipmode) {
-	    clip(xxold, yyold, x, y);
-	} else {
+	//if (clipmode) {
+	//    clip(xxold, yyold, x, y);
+	//} else {
 	    xwin_draw_line(xxold, yyold, x, y);
-	}
+	//}
     }
     xxold=x; yyold=y;
 }
@@ -991,15 +996,18 @@ void jump() {
    nsegs=0;
 }
 
-void draw(double x, double y) {
+void draw(PLOTDAT *pd, double x, double y) {
     static double xold, yold;
+    double xs, ys;	// screen coords
+    xs =(pd->urx-pd->llx)*(x-xmin)/(xmax-xmin)+pd->llx;
+    ys =(pd->ury-pd->lly)*(y-pd->ymin)/(pd->ymax-pd->ymin)+pd->lly; 
     if (!backstat && nsegs > 1 && x<xold) {
        nsegs=0;
        if (autopenflag)	 pen(++pennum);
        if (autolineflag) line(++linenum);
     }
     if (symbolmode) {
-      do_symbol(symnum, x, y, fontsize*symbolsize);
+      do_symbol(symnum, xs, ys, fontsize*symbolsize);
     } 
     if (nsegs==0) {
        if (autosymflag) symbol(++symnum);
@@ -1007,7 +1015,7 @@ void draw(double x, double y) {
     nsegs++;
     if (nsegs > 1) {
 	if (linemode) {
-	    clip(xold, yold, x, y);
+	    clip(pd, xold, yold, x, y);
 	}
     }
     xold=x; yold=y;

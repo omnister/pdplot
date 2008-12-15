@@ -2,10 +2,10 @@
 #include "xwin.h"
 #include "points.h"
 
-static double xmin = 0.0;
-static double xmax = 0.0;
-static double ymin = 0.0;
-static double ymax = 0.0;
+double xmin = 0.0;
+double xmax = 0.0;
+double ymin = 0.0;
+double ymax = 0.0;
 
 /* Cohen-Sutherland 2-D Clipping Algorithm */
 /* See: Foley & Van Dam, p146-148 */
@@ -19,7 +19,39 @@ double xn, xx, yn, yx;
     ymax = yx;
 }
 
-void clip(x1, y1, x2, y2)
+void updatebounds(pd, x1, y1, x2, y2)
+PLOTDAT *pd;
+double x1, y1, x2, y2;
+{
+    double xmin, xmax, ymin, ymax;
+
+    xmin=x1; xmax=x2;
+    if (x2 < x1) {
+       xmin = x2;
+       xmax = x1;
+    }
+    ymin=y1; ymax=y2;
+    if (y2 < y1) {
+       ymin = y2;
+       ymax = y1;
+    }
+
+    if (pd->boundsflag == 0) {
+       pd->bbxmin = xmin;
+       pd->bbxmax = xmax;
+       pd->bbymin = ymin;
+       pd->bbymax = ymax;
+    } else {
+       if (xmin < pd->bbxmin) pd->bbxmin = xmin;
+       if (xmax > pd->bbxmax) pd->bbxmax = xmax;
+       if (ymin < pd->bbymin) pd->bbymin = ymin;
+       if (ymax > pd->bbymax) pd->bbymax = ymax;
+    }
+    pd->boundsflag=1;
+}
+
+void clip(pd, x1, y1, x2, y2)
+PLOTDAT *pd;
 double x1, y1, x2, y2;
 {
 
@@ -30,15 +62,7 @@ double x1, y1, x2, y2;
     int code1=0;
     int code2=0;
     double tmp;
-
-    if (x2 < x1) {	/* canonicalize the line */
-//	tmp = x2; x2 = x1; x1 = tmp;
-    }
-    if (y2 < y1) {
-//	tmp = y2; y2 = y1; y1 = tmp;
-    }
-
-    if (debug) printf("canonicalized: %g,%g %g,%g\n", x1, y1, x2, y2);
+    double xs1, xs2, ys1, ys2;
 
     while (!done) {
         /* compute "outcodes" */
@@ -91,36 +115,20 @@ double x1, y1, x2, y2;
     }
     if (debug) printf("accept = %d\n", accept);
     if (accept) {
+	updatebounds(pd, x1, y1, x2, y2);
+	xs1 =(pd->urx-pd->llx)*(x1-xmin)/(xmax-xmin)+pd->llx;
+        ys1 =(pd->ury-pd->lly)*(y1-pd->ymin)/(pd->ymax-pd->ymin)+pd->lly; 
+	xs2 =(pd->urx-pd->llx)*(x2-xmin)/(xmax-xmin)+pd->llx;
+        ys2 =(pd->ury-pd->lly)*(y2-pd->ymin)/(pd->ymax-pd->ymin)+pd->lly; 
 	if (linenum != 0) {
-	    xwin_draw_line(x1,y1,x2,y2);
+	    xwin_draw_line(xs1,ys1,xs2,ys2);
 	} else {
-	    xwin_draw_point(x1,y1);
-	    xwin_draw_point(x2,y2);
+	    xwin_draw_point(xs1,ys1);
+	    xwin_draw_point(xs2,ys2);
 	}
-    	// printf("%g %g\n", x1,y1);
-    	// printf("%g %g\n", x2,y2);
+    	// printf("%g %g\n", xs1,ys1);
+    	// printf("%g %g\n", xs2,ys2);
     	// printf("jump\n");
     }
-}
-
-void cliptestmain() {
-   char buf[128];
-   double x1, y1, x2, y2;
-
-   printf("back\n");
-
-   printf("-1.2 -1.2\n");
-   printf("1.2 -1.2\n");
-   printf("1.2 1.2\n");
-   printf("-1.2 1.2\n");
-   printf("-1.2 -1.2\n");
-
-   printf("jump\n");
-
-   while (fgets(buf, 128, stdin) != 0) {
-   	sscanf(buf, "%lf %lf %lf %lf", &x1, &y1, &x2, &y2);
-	/* printf("got %g %g %g %g\n", x1, y1, x2, y2);  */
-	clip(x1, y1, x2, y2, -1.0, -1.0, 1.0, 1.0);
-   }
 }
 

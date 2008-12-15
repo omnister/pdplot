@@ -12,6 +12,11 @@ typedef struct plotdat {
      double lly;
      double urx;
      double ury;
+     int    boundsflag;	// set to 0 to force initialization of bounding box
+     double bbxmin;	// bounding box captured during a dry run plot
+     double bbxmax;
+     double bbymin;
+     double bbymax;
      double xmin;	// computed bounds 
      double xmax;
      double ymin;
@@ -49,7 +54,7 @@ extern void xset(double xmin, double xmax);
 extern void yset(double ymin, double ymax);
 extern void xscale(char *, double scale);
 extern void yscale(char *, double scale);
-extern void draw(double x, double y);
+extern void draw(PLOTDAT *pd, double x, double y);
 extern void jump(void);
 extern void fontdraw(double x, double y);
 extern void fontjump(void);
@@ -77,6 +82,8 @@ extern void tickset(double scale);
 extern void setcharsize(double size);
 extern void button(double x, double y, int buttonno, int state);
 extern int linenum;
+
+extern double xmin, xmax, ymin, ymax;
 
 
 #define MIRROR_OFF 0

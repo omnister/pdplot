@@ -21,6 +21,7 @@ void xwin_top();
 #define MAX_COLORS 16
 #define MAX_LINETYPE 7
 unsigned long colors[MAX_COLORS];    /* will hold pixel values for colors */
+int displayon=1;
 
 #define icon_bitmap_width 20
 #define icon_bitmap_height 20
@@ -455,28 +456,32 @@ XFontStruct **font_info;
 
 void xwin_draw_point(double x, double y)
 {
-    XDrawPoint(dpy, win, gc, 
-    	(int) rint(x),
-	height-(int) rint(y));
-    XDrawPoint(dpy, win, gc, 
-    	(int) rint(x)+1,
-	height-(int) rint(y)+1);
-    XDrawPoint(dpy, win, gc, 
-    	(int) rint(x)+1,
-	height-(int) rint(y));
-    XDrawPoint(dpy, win, gc, 
-    	(int) rint(x),
-	height-(int) rint(y)+1);
+    if (displayon) {
+	XDrawPoint(dpy, win, gc, 
+	    (int) rint(x),
+	    height-(int) rint(y));
+	XDrawPoint(dpy, win, gc, 
+	    (int) rint(x)+1,
+	    height-(int) rint(y)+1);
+	XDrawPoint(dpy, win, gc, 
+	    (int) rint(x)+1,
+	    height-(int) rint(y));
+	XDrawPoint(dpy, win, gc, 
+	    (int) rint(x),
+	    height-(int) rint(y)+1);
+    }
 }
 
 void xwin_draw_line(x1, y1, x2, y2)
 double x1,y1,x2,y2;
 {
-    XDrawLine(dpy, win, gc, 
-    	(int) rint(x1),
-	height-(int) rint(y1),
-	(int) rint(x2),
-	height-(int) rint(y2));
+    if (displayon) {
+	XDrawLine(dpy, win, gc, 
+	    (int) rint(x1),
+	    height-(int) rint(y1),
+	    (int) rint(x2),
+	    height-(int) rint(y2));
+    }
 }
 
 void xwin_set_pen_line(int pen, int line) 
@@ -566,6 +571,10 @@ void xwin_annotate(char *buf) {
                     size, 1.0, 0.0, 0.0, 0, 1);
 
    // XDrawImageString(dpy, win, gc, 20, height-5, buf, strlen(buf));
+}
+
+void xwin_display(int mode) {
+   displayon = mode;
 }
 
 void debug(char *s, int dbug)
