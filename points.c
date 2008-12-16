@@ -26,6 +26,8 @@ static int gridstatex=1;
 static int gridstatey=1;
 static int gridpenx=13;
 static int gridpeny=13;
+static int xgridline=3;
+static int ygridline=3;
 static int framepen=1;
 static int scalemode=1;
 static int tickmode=1;
@@ -50,6 +52,7 @@ static double titlesize=1.0;    // scales title
 static double labelsize=1.0;    // scales label
 static double xtolerance=0.0;
 static double ytolerance=0.0;
+static double labelangle=0.0;
 
 DATUM *datum_new(x,y)
 double x,y;
@@ -113,6 +116,19 @@ void gridpen(int mode) {
    gridpenx=gridpeny=mode;
 }
 
+void xgrid(int line) {
+   xgridline=line;
+}
+
+void ygrid(int line) {
+   ygridline=line;
+}
+
+void grid(int line) {
+   xgridline=ygridline=line;
+}
+
+
 void setcharsize(double size) {
    charsize=size;
 }
@@ -128,6 +144,10 @@ void yscaletol(double val) {
 void scaletol(double val) {
    xtolerance=val;
    ytolerance=val;
+}
+
+void labelrotation(double angle) {
+   labelangle=angle;
 }
 
 void button(double x, double y, int buttonno, int state) {
@@ -289,6 +309,8 @@ void initplot(void) {
    framepen=1;
    gridpenx=13;		// default is dim off-white grid
    gridpeny=13;		// default is dim off-white grid
+   xgridline=3;
+   ygridline=3;
    boxmode=1;
    symbolmode=0;
    linemode=1;
@@ -303,6 +325,7 @@ void initplot(void) {
    tickmode=1;
    xtolerance=0.0;
    ytolerance=0.0;
+   labelangle=0.0;
 
    charsize=1.0;     // scales all characters
    symbolsize=1.0;   // scales symbols
@@ -405,13 +428,13 @@ void gridline(PLOTDAT *pd, double alpha, int x) {
     gridtick(pd, alpha, x);
     if (x) { 			// xaxis grid lines
 	if (gridstatex) {
-	    xwin_set_pen_line(gridpenx,3);
+	    xwin_set_pen_line(gridpenx,xgridline);
 	    tmp = alpha*pd->urx+(1.0-alpha)*pd->llx;
 	    xwin_draw_line( tmp, pd->lly, tmp, pd->ury);
 	}
     } else { 			// yaxis grid lines
 	if (gridstatey) {
-	    xwin_set_pen_line(gridpeny,3);
+	    xwin_set_pen_line(gridpeny,ygridline);
 	    tmp = alpha*pd->lly+(1.0-alpha)*pd->ury;
 	    xwin_draw_line( pd->llx, tmp, pd->urx, tmp);
 	}
@@ -587,6 +610,16 @@ void do_command(PLOTDAT *pd, char *s) {
 	   }
        } else {
 	   fprintf(stderr,"bad argument to labelsize cmd: %s\n", s);
+       }
+   } else if (strncmp(s,"labeldir",8)==0) {
+       if (sscanf(s, "%*s %lg", &tmp)==1) {
+	   if (tmp <= 360.0 && tmp >= -360.0) {
+	       labelangle=tmp;
+	   } else {
+	      fprintf(stderr,"angle too large in labeldir cmd: %s\n", s);
+	   }
+       } else {
+	   fprintf(stderr,"bad argument to labeldir cmd: %s\n", s);
        }
    } else if (strncmp(s,"scalesize",9)==0) {
        if (sscanf(s, "%*s %lg", &tmp)==1) {
@@ -813,6 +846,8 @@ void render() 	// this is where the image gets drawn
       autosymflag=1;
       // gridpenx=1;
       // gridpeny=1;
+      // xgridline=3;
+      // ygridline=3;
       linemode=1;
       symbolsize=1.0;
       if (i==0) {
@@ -830,12 +865,12 @@ void render() 	// this is where the image gets drawn
 	        xx=(pd->urx-pd->llx)*(x/100.0)+pd->llx;
 		yy=(pd->ury-pd->lly)*(y/100.0)+pd->lly; 
 		do_note(buf, xx, yy, MIRROR_OFF , 0.6*fontsize*charsize*labelsize,
-		   1.0, 0.0, 0.0, 0, 3);
+		   1.0, 0.0, labelangle, 0, 3);
 	     } else if (sscanf(p->cmd, "%*s %lg %lg %[^#]", &x, &y, buf)==3) {
 		xx=(pd->urx-pd->llx)*(logscale(x,0)-xmin)/(xmax-xmin)+pd->llx;
 		yy=(pd->ury-pd->lly)*(logscale(y,1)-pd->ymin)/(pd->ymax-pd->ymin)+pd->lly; 
 		do_note(buf, xx, yy, MIRROR_OFF , 0.6*fontsize*charsize*labelsize,
-		    1.0, 0.0, 0.0, 0, 3);
+		    1.0, 0.0, labelangle, 0, 3);
 	     } else { 
 	        fprintf(stderr,"bad argument to label cmd: %s\n", p->cmd);
 	     }

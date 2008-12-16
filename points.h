@@ -85,12 +85,16 @@ extern void frame_pen(int pen);
 extern void gridpen(int pen);
 extern void xgridpen(int pen);
 extern void ygridpen(int pen);
+extern void xgrid(int line);
+extern void ygrid(int line);
+extern void grid(int line);
 extern void gridstate(int mode);
 extern void xgridstate(int mode);
 extern void ygridstate(int mode);
 extern void xscaletol(double tolerance);
 extern void yscaletol(double tolerance);
 extern void scaletol(double tolerance);
+extern void labelrotation(double angle);
 extern int linenum;
 
 extern double xmin, xmax, ymin, ymax;

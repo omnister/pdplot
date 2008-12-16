@@ -112,6 +112,24 @@ char **argv;
 	       } else { 
 		  fprintf(stderr, "bad ygrid value: %s\n", s);
 	       }
+   	   } else if (strncmp(sp,"xgrid ",6)==0) {
+       	       if (sscanf(s, "%*s %d", &itmp)==1) { 
+	       	  xgrid(itmp); 
+	       } else { 
+		  fprintf(stderr, "bad xgrid value: %s\n", s);
+	       }
+   	   } else if (strncmp(sp,"ygrid ",6)==0) {
+       	       if (sscanf(s, "%*s %d", &itmp)==1) { 
+	       	  ygrid(itmp); 
+	       } else { 
+		  fprintf(stderr, "bad ygrid value: %s\n", s);
+	       }
+   	   } else if (strncmp(sp,"grid ",5)==0) {
+       	       if (sscanf(s, "%*s %d", &itmp)==1) { 
+	       	  grid(itmp); 
+	       } else { 
+		  fprintf(stderr, "bad grid value: %s\n", s);
+	       }
 	   } else if (strncmp(sp,"brightgrid",10)==0) {
 	       gridpen(1);
 	   } else if (strncmp(sp,"dimgrid",7)==0) {
