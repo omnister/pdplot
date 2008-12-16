@@ -360,6 +360,7 @@ void doXevent(char *s) {
             break;
 	case ReparentNotify:
 	    break;
+	case UnmapNotify:
 	case MapNotify:
 	    // if (!need_redraw) redraw();
 	    need_redraw++;

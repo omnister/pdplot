@@ -43,6 +43,8 @@ static double isoscale=1.0;
 static int symline=0;
 
 static double fontsize;
+static double xfontsize;
+static double yfontsize;
 static double charsize=1.0; 	// scales all characters
 static double symbolsize=1.0;	// scales symbols
 static double ticksize=1.0;	// scales ticks	
@@ -446,15 +448,15 @@ void axislabel(PLOTDAT *pd, char *str, int x) {
     xwin_set_pen_line(framepen,1);
     if (scalemode) {
 	if (x) { 			// xaxis label
-	    tmp = pd->lly-pad-fontsize;
+	    tmp = pd->lly-pad-xfontsize;
 	    mid = (pd->llx+pd->urx)/2.0;
 	    do_note(str, mid, tmp, MIRROR_OFF, 
-	    	scalesize*charsize*fontsize*.6, 1.0, 0.0, 0.0, 0, 4);
+	    	scalesize*charsize*xfontsize*.6, 1.0, 0.0, 0.0, 0, 4);
 	} else { 			// yaxis label
-	    tmp = pd->llx-pad-2.0*fontsize;
+	    tmp = pd->llx-pad-2.0*yfontsize;
 	    mid = (pd->lly+pd->ury)/2.0;
 	    do_note(str, tmp, mid , MIRROR_OFF, 
-	    	scalesize*charsize*fontsize*.6, 1.0, 0.0, 90.0, 0, 4);
+	    	scalesize*charsize*yfontsize*.6, 1.0, 0.0, 90.0, 0, 4);
 	}
     }
 }
@@ -466,11 +468,11 @@ void gridlabel(PLOTDAT *pd, char *str, double alpha, int x) {
 	if (x) { 			// xaxis label
 	    tmp = alpha*pd->urx+(1.0-alpha)*pd->llx;
 	    do_note(str, tmp, pd->lly-pad, MIRROR_OFF,
-	    	fontsize*.6*charsize*tagsize, 1.0, 0.0, 0.0, 0, 7);
+	    	xfontsize*.6*charsize*tagsize, 1.0, 0.0, 0.0, 0, 7);
 	} else { 			// yaxis label
 	    tmp = alpha*pd->ury+(1.0-alpha)*pd->lly;
 	    do_note(str, pd->llx-pad, tmp, MIRROR_OFF,
-	    	fontsize*.6*charsize*tagsize, 1.0, 0.0, 0.0, 0, 5);
+	    	yfontsize*.6*charsize*tagsize, 1.0, 0.0, 0.0, 0, 5);
 	}
     }
 }
@@ -692,7 +694,9 @@ void render() 	// this is where the image gets drawn
     lly=0.1*height;
     urx=0.95*width;
     ury=0.9*height;
-    fontsize = (height+width)/50.0;
+    fontsize  = (height+width)/50.0;
+    xfontsize = (height)/20.0;
+    yfontsize = (width)/30.0;
     ticklen = ticksize*(height+width)/200.0;
     pad=fontsize/4.0;
 
