@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <string.h>
+#include <math.h>
 #include "xwin.h"
 #include "points.h"
 #include "readfont.h"
@@ -43,6 +44,7 @@ char **argv;
     progname = argv[0];
     double xmin,xmax,ymin,ymax;
     double tmp;
+    int itmp;
     int opt;
 
     setvbuf(stdin, NULL, _IONBF, 0);  // make stdin unbuffered 
@@ -82,14 +84,38 @@ char **argv;
 	   if (strncmp(sp,"nextygraph",10)==0) {
 	       nextygraph();
 	   } else if (strncmp(sp,"noframe",7)==0) {
-	       grid(0);
+	       gridstate(0);
 	       box(0);
 	       scale(0);
 	       tick(0);
+   	   } else if (strncmp(sp,"framepen",8)==0) {
+       	       if (sscanf(s, "%*s %d", &itmp)==1) { 
+	       	  frame_pen(itmp); 
+	       } else { 
+		  fprintf(stderr, "bad framepen value: %s\n", s);
+	       }
+   	   } else if (strncmp(sp,"gridpen",7)==0) {
+       	       if (sscanf(s, "%*s %d", &itmp)==1) { 
+	       	  gridpen(itmp); 
+	       } else { 
+		  fprintf(stderr, "bad grid value: %s\n", s);
+	       }
+   	   } else if (strncmp(sp,"xgridpen",8)==0) {
+       	       if (sscanf(s, "%*s %d", &itmp)==1) { 
+	       	  xgridpen(itmp); 
+	       } else {
+		  fprintf(stderr, "bad xgrid value: %s\n", s);
+	       }
+   	   } else if (strncmp(sp,"ygridpen",8)==0) {
+       	       if (sscanf(s, "%*s %d", &itmp)==1) { 
+	       	  ygridpen(itmp); 
+	       } else { 
+		  fprintf(stderr, "bad ygrid value: %s\n", s);
+	       }
 	   } else if (strncmp(sp,"brightgrid",10)==0) {
-	       dim(0);
+	       gridpen(1);
 	   } else if (strncmp(sp,"dimgrid",7)==0) {
-	       dim(1);
+	       gridpen(12);
 	   } else if (strncmp(sp,"linxy",4)==0) {
 	       logmode(0,0);
 	       logmode(0,0);
@@ -125,9 +151,9 @@ char **argv;
 	   } else if (strncmp(sp,"dump",4)==0) {
 	       dumppoints();
 	   } else if (strncmp(sp,"grid",4)==0) {
-	       grid(1);
+	       gridstate(1);
 	   } else if (strncmp(sp,"nogrid",6)==0) {
-	       grid(0);
+	       gridstate(0);
 	   } else if (strncmp(sp,"box",3)==0) {
 	       box(1);
 	   } else if (strncmp(sp,"nobox",5)==0) {
@@ -145,6 +171,24 @@ char **argv;
 	       xwin_top();
 	   } else if (strncmp(sp,"clear",5)==0) {
 	       initplot();	
+	   } else if (strncmp(sp,"xscaletol",9)==0) {
+	       if (sscanf(sp,"%*s %lg", &tmp) != 1 || tmp >= 0.4 || tmp < -1.0) {
+	          fprintf(stderr, "bad xscaletol values: sp\n");
+	       } else {
+		  xscaletol(tmp);	
+	       }
+	   } else if (strncmp(sp,"yscaletol",9)==0) {
+	       if (sscanf(sp,"%*s %lg", &tmp) != 1 || tmp >= 0.4 || tmp < -1.0) {
+	          fprintf(stderr, "bad yscaletol values: sp\n");
+	       } else {
+		  yscaletol(tmp);	
+	       }
+	   } else if (strncmp(sp,"scaletol",8)==0) {
+	       if (sscanf(sp,"%*s %lg", &tmp) != 1 || tmp >= 0.4 || tmp < -1.0) {
+	          fprintf(stderr, "bad scaletol values: sp\n");
+	       } else {
+		  scaletol(tmp);	
+	       }
 	   } else if (strncmp(sp,"ticklength",10)==0) {
 	       if (sscanf(sp+10,"%lg", &tmp) != 1 || tmp < 0.1 || tmp > 10.0) {
 		  tickset(-1.0);
@@ -188,10 +232,10 @@ char **argv;
 	   } else if (strncmp(sp,"style",5)==0) {
        	       sp=skipblanks(sp+6);
 	       if (sp[0] == 'p') {
-	       	  grid(0); 
+	       	  gridstate(0); 
 		  setcharsize(1.6);
 	       } else if (sp[0] == 'w') {
-	          grid(1);
+	          gridstate(1);
 		  setcharsize(1.0);
 	       }
 	   } else if (strncmp(sp,"exit",4)==0) {

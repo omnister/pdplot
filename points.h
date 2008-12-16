@@ -81,6 +81,16 @@ extern void iso(int mode, double scale);
 extern void tickset(double scale);
 extern void setcharsize(double size);
 extern void button(double x, double y, int buttonno, int state);
+extern void frame_pen(int pen);
+extern void gridpen(int pen);
+extern void xgridpen(int pen);
+extern void ygridpen(int pen);
+extern void gridstate(int mode);
+extern void xgridstate(int mode);
+extern void ygridstate(int mode);
+extern void xscaletol(double tolerance);
+extern void yscaletol(double tolerance);
+extern void scaletol(double tolerance);
 extern int linenum;
 
 extern double xmin, xmax, ymin, ymax;

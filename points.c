@@ -22,7 +22,11 @@ int linenum=1;
 static int backstat=0;
 static double pad;
 static double ticklen;
-static int gridmode=1;
+static int gridstatex=1;
+static int gridstatey=1;
+static int gridpenx=13;
+static int gridpeny=13;
+static int framepen=1;
 static int scalemode=1;
 static int tickmode=1;
 static int boxmode=1;
@@ -34,7 +38,6 @@ static int autolineflag=0;
 static int autosymflag=1;
 static int isotropic=0;
 static double isoscale=1.0;
-static int dimgrid=1;
 static int symline=0;
 
 static double fontsize;
@@ -45,6 +48,8 @@ static double scalesize=1.0;    // scales axis labels
 static double tagsize=1.0;      // scales grid tick values
 static double titlesize=1.0;    // scales title	
 static double labelsize=1.0;    // scales label
+static double xtolerance=0.0;
+static double ytolerance=0.0;
 
 DATUM *datum_new(x,y)
 double x,y;
@@ -57,10 +62,6 @@ double x,y;
     tmp->next = NULL;
     tmp->prev = tmp;    /* prev pointer points at last */
     return(tmp);
-}
-
-void dim(int mode) {
-    dimgrid=mode; 
 }
 
 void iso(int mode, double scale) {
@@ -84,12 +85,49 @@ void tickset(double scale) {
    ticksize=scale; 
 }
 
-void grid(int mode) {
-   gridmode=mode;
+void xgridstate(int mode) {
+   gridstatex=mode;
+}
+
+void ygridstate(int mode) {
+   gridstatey=mode;
+}
+
+void gridstate(int mode) {
+   gridstatex=gridstatey=mode;
+}
+
+void frame_pen(int mode) {
+   framepen=mode;
+}
+
+void xgridpen(int mode) {
+   gridpenx=mode;
+}
+
+void ygridpen(int mode) {
+   gridpeny=mode;
+}
+
+void gridpen(int mode) {
+   gridpenx=gridpeny=mode;
 }
 
 void setcharsize(double size) {
    charsize=size;
+}
+
+void xscaletol(double val) {
+   xtolerance=val;
+}
+
+void yscaletol(double val) {
+   ytolerance=val;
+}
+
+void scaletol(double val) {
+   xtolerance=val;
+   ytolerance=val;
 }
 
 void button(double x, double y, int buttonno, int state) {
@@ -246,7 +284,11 @@ void initplot(void) {
    pennum=1;
    linenum=1;
    backstat=0;
-   gridmode=1;
+   gridstatex=1;
+   gridstatey=1;
+   framepen=1;
+   gridpenx=13;		// default is dim off-white grid
+   gridpeny=13;		// default is dim off-white grid
    boxmode=1;
    symbolmode=0;
    linemode=1;
@@ -256,10 +298,11 @@ void initplot(void) {
    autosymflag=1;
    isotropic=0;
    isoscale=1.0;
-   dimgrid=1;
    symline=0;
    scalemode=1;
    tickmode=1;
+   xtolerance=0.0;
+   ytolerance=0.0;
 
    charsize=1.0;     // scales all characters
    symbolsize=1.0;   // scales symbols
@@ -360,16 +403,15 @@ void gridtick(PLOTDAT *pd, double alpha, int x) {
 void gridline(PLOTDAT *pd, double alpha, int x) {
     double tmp;
     gridtick(pd, alpha, x);
-    if (gridmode) {
-	if (dimgrid) {
-	    xwin_set_pen_line(15,3);
-	} else {
-	    xwin_set_pen_line(1,3);
-	}
-	if (x) { 			// xaxis grid lines
+    if (x) { 			// xaxis grid lines
+	if (gridstatex) {
+	    xwin_set_pen_line(gridpenx,3);
 	    tmp = alpha*pd->urx+(1.0-alpha)*pd->llx;
 	    xwin_draw_line( tmp, pd->lly, tmp, pd->ury);
-	} else { 			// yaxis grid lines
+	}
+    } else { 			// yaxis grid lines
+	if (gridstatey) {
+	    xwin_set_pen_line(gridpeny,3);
 	    tmp = alpha*pd->lly+(1.0-alpha)*pd->ury;
 	    xwin_draw_line( pd->llx, tmp, pd->urx, tmp);
 	}
@@ -378,7 +420,7 @@ void gridline(PLOTDAT *pd, double alpha, int x) {
 
 void axislabel(PLOTDAT *pd, char *str, int x) {
     double tmp,mid;
-    xwin_set_pen_line(1,1);
+    xwin_set_pen_line(framepen,1);
     if (scalemode) {
 	if (x) { 			// xaxis label
 	    tmp = pd->lly-pad-fontsize;
@@ -396,7 +438,7 @@ void axislabel(PLOTDAT *pd, char *str, int x) {
 
 void gridlabel(PLOTDAT *pd, char *str, double alpha, int x) {
     double tmp;
-    xwin_set_pen_line(1,1);
+    xwin_set_pen_line(framepen,1);
     if (scalemode) {
 	if (x) { 			// xaxis label
 	    tmp = alpha*pd->urx+(1.0-alpha)*pd->llx;
@@ -652,16 +694,21 @@ void render() 	// this is where the image gets drawn
       ymin=pd->ymin;
       ymax=pd->ymax;
 
-      if (plots[0].xsetmin != plots[0].xsetmax) {	
+      if (plots[0].xsetmin != plots[0].xsetmax) {	// xset was used	
          xmin = plots[0].xsetmin;
 	 xmax = plots[0].xsetmax;
       }
-      if (pd->ysetmin != pd->ysetmax) {
+      if (pd->ysetmin != pd->ysetmax) {			// yset was used
          ymin = pd->ysetmin;
 	 ymax = pd->ysetmax;
       }
       pd->boundsflag=0;
       nsegs=0;
+
+      // FIXME: only need to do this next loop through the
+      // data if either xset or yset is used.  Otherwise,
+      // just use the data bounds...
+
       for (p=pd->data; p!=(DATUM *)0; p=p->next) {
 	  clip_set(xmin, xmax, ymin, ymax);
 	  if (p->cmd == NULL) {
@@ -685,11 +732,32 @@ void render() 	// this is where the image gets drawn
        pd->xmax = pd->bbxmax;
        pd->ymin = pd->bbymin;
        pd->ymax = pd->bbymax;
+
+	double a,b;
+	if (xtolerance>=0.0) {
+	   a = pd->xmax-(pd->xmax-pd->xmin)*xtolerance;
+	   b = pd->xmin+(pd->xmax-pd->xmin)*xtolerance;
+	} else {
+	   a = pd->xmax+(pd->xmax-pd->xmin)*(-xtolerance);
+	   b = pd->xmin-(pd->xmax-pd->xmin)*(-xtolerance);
+	}
+	pd->xmax = a; pd->xmin = b;
+	if (ytolerance>=0.0) {
+	   a = pd->ymax-(pd->ymax-pd->ymin)*ytolerance;
+	   b = pd->ymin+(pd->ymax-pd->ymin)*ytolerance;
+	} else {
+	   a = pd->ymax+(pd->ymax-pd->ymin)*(-ytolerance);
+	   b = pd->ymin-(pd->ymax-pd->ymin)*(-ytolerance);
+	}
+	pd->ymax = a; pd->ymin = b;
     }
+
 
     xwin_display(1);	// turn display on
 
     for (i=0; i<=numplots; i++) {
+      xmin = plots[0].xmin;
+      xmax = plots[0].xmax;
       pd = &(plots[numplots-i]); 		// compute bounding box for each graph 
       div=5.0*(numplots+1.0)+(numplots);	// number of vertical divisions
       del=(ury-lly)/div;
@@ -743,7 +811,8 @@ void render() 	// this is where the image gets drawn
       symbol(1);	// select first symbol
       autopenflag=1;
       autosymflag=1;
-      // gridmode=1;
+      // gridpenx=1;
+      // gridpeny=1;
       linemode=1;
       symbolsize=1.0;
       if (i==0) {
@@ -775,7 +844,7 @@ void render() 	// this is where the image gets drawn
 	 }
       }
 
-      xwin_set_pen_line(1,1);
+      xwin_set_pen_line(framepen,1);
       if (boxmode) {
 	  xwin_draw_box(pd->llx, pd->lly, pd->urx, pd->ury);	// plot boundary
       }
