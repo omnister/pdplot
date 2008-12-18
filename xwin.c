@@ -5,6 +5,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <errno.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 #include <math.h>
 #include "eventnames.h"
 #include "xwin.h"
@@ -17,7 +19,6 @@ void getGC(Window win, GC *gc, XFontStruct *font_info);
 void doXevent(char *s);
 void xwin_top();
 
-#define TICKSIZE 0.005  /* fraction of xsize+ysize for default ticks */
 #define MAX_COLORS 16
 #define MAX_LINETYPE 7
 unsigned long colors[MAX_COLORS];    /* will hold pixel values for colors */
@@ -45,6 +46,7 @@ char *progname;
 #define BUF_SIZE 2000
 
 Window win;
+Drawable *dd=&win;
 unsigned int width, height;
 GC gc,gcx;
 
@@ -100,6 +102,7 @@ void initX() {
     /* Size window */
     width = display_width/2, height = display_height/2;
 
+
     /* Create opaque window */
     win = XCreateSimpleWindow(dpy, RootWindow(dpy,screen_num),
         x,y,width, height, border_width, WhitePixel(dpy,screen_num),
@@ -143,7 +146,7 @@ void initX() {
     wm_hints->flags = StateHint | IconPixmapHint | InputHint;
 
     class_hints->res_name = progname;
-    class_hints->res_class = "hoe";
+    class_hints->res_class = "pdp";
 
     XSetWMProperties(dpy, win, &windowName, &iconName,
              (char **) NULL, (int) NULL, size_hints, wm_hints, class_hints);
@@ -458,16 +461,16 @@ XFontStruct **font_info;
 void xwin_draw_point(double x, double y)
 {
     if (displayon) {
-	XDrawPoint(dpy, win, gc, 
+	XDrawPoint(dpy, *dd, gc, 
 	    (int) rint(x),
 	    height-(int) rint(y));
-	XDrawPoint(dpy, win, gc, 
+	XDrawPoint(dpy, *dd, gc, 
 	    (int) rint(x)+1,
 	    height-(int) rint(y)+1);
-	XDrawPoint(dpy, win, gc, 
+	XDrawPoint(dpy, *dd, gc, 
 	    (int) rint(x)+1,
 	    height-(int) rint(y));
-	XDrawPoint(dpy, win, gc, 
+	XDrawPoint(dpy, *dd, gc, 
 	    (int) rint(x),
 	    height-(int) rint(y)+1);
     }
@@ -477,7 +480,7 @@ void xwin_draw_line(x1, y1, x2, y2)
 double x1,y1,x2,y2;
 {
     if (displayon) {
-	XDrawLine(dpy, win, gc, 
+	XDrawLine(dpy, *dd, gc, 
 	    (int) rint(x1),
 	    height-(int) rint(y1),
 	    (int) rint(x2),
@@ -583,4 +586,148 @@ void debug(char *s, int dbug)
     if (dbug) {
 	fprintf(stderr,"%s\n",s);
     }
+}
+
+
+/* given a shiftmask, return how many bits to shift */
+/* it into position... look at most max bits */
+
+int shift_from_mask(int mask, int max) {
+
+    int bit, tmp, shift;
+
+    tmp = mask;
+    bit = tmp & 1;
+    shift=0;
+    while(bit != 1 && shift<max) {
+       tmp = tmp>>1;	/* shift down to 1 */
+       bit = tmp & 1;
+       shift++;
+    }
+    bit = tmp & 128;
+    while(bit != 128 && shift>1) {
+       tmp = tmp<<1;	/* shift up to 128 */
+       bit = tmp & 128;
+       shift--;
+    }
+    return (shift);
+}
+
+int xwin_dump_graphics(char *cmd) 
+{
+    XImage *xi;
+    int x, y;
+    unsigned long pixel;
+    char buf[256];
+    int R,G,B;
+    FILE *fd;
+    int i;
+    int debug=1;
+    int rshift, gshift, bshift;
+    int err=0;
+    int status;
+    Visual *default_visual;
+
+    Pixmap pixmap;
+    pixmap = XCreatePixmap(dpy, RootWindow(dpy,screen_num), width, 
+    	height, DefaultDepth(dpy, DefaultScreen(dpy)));
+    dd=&pixmap;
+    render();
+    xi = XGetImage(dpy, pixmap, 0,0, width, height, AllPlanes, ZPixmap);
+
+    // an X11 bug!  XGetImage(pixmap) does not set masks 
+    // so we get the masks from default_visual
+    // Thanks to :http://www.gnu-darwin.org/www001/ports-1.5a-CURRENT/
+    // x11-wm/windowmaker/work/WindowMaker-0.92.0/wrlib/xpixmap.c
+    // for this observation!
+
+    default_visual = DefaultVisual(dpy, screen_num);
+    xi->red_mask=default_visual->red_mask;
+    xi->green_mask=default_visual->green_mask;
+    xi->blue_mask=default_visual->blue_mask;
+
+    dd=&win;
+    XFreePixmap(dpy, pixmap);
+
+    // xi = XGetImage(dpy, win, 0,0, width, height, AllPlanes, ZPixmap);
+
+    if (debug) {
+	printf("width  = %d\n", xi->width );
+	printf("height = %d\n", xi->height);
+
+	if (xi->byte_order == LSBFirst) {
+	    printf("byte_order = LSBFirst\n");
+	} else if (xi->byte_order == MSBFirst) {
+	    printf("byte_order = MSBFirst\n");
+	} else {
+	    printf("unknown byte_order: %d\n", xi->byte_order);
+	}
+
+	printf("bitmap unit=%d\n", xi->bitmap_unit);
+
+	if (xi->bitmap_bit_order == LSBFirst) {
+	    printf("bitmap_bit_order = LSBFirst\n");
+	} else if (xi->byte_order == MSBFirst) {
+	    printf("bitmap_bit_order = MSBFirst\n");
+	} else {
+	    printf("unknown bitmap_bit_order: %d\n", xi->bitmap_bit_order);
+	}
+
+	printf("bitmap pad = %d\n", xi->bitmap_pad);
+	printf("depth = %d\n", xi->depth);
+	printf("bytes_per_line = %d\n", xi->bytes_per_line);
+	printf("bit_per_pixel = %d\n", xi->bits_per_pixel);
+	printf("red mask= %08lx\n", xi->red_mask);
+	printf("green mask= %08lx\n", xi->green_mask);
+	printf("blue mask= %08lx\n",  xi->blue_mask);
+    }
+
+    /* compute bit shift values */
+
+    rshift=shift_from_mask(xi->red_mask, 8*xi->bitmap_unit);
+    gshift=shift_from_mask(xi->green_mask, 8*xi->bitmap_unit);
+    bshift=shift_from_mask(xi->blue_mask, 8*xi->bitmap_unit);
+    // printf("rs: %d, gs: %d, bs: %d\n",rshift, gshift, bshift);
+
+    if ((fd = popen(cmd, "w")) == 0 ) {
+    	printf("can't open dump pipeline: %s\n", cmd);
+	return(0);
+    }
+
+    fflush(stdout);
+
+    sprintf(buf, "P6\n%d\n%d\n%d\n", xi->width, xi->height, 255);
+    fwrite(buf, 1, strlen(buf), fd);
+
+    i=0;
+    for (y=0; y<xi->height; y++) {
+	for (x=0; x<xi->width && (waitpid(-1, &status, WNOHANG) != -1); x++) {
+	   if (++i==10000) {
+	       i=0;
+	       printf(".");
+	       fflush(stdout);
+	   }
+	   pixel = XGetPixel(xi, x, y);	
+
+	   R=pixel & xi->red_mask;
+	   R = R>>rshift;
+	   buf[0] = (unsigned char) R;
+
+	   G=pixel & xi->green_mask;
+	   G = G>>gshift;
+	   buf[1] = (unsigned char) G;
+
+	   B=pixel & xi->blue_mask;
+	   B = B>>bshift;
+	   buf[2] = (unsigned char) B;
+
+	   err=fwrite(buf, 3, 1, fd);
+	}
+    }
+    printf("done \n");
+    fflush(stdout);
+
+    return(pclose(fd));
+    XDestroyImage(xi);
+    return(1);
 }

@@ -39,6 +39,7 @@ char **argv;
     double x,y;
     char s[BUF_SIZE];
     char scratch[BUF_SIZE];
+    char scratch2[BUF_SIZE];
     char *sp;
     int line=0;
     progname = argv[0];
@@ -255,6 +256,13 @@ char **argv;
 	       } else if (sp[0] == 'w') {
 	          gridstate(1);
 		  setcharsize(1.0);
+	       }
+	   } else if (strncmp(sp,"graph",5)==0) {
+	       if (sscanf(sp,"graph %s", scratch) == 1) {
+		   sprintf(scratch2, "pnmtopng > %s.png", scratch);
+		   xwin_dump_graphics(scratch2);
+	       } else {
+		   xwin_dump_graphics("pnmtopng > pddump.png");
 	       }
 	   } else if (strncmp(sp,"exit",4)==0) {
 	       exit(2);

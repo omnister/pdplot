@@ -746,6 +746,8 @@ void render() 	// this is where the image gets drawn
       // data if either xset or yset is used.  Otherwise,
       // just use the data bounds...
 
+      // printf("graph %d: setting clip ymin/max = %g %g\n", numplots-i, ymin, ymax); // RCW
+
       for (p=pd->data; p!=(DATUM *)0; p=p->next) {
 	  clip_set(xmin, xmax, ymin, ymax);
 	  if (p->cmd == NULL) {
@@ -769,6 +771,15 @@ void render() 	// this is where the image gets drawn
        pd->xmax = pd->bbxmax;
        pd->ymin = pd->bbymin;
        pd->ymax = pd->bbymax;
+
+      if (plots[0].xsetmin != plots[0].xsetmax) {	// xset was used	
+         pd->xmin = plots[0].xsetmin;
+	 pd->xmax = plots[0].xsetmax;
+      }
+      if (pd->ysetmin != pd->ysetmax) {			// yset was used
+         pd->ymin = pd->ysetmin;
+	 ymax = pd->ysetmax;
+      }
 
 	double a,b;
 	if (xtolerance>=0.0) {
@@ -798,6 +809,8 @@ void render() 	// this is where the image gets drawn
       pd = &(plots[numplots-i]); 		// compute bounding box for each graph 
       div=5.0*(numplots+1.0)+(numplots);	// number of vertical divisions
       del=(ury-lly)/div;
+
+      // printf("graph %d: ymin/max = %g %g\n", numplots-i, pd->ymin, pd->ymax); // RCW
 
       pd->llx = llx;
       pd->lly = (lly+6.0*del*(double)i);
@@ -843,9 +856,9 @@ void render() 	// this is where the image gets drawn
       }
 
       back(0);		// defaults on a per graph basis...		
-      jump();	
       pen(2);		// select red pen
       symbol(1);	// select first symbol
+      line(1);
       autopenflag=1;
       autosymflag=1;
       // gridpenx=1;
@@ -858,6 +871,7 @@ void render() 	// this is where the image gets drawn
 	   symbolmode=0;
 	   autolineflag=0;
       }
+      jump();
 
       for (p=pd->data; p!=(DATUM *)0; p=p->next) {
 	 // clip_set(pd->llx, pd->urx, pd->lly, pd->ury);
@@ -1109,7 +1123,7 @@ void draw(PLOTDAT *pd, double x, double y) {
     double xs, ys;	// screen coords
     xs =(pd->urx-pd->llx)*(x-xmin)/(xmax-xmin)+pd->llx;
     ys =(pd->ury-pd->lly)*(y-pd->ymin)/(pd->ymax-pd->ymin)+pd->lly; 
-    if (!backstat && nsegs > 1 && x<xold) {
+    if (!backstat && (nsegs > 1) && x<xold) {
        nsegs=0;
        if (autopenflag)	 pen(++pennum);
        if (autolineflag) line(++linenum);

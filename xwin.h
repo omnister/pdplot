@@ -1,6 +1,4 @@
 
-#define TICKSIZE 0.005  /* fraction of xsize+ysize for default ticks */
-
 void initX(void);
 int procXevent(char *s, int n); 
 void xwin_draw_line(double x1, double y1, double x2, double y2);
@@ -11,6 +9,7 @@ void xwin_size(double *x, double *y);
 void xwin_top();
 void xwin_annotate(char *buf);
 void xwin_display(int mode);
+int xwin_dump_graphics(char *command);
 
 extern char *progname;
 extern int need_redraw;		// setting TRUE causes redraw
