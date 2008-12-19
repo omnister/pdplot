@@ -264,6 +264,13 @@ char **argv;
 	       } else {
 		   xwin_dump_graphics("pnmtopng > pddump.png");
 	       }
+	   } else if (strncmp(sp,"post",4)==0) {
+	       if (sscanf(sp,"post %s", scratch) == 1) {
+		   sprintf(scratch2, "cat > %s.ps", scratch);
+		   xwin_dump_postscript(scratch2);
+	       } else {
+		   xwin_dump_postscript("cat > pddump.ps");
+	       }
 	   } else if (strncmp(sp,"exit",4)==0) {
 	       exit(2);
 	   } else {

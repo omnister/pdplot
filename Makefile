@@ -1,12 +1,12 @@
-OBJS=main.o points.o readfont.o xwin.o label.o clip.o symbol.o
+OBJS=main.o points.o readfont.o xwin.o label.o clip.o symbol.o postscript.o
 
 FONTS=SYMBOL.F NOTEDATA.F
 
 TARS=main.c points.c readfont.c xwin.c label.c clip.c points.h symbol.c symbol.h \
-xwin.h readfont.h eventnames.h ${FONTS} pd
+xwin.h readfont.h eventnames.h postscript.c postscript.h ${FONTS} pd
 
-#CC=cc -ggdb -Wall
-CC=cc -pg -Wall
+CC=cc -ggdb -Wall
+#CC=cc -pg -Wall
 
 BINDIR = /usr/local/bin
 LIBDIR = /usr/local/lib/pdplot
@@ -71,9 +71,15 @@ points.o: readfont.h
 points.o: symbol.h
 points.o: xwin.h
 postscript.o: postscript.h
+pwin.o: eventnames.h
+pwin.o: points.h
+pwin.o: xwin.h
 readfont.o: points.h
 readfont.o: readfont.h
 symbol.o: symbol.h
 xwin.o: eventnames.h
+xwinold.o: eventnames.h
+xwinold.o: points.h
+xwinold.o: xwin.h
 xwin.o: points.h
 xwin.o: xwin.h

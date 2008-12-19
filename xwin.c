@@ -11,6 +11,7 @@
 #include "eventnames.h"
 #include "xwin.h"
 #include "points.h"
+#include "postscript.h"
 
 void load_font(XFontStruct **font_info);
 void debug(char *s, int dbug);
@@ -460,33 +461,47 @@ XFontStruct **font_info;
 
 void xwin_draw_point(double x, double y)
 {
-    if (displayon) {
-	XDrawPoint(dpy, *dd, gc, 
-	    (int) rint(x),
-	    height-(int) rint(y));
-	XDrawPoint(dpy, *dd, gc, 
-	    (int) rint(x)+1,
-	    height-(int) rint(y)+1);
-	XDrawPoint(dpy, *dd, gc, 
-	    (int) rint(x)+1,
-	    height-(int) rint(y));
-	XDrawPoint(dpy, *dd, gc, 
-	    (int) rint(x),
-	    height-(int) rint(y)+1);
+    if (dd!=NULL) {
+    	if (displayon) {
+	    XDrawPoint(dpy, *dd, gc, 
+		(int) rint(x),
+		height-(int) rint(y));
+	    XDrawPoint(dpy, *dd, gc, 
+		(int) rint(x)+1,
+		height-(int) rint(y)+1);
+	    XDrawPoint(dpy, *dd, gc, 
+		(int) rint(x)+1,
+		height-(int) rint(y));
+	    XDrawPoint(dpy, *dd, gc, 
+		(int) rint(x),
+		height-(int) rint(y)+1);
+	}
+    } else {	// postscript mode
+        ps_start_line(x, y);
+        ps_continue_line(x+1.0, y);
+        ps_continue_line(x+1.0, y);
+        ps_continue_line(x, 1.0+y);
+        ps_continue_line(x, y);
     }
 }
 
 void xwin_draw_line(x1, y1, x2, y2)
 double x1,y1,x2,y2;
 {
-    if (displayon) {
-	XDrawLine(dpy, *dd, gc, 
-	    (int) rint(x1),
-	    height-(int) rint(y1),
-	    (int) rint(x2),
-	    height-(int) rint(y2));
+    if (dd!=NULL) {
+	if (displayon) {
+	    XDrawLine(dpy, *dd, gc, 
+		(int) rint(x1),
+		height-(int) rint(y1),
+		(int) rint(x2),
+		height-(int) rint(y2));
+	}
+    } else {	// postscript mode
+	ps_start_line(x1,y1);
+	ps_continue_line(x2,y2);
     }
 }
+
 
 void xwin_set_pen_line(int pen, int line) 
 {
@@ -500,63 +515,68 @@ void xwin_set_pen_line(int pen, int line)
      * sending messages to server.  Currently this is enforced because
      */
 
-    static int oldpen=(-9999); /* optimize out unnecessary Xserver calls */
-    static int oldlinetype=(-9999);
+    if (dd!=NULL) {
 
-    pen = abs(pen)%MAX_COLORS;
+	static int oldpen=(-9999); /* optimize out unnecessary Xserver calls */
+	static int oldlinetype=(-9999);
 
-    if (pen != oldpen) {
-	XSetForeground(dpy, gc, colors[pen]);	/* for lines */
+	pen = abs(pen)%MAX_COLORS;
+
+	if (pen != oldpen) {
+	    XSetForeground(dpy, gc, colors[pen]);	/* for lines */
+	}
+
+	if (line == oldlinetype) return;
+	line = abs(line)%MAX_LINETYPE;
+
+	/* there are two switches here because even if you XSetDashes(),
+	 * the drawn line will still be solid *unless* you also change
+	 * the line style to LineOnOffDash or LineDoubleDash.  So we set
+	 * line zero to be LineSolid and all the rest to LineOnOffDash
+	 * and then the XSetDashes will take effect.  (45 minutes to debug!)
+	 * - with much appreciation to Ken Poulton for an example of this in 
+	 * autoplot(1) code.
+	 */
+
+	switch (line) {
+	   case 0:     line_style = LineSolid;     break;	/* solid */
+	   case 1:     line_style = LineSolid;     break;	/* solid */
+	   case 2:     line_style = LineOnOffDash; break;	/* dotted */
+	   case 3:     line_style = LineOnOffDash; break;   /* broken */
+	   case 4:     line_style = LineOnOffDash; break;   /* dot center */
+	   case 5:     line_style = LineOnOffDash; break;   /* dash center */
+	   case 6:     line_style = LineOnOffDash; break;   /* long dash */
+	   case 7:     line_style = LineOnOffDash; break;   /* long dotted */
+	   default:
+	       printf("line type %d out of range\n", line);
+	}        
+	
+	switch (line) {
+	   case 0:				
+	   case 1:				
+	   case 2:     dash_list[0]=7; dash_list[1]=5; dash_n=2; break;
+
+	   case 3:     dash_list[0]=2; dash_list[1]=2; dash_n=2; break;
+
+	   case 4:     dash_list[0]=7; dash_list[1]=2;
+		       dash_list[2]=3; dash_list[3]=2; dash_n=4; break;
+
+	   case 5:     dash_list[0]=7; dash_list[1]=2;
+		       dash_list[2]=1; dash_list[3]=2; dash_n=4; break;
+
+
+	   case 6:     dash_list[0]=9; dash_list[1]=5; dash_n=2; break;
+
+	   case 7:     dash_list[0]=4; dash_list[1]=4; dash_n=2; break;
+	}
+
+	dash_offset=0;
+	XSetLineAttributes(dpy, gc, 0, line_style, CapButt, JoinRound); 
+	XSetDashes(dpy, gc, dash_offset, dash_list, dash_n);
+    } else {
+	ps_set_pen(pen);
+	ps_set_line(line);
     }
-
-    if (line == oldlinetype) return;
-    line = abs(line)%MAX_LINETYPE;
-
-    /* there are two switches here because even if you XSetDashes(),
-     * the drawn line will still be solid *unless* you also change
-     * the line style to LineOnOffDash or LineDoubleDash.  So we set
-     * line zero to be LineSolid and all the rest to LineOnOffDash
-     * and then the XSetDashes will take effect.  (45 minutes to debug!)
-     * - with much appreciation to Ken Poulton for an example of this in 
-     * autoplot(1) code.
-     */
-
-    switch (line) {
-       case 0:     line_style = LineSolid;     break;	/* solid */
-       case 1:     line_style = LineSolid;     break;	/* solid */
-       case 2:     line_style = LineOnOffDash; break;	/* dotted */
-       case 3:     line_style = LineOnOffDash; break;   /* broken */
-       case 4:     line_style = LineOnOffDash; break;   /* dot center */
-       case 5:     line_style = LineOnOffDash; break;   /* dash center */
-       case 6:     line_style = LineOnOffDash; break;   /* long dash */
-       case 7:     line_style = LineOnOffDash; break;   /* long dotted */
-       default:
-	   printf("line type %d out of range\n", line);
-    }        
-    
-    switch (line) {
-       case 0:				
-       case 1:				
-       case 2:     dash_list[0]=7; dash_list[1]=5; dash_n=2; break;
-
-       case 3:     dash_list[0]=2; dash_list[1]=2; dash_n=2; break;
-
-       case 4:     dash_list[0]=7; dash_list[1]=2;
-                   dash_list[2]=3; dash_list[3]=2; dash_n=4; break;
-
-       case 5:     dash_list[0]=7; dash_list[1]=2;
-                   dash_list[2]=1; dash_list[3]=2; dash_n=4; break;
-
-
-       case 6:     dash_list[0]=9; dash_list[1]=5; dash_n=2; break;
-
-       case 7:     dash_list[0]=4; dash_list[1]=4; dash_n=2; break;
-    }
-
-    dash_offset=0;
-    XSetLineAttributes(dpy, gc, 0, line_style, CapButt, JoinRound); 
-    XSetDashes(dpy, gc, dash_offset, dash_list, dash_n);
-
 }
 
 void xwin_draw_box(double x1, double y1, double x2, double y2)
@@ -622,7 +642,7 @@ int xwin_dump_graphics(char *cmd)
     int R,G,B;
     FILE *fd;
     int i;
-    int debug=1;
+    int debug=0;
     int rshift, gshift, bshift;
     int err=0;
     int status;
@@ -730,4 +750,22 @@ int xwin_dump_graphics(char *cmd)
     return(pclose(fd));
     XDestroyImage(xi);
     return(1);
+}
+
+void xwin_dump_postscript(char *cmd) 
+{
+
+    extern FILE *fp;
+    if ((fp = popen(cmd, "w")) == 0 ) {
+    	printf("can't open dump pipeline: %s\n", cmd);
+	return(0);
+    }
+
+    ps_preamble(fp, "title", "Pdplot", 8.5, 11.0, 0, 0, width, height);
+
+    dd=NULL;
+    render();
+    dd=&win;
+
+    ps_postamble(fp);
 }
