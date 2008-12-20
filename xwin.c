@@ -461,8 +461,8 @@ XFontStruct **font_info;
 
 void xwin_draw_point(double x, double y)
 {
-    if (dd!=NULL) {
-    	if (displayon) {
+    if (displayon) {
+	if (dd!=NULL) {
 	    XDrawPoint(dpy, *dd, gc, 
 		(int) rint(x),
 		height-(int) rint(y));
@@ -475,30 +475,36 @@ void xwin_draw_point(double x, double y)
 	    XDrawPoint(dpy, *dd, gc, 
 		(int) rint(x),
 		height-(int) rint(y)+1);
+	} else {	// postscript mode
+	    ps_start_line(x, y);
+	    ps_continue_line(x+1.0, y);
+	    ps_continue_line(x+1.0, y);
+	    ps_continue_line(x, 1.0+y);
+	    ps_continue_line(x, y);
 	}
-    } else {	// postscript mode
-        ps_start_line(x, y);
-        ps_continue_line(x+1.0, y);
-        ps_continue_line(x+1.0, y);
-        ps_continue_line(x, 1.0+y);
-        ps_continue_line(x, y);
     }
 }
 
 void xwin_draw_line(x1, y1, x2, y2)
 double x1,y1,x2,y2;
 {
-    if (dd!=NULL) {
-	if (displayon) {
+    double xold, yold;
+    if (displayon) {
+	if (dd!=NULL) {
 	    XDrawLine(dpy, *dd, gc, 
 		(int) rint(x1),
 		height-(int) rint(y1),
 		(int) rint(x2),
 		height-(int) rint(y2));
+	} else {	// postscript mode
+	    if (x1==xold && y1==yold) {
+		ps_continue_line(x2,y2);
+	    } else {
+		ps_start_line(x1,y1);
+		ps_continue_line(x2,y2);
+	    }
+	    xold=x2; yold=y2;
 	}
-    } else {	// postscript mode
-	ps_start_line(x1,y1);
-	ps_continue_line(x2,y2);
     }
 }
 
@@ -752,7 +758,7 @@ int xwin_dump_graphics(char *cmd)
     return(1);
 }
 
-void xwin_dump_postscript(char *cmd) 
+int xwin_dump_postscript(char *cmd) 
 {
 
     extern FILE *fp;
@@ -768,4 +774,5 @@ void xwin_dump_postscript(char *cmd)
     dd=&win;
 
     ps_postamble(fp);
+    return(1);
 }

@@ -152,43 +152,73 @@ void labelrotation(double angle) {
    labelangle=angle;
 }
 
-void button(double x, double y, int buttonno, int state) {
+// buttons are 1,2,3 left->right
+// button 4 is scroll forward, button 5 backward
+
+void button(double x, double y, int buttonno, int pressdown) {
     int i;
     PLOTDAT *pd;
     int debug=0;
-    static double x1,y1,x2,y2;
-    static int npts=0;
+    static double x1,y1,x2,y2,x3,y3;
+    static int npts1=0;		// FIXME, need a way to reset state when plotting second graph
+    static int npts3=0;
     char buf[256];
-    if (state) {
+    if (pressdown) {	// 1=button_down, 0_button_up
 	for (i=0; i<=numplots; i++) {
 	  pd = &(plots[numplots-i]); 		// compute bounding box for each graph 
 	  if (debug) printf("==============================\n");
+	  if (debug) printf("button #%d\n", buttonno);
 	  if (debug) printf("ll=%g %g ur=%g %g\n", pd->llx, pd->lly, pd->urx, pd->ury);
 	  if (debug) printf("min=%g %g max=%g %g\n", pd->xmin, pd->ymin, pd->xmax, pd->ymax);
 	  if (x >= pd->llx && x <= pd->urx && y >= pd->lly && y <= pd->ury) {
 	       x1= pd->xmin+(pd->xmax-pd->xmin)*(x-pd->llx)/(pd->urx-pd->llx);
 	       y1= pd->ymin+(pd->ymax-pd->ymin)*(pd->ury-y)/(pd->ury-pd->lly);
-	       if ((x2-x1) == 0.0  && (y2-y1) == 0.0) npts=0;
-	       if (npts++ < 1) {
-		  sprintf(buf,"x=%.3g y=%.3g", x1, y1);
-	       } else {
-		  if ((x1-x2) == 0) {
-		      sprintf(buf,"x=%.3g y=%.3g dx=%.3g dy=%.3g", x1, y1, x1-x2, y1-y2);
-		  } else {
-		      sprintf(buf,"x=%.3g y=%.3g dx=%.3g dy=%.3g 1/dx = %.3g dy/dx = %.3g",
-		      	x1, y1, x1-x2, y1-y2,1.0/(x1-x2), (y1-y2)/(x1-x2));
+	       if (buttonno == 1) {
+		   if ((x2-x1) == 0.0  && (y2-y1) == 0.0) npts1=0;
+		   if (npts1++ < 1) {
+		      sprintf(buf,"x=%.3g y=%.3g", x1, y1);
+		   } else {
+		      if ((x1-x2) == 0) {
+			  sprintf(buf,"x=%.3g y=%.3g dx=%.3g dy=%.3g", x1, y1, x1-x2, y1-y2);
+		      } else {
+			  sprintf(buf,"x=%.3g y=%.3g dx=%.3g dy=%.3g 1/dx = %.3g dy/dx = %.3g",
+			    x1, y1, x1-x2, y1-y2,1.0/(x1-x2), (y1-y2)/(x1-x2));
+		      }
+		   }
+		   xwin_set_pen_line(1,1);
+		   xwin_annotate(buf);
+		   if (debug) printf("plot %d: (%g,%g)->(%g,%g) %d %d\n", i,
+			x, y, x1, y1,
+			buttonno, pressdown);
+		   x2=x1; y2=y1;
+		   return;
+	      } else if (buttonno == 3) {
+		  if ((fabs(x3-x1) < fabs(pd->xmax-pd->xmin)/100.0) && 
+		  	(fabs(y3-y1) < fabs(pd->ymax-pd->ymin)/100.0)) {
+		      xset(0.0,0.0);	// zoom out
+		      yset(0.0,0.0);
+		      need_redraw++;
+		      npts3=0;
+		  } else if (++npts3 ==2) {
+		      if (x3<x1) xset(x3,x1);	// zoom in
+		      if (x1<x3) xset(x1,x3);
+		      if (y3<y1) yset(y3,y1);	// zoom in
+		      if (y1<y3) yset(y1,y3);
+		      need_redraw++;
+		      npts3=0;
 		  }
-	       }
-	       xwin_set_pen_line(1,1);
-	       xwin_annotate(buf);
-	       x2=x1; y2=y1;
-	       if (debug) printf("plot %d: (%g,%g)->(%g,%g) %d %d\n", i,
-		    x, y, x1, y1,
-		    buttonno, state);
-	       return;
-	  }
+		  x3=x1; y3=y1;
+		  need_redraw++;
+	          return;
+	      }
+	   }
 	}
-	if (debug) printf("In plot frame: %g %g %d %d\n",  x, y, buttonno, state);
+	if (debug) printf("In plot frame: %g %g %d %d\n",  x, y, buttonno, pressdown);
+	if (buttonno == 3) {
+	    xset(0.0,0.0);	// zoom out
+	    yset(0.0,0.0);
+	    need_redraw++;
+        }
     }
 }
 
