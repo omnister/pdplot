@@ -1,0 +1,627 @@
+.TH PDPLOT 1:LOCAL
+.ad b
+.SH NAME
+pdplot \- plot ascii data to an X window 
+.SH SYNOPSIS
+.B Pdplot 
+.br
+.B pd 
+[-n] [-k] [-g <pngfile>] [-p<psfile>] [-r] [file1 file2...]
+.br
+.SH DESCRIPTION
+.B Pdplot
+reads ascii x-y pairs and commands from standard input 
+to create a formatted plot of the data in an X11 window.
+The input lines should consist of either an x-y pair or a
+formatting command, one per line.
+Blank lines and lines starting with "#" are ignored.
+.PP
+The easiest way to invoke
+.B Pdplot\^
+under X11 is with the
+.B pd(1)\^
+script, which will handle creation of pipes and put 
+.I Pdplot
+into the
+background so the display will not be erased when the data ends.
+Additional plots can be made to the same graphics window with later
+calls to
+.B pd(1)\^.
+.PP
+.B pd(1) 
+accepts input from either a list of files from the command line, or from stdin
+(similiar to cat(1)).  With no options 
+.I pd
+will start a 
+.I pdplot
+daemon if none already exists, clear the window and plot the data.
+.SH OPTIONS
+.TP
+.B "\-n"
+Do not clear the plot window before plotting new data.  New data will be merged
+with the old dataset and the data will be rescaled if necessary.
+.TP
+.B "\-g <file>"
+Write a bitdump of the existing window to <file>.png.  This function
+requires the program pnmtopng(1) (from the Netpbm package) to be present
+in the search path.  This is equivalent to giving the 
+.B graph <file>
+formatting command in the plot data file.
+.TP
+.B "\-p <file>"
+Write a postscript dump of the existing window to <file>.ps.   This is equivalent
+to putting a 
+.B post <file>
+formatting command in the input data file.
+.TP
+.B "\-k"
+Kill any existing 
+.I 
+pdplot daemon and close the graphics window.
+.TP
+.B "\-r"
+Force a refresh of the screen.
+.SH GENERAL USAGE
+.PP
+After the X11 window is created, it can be resized and zoomed in several
+ways.  The normal X11 resize by stretching the frame or menu selection leaves
+the plotted value range unchanged.  Clicking the right mouse button at
+two locations will zoom in to that range.  If the clicks are outside
+the frame of the plot, the plot will be zoomed out.  Double clicking at the 
+same x-y location will cause the data to be rescaled so that it is all
+within the frame (auto unzoom).
+.PP
+If the keyword
+.B plot
+appears on the input, the data so far will be plotted.  If the keyword
+.B clear
+appears, the window will be cleared, ready for another set of data.
+These two commands are used by 
+.I pd
+to allow reuse of the same graphics window for additional plots or to
+add data.
+.PP
+.SH "FORMATTING COMMANDS"
+The following formatting commands are available.
+Most of them should appear before any data.
+Some of them, such as the
+.B pen
+command, may appear among the data.
+.PP
+Formatting commands and datapoints may be placed one per line.
+.TP
+.B style {working|presentation}
+This sets one of several basic modes.  The default is 
+.B working,
+which uses a large drawing area, small default character size
+and defaults to using a grid.
+The alternative is 
+.B presentation,
+which is intended to provide legible slides or viewgraphs.
+This uses larger characters and a somewhat smaller data region,
+and turns off the grid.
+The 
+.B style
+command overrides earlier 
+.B lowerleft, charsize
+and
+.B grid
+commands.
+Only the first character of the argument (
+.B w,
+or
+.B p
+)
+is needed.
+.TP
+.B title \fItop_label
+.I top_label
+must be fewer than 150 characters.
+Up to two lines of title may be specified.
+Titles too long to fit at the default (or specified) character
+size will be drawn smaller so as to fit.
+Some special characters are available (see below).
+.TP
+.B xscale \fI[value] [axis_label]
+.PD 0
+.PD 0
+.TP
+.B yscale \fI[value] [axis_label]
+.PD 0
+.PD 1
+The program divides the corresponding inputs by
+.I value
+and labels the corresponding axis with
+.I axis_label.
+The scale value is applied when it is read.  Points that
+are read prior to the x/y scale command will not be scaled.
+Either the value or the label may be omitted
+but at least one must appear on the command line.
+For example, if the x data are values around
+a few nanoseconds, you might use:
+
+	xscale 1e-9 TIME (ns)
+
+The label must have fewer than 150 characters.
+.TP
+.B nextygraph [graph_number]
+.PD 1
+.I Pdplot
+can stack up to 10 graphs on one plot.  All graphs share
+a common X axis, and the Y axes are independently scaled, labelled, etc.
+The 
+.B nextygraph
+command directs 
+.I Pdplot
+to add another graph and subsequent
+data,
+.B label
+and 
+.B yscale
+commands will be placed in that graph.
+.TP
+.B noisotropic
+.PD 0
+.TP
+.B isotropic \fI[aspect]
+.PD 1
+By default, 
+.I Pdplot
+scales the X and Y directions independently
+to fill the page.
+If
+.B isotropic
+is given, 
+.I Pdplot
+will force the scales to be the same in X and Y by reducing 
+the size of the plot frame in one directions.
+If an aspect ratio is given, then a square will be drawn
+.I aspect
+times higher than it is wide.
+.TP
+.B label \fIx y label_string
+.PD 0
+.TP
+.B label \fIx\fB%\fI y\fB%\fI label_string
+.I X
+and
+.I y
+values are given in scaled units.
+In the case of
+.B dbx
+and
+.B dby\fR,
+the values should be in dB.
+The
+.I label_string
+may contain any of the special characters mentioned below.
+The label may be placed outside of the normal plotting area.
+The size of the label may be changed with a
+.B labelsize
+command.
+The orienttion of the label may be changed with a
+.B labeldir
+command.
+In the second case above, the label placement may be specified
+as X and Y percentages relative to the graphing region.
+When combined with data lines using 
+.B %,
+this provides an easy way to draw legends, etc.
+.TP
+.B labeldir \fIdirection
+This defines the orientation of the labels.
+The default 
+.I direction
+is 0 degrees (horizontal).
+.TP
+.B xset \fIxmin xmax
+.PD 0
+.TP
+.B yset \fIymin ymax
+.PD 1
+This command allows the user to specify the range of the 
+plot independent of the data.
+Both the minimum and the maximum must be specified with
+each command, or automatic scaling is enabled.
+If only one of the two axes is specified,
+automatic scaling of the other axis will
+only consider data points that are within the specified range on the first
+axis.
+.B maxxdiv \fIn
+.PD 0
+.TP
+.B maxydiv \fIn
+.PD 1
+.I N
+is the maximum number of divisions along the axis.
+The default is 7.
+For example, if the data ranged from 0 to 100,
+the scale would normally be 5 divisions of
+20, but if max?div were set to 10, there would be 10
+divisions of 10.
+The range of n is limited between 2 and 50.
+The unit division is from the set 1, 2, 2.5, 5, possibly multiplied by a
+power of 10.
+Each tick will land on an integer multiple of the unit division.
+.TP
+.B  charsize \f2size
+.PD 0
+.TP
+.B scalesize \f2size
+.PD 0
+.TP
+.B tagsize \f2size
+.PD 0
+.TP
+.B titlesize \f2size
+.PD 0
+.TP
+.B labelsize \f2size
+.PD 1
+Characters are usually proportional to the sum of the
+lengths of the axes.
+.I Size
+is a value between .1 and 10 which multiplies
+the default size of the characters.
+.B Charsize
+changes the size of all the text, and each of the other commands changes the
+corresponding kind of text.
+.B Tagsize
+scales the numeric labels at the grid divisions.
+.B Scalesize
+scales the axis label specified by
+.B xscale
+or
+.B yscale.
+.TP
+.B xgrid \fI[xgridline] \fR(vertical grid)
+.PD 0
+.TP
+.B ygrid  \fI[ygridline] \fR(horizontal grid)
+.PD 0
+.TP
+.B grid \fI[gridline] \fR(full grid)
+.PD 0
+.TP
+.B nogrid \fR(default)
+.PD 1
+These commands draw a grid for the plot.
+A line type between 1 and 5 may be specified (see
+.B line
+below).
+.TP
+.B xgridpen \fIxgridpen \fR(vertical grid)
+.PD 0
+.TP
+.B ygridpen \fIygridpen \fR(horizontal grid)
+.PD 0
+.TP
+.B gridpen \fIgridpen
+.PD 0
+.TP
+.B framepen \fIframepen
+.PD 1
+Select a pen other than pen 1 for grid lines or the frame.
+The frame includes the axes, tags, scale labels, and titles.
+This is most useful on a pen plotter where a thinner pen is to be used for
+the grid than for the frame.
+.TP
+.B noback \fR(default)
+.PD 0
+.TP
+.B back 
+.PD 1
+If noback is set, the pen will lift for negative x motion
+so that one datafile can have multiple curves.
+If the back command is given, the pen will stay
+down during negative x motion.
+This command may be among the data pairs.
+.TP
+.B line \fIn
+.I N
+is an integer between zero and five which specifies the
+type of line to draw.
+.RS 5
+.na
+.nf
+0  dots only at the data points
+1  solid line (default)
+2  dashed line
+3  dotted line
+4  dash dot line
+5  long dash short dash
+.RE
+.fi
+.ad
+.PD 1
+.PP
+Line type 0 uses a square dot that is one device unit on a side.
+This will usually plot as four pixels on graphics terminals.
+.TP
+.B autoline
+.PD 0
+.TP
+.B noautoline \fR(default)
+.PD 1
+If noback is set, the linetype for each new trace is
+cycled through linetypes 1-5.
+On monochrome displays, the default is 
+.B autoline.
+.TP
+.B pen \fI[n]
+Change to pen
+.I n
+for the following data.
+The number of pens available depends on the plotter.
+In X11 and on the default PAINTXL plotter model, 6 pens are allowed.
+If no
+.I n
+is given, the next pen is selected, going back to pen 1 after the last
+pen.
+If 
+.I n
+is larger than the maximum allowed, pen n-modulo-max_n is used.
+.TP
+.B "logx, logy, loglog, dbx, dby, dbpx, dbpy, linx, liny"
+Use a logarithmic scale for the indicated axis.
+\fBdbx\fP and \fBdby\fP will plot 20*log10 of the variable,
+while \fBdbpx\fP and \fBdbpy\fP will plot 10*log10 of the variable.
+\fBlinx\fP and \fBliny\fP are used to reset the mode if a second set of axes
+is used.
+Any scale factor introduced by an
+.B xscale
+or
+.B yscale
+will still be applied.
+.TP
+.B autopen \f1(default)
+.PD 0
+.TP
+.B noautopen
+.PD 1
+If noback is set, the traces will cycle among
+the available pens.
+.TP
+.B symbol \fI[symbol_number]
+Begin a scatter plot with the indicated symbol.
+Unless
+.B symbol+line
+is active, the normal line will not be drawn.
+If no symbol name is given, the ``next'' symbol will be used.
+.TP
+.B symbol+line
+Turn on both symbols and lines \(em connect the dots.
+.TP
+.B nosymbol
+Turn off symbols, and turn on lines.
+This negates
+.B symbol+line.
+.TP
+.B noline
+Turn off lines, and turn on symbol mode.
+This negates
+.B symbol+line.
+.TP
+.B symbolsize \fIvalue
+Change the size of the symbol, with
+.I value
+being a multiplier on the
+default size, which scales with the perimeter of the plot.
+.TP
+.B autosymbol \f1(default)
+.PD 0
+.TP
+.B noautosymbol 
+.PD 1
+Change the symbol to the ``next'' symbol each time there is negative x
+motion.
+.TP
+.B jump
+The jump command causes a pen lift between the two surrounding
+data points.
+.B ticklength \fI[length]
+Tick marks along the axes are normally scaled with the perimeter
+of the plotting area.
+The
+.I length
+will multiply the normal length of the ticks.
+If no
+.I length
+is specified, ticks are suppressed.
+.TP
+.B scaletol \fI[tolerance] \fR(both axes)
+.PD 0
+.TP
+.B xscaletol \fI[tolerance]
+.PD 0
+.TP
+.B yscaletol \fI[tolerance]
+.PD 1
+When the program selects a scale to fit the data,
+the frame of the plot is normally allowed to be slightly
+smaller than the range of the data.
+For example, if the data range from -.0001 to 100, the range for the
+corresponding scale will be from 0 to 100.
+Scaletol sets the fraction of the data range which can fall outside the 
+scale for the plot.
+Its default value is 0.001.
+If
+.I tolerance
+is not given, it is assumed to be 0, and all of the data points are
+guaranteed to be within the frame.
+Negative values may be specified, which guarantees a clearance between
+the data and the frame of the plot.
+.TP
+.B noframe
+The drawing of the axes will be suppressed.
+Neither the scale labels nor the titles will appear.
+The
+.B label
+command may be used to do annotation.
+.TP
+.B nobox
+The box around the data region will be suppressed.
+Scale labels, grids and titles are not affected.
+.TP
+.B graph <file>
+Write a bitdump of the existing window to <file>.png.  This function
+requires the program pnmtopng(1) (from the Netpbm package) to be present
+in the search path.  The bitmap is dumped at the point that it appears
+in the file, so the command should be placed at the very end of
+the data file.
+.TP
+.B "post <file>"
+Write a postcript dump of the existing window to <file>.ps.  The resulting
+file is in a fairly organized format.  In particular, you may wish to 
+search for the color definitions c1, c2, ... c15 to make modifications.  The
+postscript file is autoscaled and rotated to fit the page as well as possible.
+.SH "SPECIAL CHARACTERS"
+The following special command characters are allowed
+in titles and labels.
+
+.if n .ta 2i
+.if t .ta 1.5i
+.RS 5
+.nf
+.na
+begin subscript	\\[
+end subscript	\\]
+begin superscript	\\{
+end superscript	\\}
+backspace one char	\\<
+forward one char	\\>
+.RE
+.fi
+.ad
+
+The following special characters are allowed
+in titles and labels.
+All of them are taken from the Hershey simplex fonts.
+
+.if n .ta 2i 4i
+.if t .ta 1.5i 3i
+.RS 5
+.nf
+.na
+GAMMA	\(*G	\\G
+DELTA	\(*D	\\D
+THETA	\(*H	\\H
+LAMBDA	\(*L	\\L
+XI	\(*C	\\C
+PI	\(*P	\\P
+SIGMA	\(*S	\\S
+UPSILON	\(*Y	\\Y
+PHI	\(*F	\\F
+CHI	\(*X	\\X
+PSI	\(*Q	\\Q
+OMEGA	\(*W	\\W
+OMEGA	\(*O	\\O
+alpha	\(*a	\\a
+beta	\(*b	\\b
+gamma	\(*g	\\g
+delta	\(*d	\\d
+epsilon	\(*e	\\e
+zeta	\(*z	\\z
+eta	\(*y	\\y
+theta1	\(*@	\\@
+iota	\(*i	\\i
+kappa	\(*k	\\k
+lambda	\(*l	\\l
+mu	\(*m	\\m
+mu	\(*u	\\u
+nu	\(*n	\\n
+xi	\(*c	\\c
+pi	\(*p	\\p
+rho	\(*r	\\r
+sigma	\(*s	\\s
+tau	\(*t	\\t
+phi	\(*f	\\f
+chi	\(*x	\\x
+psi	\(*q	\\q
+omega	\(*w	\\w
+omega	\(*o	\\o
+slash	\\	\\\\
+.RE
+.fi
+.ad
+.SH FILES
+.PP
+.nf
+/usr/local/lib/NOTEDATA.F   ; font definition file
+/usr/local/lib/SYMBOL.F     ; symbol+greek definition file
+.fi
+.SH AUTHOR
+.PP
+Pdplot was written by Rick Walker (walker@omnisterra.com). 
+.PP
+Pdplot is a shameless clone of the Autoplot program originally written by Bob
+Jewett at UC Berkeley with subsequent enhancements at HP and Agilent Laboratories 
+(by Konstantinos Konstantinides and Ken Poulton).  Most input data files written for Autoplot
+will produce useful if not virtually identical plots under Pdplot.  Pdplot is a
+"from scratch" implementation, heavily leveraging code from PdPiglet,
+and is released under the GNU General Public License version 2.
+.SH DIFFERENCES WITH AUTOPLOT
+.PP
+Autoplot is a general pen-plotter driver with an emphasis on HPGL
+output.  Pdplot is primarily an X11 plot program and does not produce
+HPGL but has support for PNG and Postscript output.
+.PP
+Autoplot referenced the entire Hershey font database. Pdplot uses Piglet-style
+font definition files for characters and symbols.
+.PP
+Autoplot cycles through 6 pen colors: 0=Black, 1=White, 2=Red,
+3=Green, 4=Blue, 5=Aqua, 6=Magenta, 7=White, 8=Red...  and so on. 
+Pdplot defines 15 colors: White, 6 basic colors, 6 desaturated colors
+and two shades of grey.  In both systems Black can be explicitly called
+by pen 0, but is not part of the automatic pen cycle. 
+.PP
+In Pdplot, "noframe" followed by "grid" will produce a plot with just
+a grid and no frame or annotations.
+Autoplot's noframe command overrides any further modification of scales or
+grids.  
+.PP
+Pdplot allows the specification of symbols by index number in addition to name.
+.PP
+The
+.B dimgrid, brightgrid
+and the
+.B graph, post
+commands do not exist in autoplot.
+.PP
+Autoplot tops it's graphic window on every expose event causing it to pop up whenever
+an overlaying window is repositioned.  Pdplot only tops itself at a 
+.B plot
+command.
+.PP
+There are minor pen usage differences between the two programs.  While
+plotting in "autopen" and "noback" mode, if a "pen <n>" command is made
+just prior to a negative x-motion in the data, autoplot will honor the
+pen command and use pen <n>, but pdplot will honor the negative
+x-motion, thereby printing the next segment with pen <n+1>.
+.PP
+Pdplot tries hard to show all lines that would be visible inside x or yset ranges.
+Autoplot will sometimes drop lines that have their defining coordinates outside the
+range.
+.PP 
+This version of Pdplot does not implement the following Autoplot commands:
+
+.B topxscale,
+.B rightyscale,
+.B labeloverlab, nolabeloverlab,
+.B labelsinframe, nolabelsinframe,
+.B swallowzero, noswallowzero, xswallowzero, noxswallowzero, yswallowzero, noyswallowzero,
+.B lowerleft,
+.B xsize, ysize,
+.B speed,
+.B rotate,
+.B binary
+
+.SH BUGS
+
+.PP
+Cursor coordinate picking probably doesn't yet work on log scales.  Maxxdiv and Maxydiv
+commands are handled by the code, but not parsed yet.  Multiple commands cannot yet be
+entered by using ";;" delimiters on a givein line.  Log scales only have ticks at decade
+intervals and do not yet use metric prefixes (10k 100k 1M 10M 100M 1G...).  No provision has
+yet been made to handle two title lines.
+

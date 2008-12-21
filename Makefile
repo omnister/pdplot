@@ -3,13 +3,15 @@ OBJS=main.o points.o readfont.o xwin.o label.o clip.o symbol.o postscript.o
 FONTS=SYMBOL.F NOTEDATA.F
 
 TARS=main.c points.c readfont.c xwin.c label.c clip.c points.h symbol.c symbol.h \
-xwin.h readfont.h eventnames.h postscript.c postscript.h ${FONTS} pd
+xwin.h readfont.h eventnames.h postscript.c postscript.h ${FONTS} pd pd.1
 
 CC=cc -ggdb -Wall
 #CC=cc -pg -Wall
 
 BINDIR = /usr/local/bin
 LIBDIR = /usr/local/lib/pdplot
+MANDIR = /usr/local/man/man1
+MANPAGE = pd.1
 
 pdplot: points.h $(OBJS)
 	$(CC) $(OBJS) -o pdplot -L/usr/X11R6/lib -lX11 -lm
@@ -20,13 +22,19 @@ clean:
 install: pd pdplot pd.1 ${FONTS}
 	-/bin/mv -f ${BINDIR}/pd ${BINDIR}/pd.old
 	-/bin/cp pd $(BINDIR)/pd 
+	-/bin/mv -f ${BINDIR}/pdplot ${BINDIR}/pdplot.old
 	-/bin/cp pdplot $(BINDIR)/pdplot
 	if [ ! -d ${LIBDIR} ] ; \
             then mkdir ${LIBDIR} || exit 1 ; \
 	else \
              exit 0 ; \
 	fi
-	-/bin/cp ${FONTS} ${LIBDIR}
+	if [ ! -d ${MANDIR} ] ; \
+            then mkdir ${MANDIR} || exit 1 ; \
+	else \
+             exit 0 ; \
+	fi
+	-/bin/cp ${MANPAGE} ${MANDIR}
 
 
 
