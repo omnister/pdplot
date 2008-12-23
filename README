@@ -1,0 +1,61 @@
+This is the source to Pdplot, an X11 graphing tool for ASCII data
+streams.  Pdplot duplicates the command set of the Agilent/HP graphing
+package Autoplot written by Bob Jewett.  It is written in C and Xlib and
+is released under GPL v2.  The author is Rick Walker
+(walker@omnisterra.com). 
+
+To build Pdplot, do:
+
+    make depend
+    make
+    make install
+
+The binary (pdplot) and launching script (pd) will be put in
+/usr/local/bin/ and the font files with go to /usr/local/lib/pdplot
+
+Pdplot uses a fifo file for input.  The location for the fifo is
+specified in the pd script and defaults to /var/spool/sockets/pdplot/. 
+Pd will attempt to create this directory the first time it runs, but if
+there is a permission problem, you may have to make this directory by
+hand. 
+
+See the pd.1 man page for details (man pd). 
+
+Here's a simple plot to try:
+
+----------- cut here -------------
+title XYZ stock price
+xscale 1 year
+yscale 1 price
+1999 50
+2000 52
+2001 55
+2004 60
+----------- cut here -------------
+
+Save as stock.pd and run "pd stock.pd" or "pd < stock.pd"
+
+Here's a little awk script to plot a sinewave:
+
+----------- cut here -------------
+awk '
+   BEGIN {
+     print "sine wave"
+     print "xscale 1 value"
+     print "yscale 1 time"
+     for (i=0; i<=3; i+=.02) {
+        print i, sin(2*3.14159*i)
+     }
+   }
+'
+----------- cut here -------------
+
+Save as sine.awk, do "chmod -x sine.awk", and then run "sine.awk | pd". 
+
+If you make the obvious modification to sine.awk to create cosine.awk,
+then you can add the cosine plot to the *existing* graph by doing
+"cosine.awk | pd -n".   The -n option adds the new data to the existing
+data, rescales the axes and updates the graph.
+	
+--
+Rick Walker
