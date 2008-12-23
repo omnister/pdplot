@@ -10,6 +10,7 @@ void xwin_top();
 void xwin_annotate(char *buf);
 void xwin_display(int mode);
 int xwin_dump_graphics(char *command);
+int xwin_dump_postscript(char *command);
 
 extern char *progname;
 extern int need_redraw;		// setting TRUE causes redraw

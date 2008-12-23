@@ -2,7 +2,8 @@ This is the source to Pdplot, an X11 graphing tool for ASCII data
 streams.  Pdplot duplicates the command set of the Agilent/HP graphing
 package Autoplot written by Bob Jewett.  It is written in C and Xlib and
 is released under GPL v2.  The author is Rick Walker
-(walker@omnisterra.com). 
+(walker@omnisterra.com).  The Pdplot git repository is at
+http://www.omnisterra.com/git.
 
 To build Pdplot, do:
 
