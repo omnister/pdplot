@@ -252,7 +252,7 @@ void loadfont(char *file, int id)
     }
 
     if((fp=fopen(file,"r")) == NULL) {
-	fprintf(stderr, "error: fopen call failed\n");
+	fprintf(stderr, "error: could not fopen %s\n",file);
 	exit(1);
     } else {
     	// printf("loading %s\n",file);
