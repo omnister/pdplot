@@ -29,15 +29,13 @@ install: pd pdplot pd.1 ${FONTS}
 	else \
              exit 0 ; \
 	fi
+	-/bin/cp ${FONTS} ${LIBDIR}
 	if [ ! -d ${MANDIR} ] ; \
             then mkdir ${MANDIR} || exit 1 ; \
 	else \
              exit 0 ; \
 	fi
 	-/bin/cp ${MANPAGE} ${MANDIR}
-
-
-
 
 tar: $(TARS)
 	(  d=`date +%F`;\

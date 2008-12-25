@@ -74,8 +74,23 @@ char **argv;
     initsym();
     initplot();
 
-    loadfont("/usr/local/lib/pdplot/NOTEDATA.F", 0);
-    loadfont("/usr/local/lib/pdplot/SYMBOL.F", 1);
+    if (access("./NOTEDATA.F", R_OK) == 0) {
+	loadfont("./NOTEDATA.F", 0);
+    } else if (access("/usr/local/lib/pdplot/NOTEDATA.F", R_OK) == 0) {
+	loadfont("/usr/local/lib/pdplot/NOTEDATA.F", 0);
+    } else {
+        fprintf(stderr,"can't find NOTEDATA.F font file\n");
+	exit(0);
+    }
+
+    if (access("./SYMBOL.F", R_OK) == 0) {
+	loadfont("./SYMBOL.F", 1);
+    } else if (access("/usr/local/lib/pdplot/SYMBOL.F", R_OK) == 0) {
+	loadfont("/usr/local/lib/pdplot/SYMBOL.F", 1);
+    } else {
+        fprintf(stderr,"can't find SYMBOL.F font file\n");
+	exit(0);
+    }
 
   while (1) {
     while(getz(s,BUF_SIZE) != EOF) {
