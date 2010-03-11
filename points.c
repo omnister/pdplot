@@ -170,8 +170,12 @@ void button(double x, double y, int buttonno, int pressdown) {
 	  if (debug) printf("button #%d\n", buttonno);
 	  if (debug) printf("ll=%g %g ur=%g %g\n", pd->llx, pd->lly, pd->urx, pd->ury);
 	  if (debug) printf("min=%g %g max=%g %g\n", pd->xmin, pd->ymin, pd->xmax, pd->ymax);
+	  if (debug) printf("xsetmin=%g %g xsetmax=%g %g\n", pd->xsetmin, pd->ysetmin, pd->xsetmax, pd->ysetmax);
+	  if (debug) printf("xsetmin=%g %g xsetmax=%g %g\n", pd->xsetmin, pd->ysetmin, pd->xsetmax, pd->ysetmax);
+	  if (debug) printf("gsetmin=%g %g gsetmax=%g %g\n", plots[0].xmin, pd->ysetmin, plots[0].xmax, pd->ysetmax);
+
 	  if (x >= pd->llx && x <= pd->urx && y >= pd->lly && y <= pd->ury) {
-	       x1= pd->xmin+(pd->xmax-pd->xmin)*(x-pd->llx)/(pd->urx-pd->llx);
+	       x1= plots[0].xmin+(plots[0].xmax-plots[0].xmin)*(x-pd->llx)/(pd->urx-pd->llx);
 	       y1= pd->ymin+(pd->ymax-pd->ymin)*(pd->ury-y)/(pd->ury-pd->lly);
 	       if (buttonno == 1) {
 		   if ((x2-x1) == 0.0  && (y2-y1) == 0.0) npts1=0;
@@ -858,7 +862,9 @@ void render() 	// this is where the image gets drawn
       if (debug) printf("calling ll: %g %g %g %g\n", xmin, pd->ymin, xmax, pd->ymax);
       loose_label(pd,&(pd->ymin),&(pd->ymax),20/(numplots+2),0, 1, pd->ylogmode, 1); 
       loose_label(pd,&(xmin),&(xmax),8, 1, (i==0), plots[0].xlogmode, 1);		   
-      if (debug) printf("%g %g %g %g\n", xmin, pd->ymin, xmax, pd->ymax);
+      if (debug) printf("bounds %g %g %g %g\n", xmin, pd->ymin, xmax, pd->ymax);
+      plots[0].xmin = xmin;
+      plots[0].xmax = xmax;
 
       if (isotropic) {
 	  uppx=(xmax - xmin)/(pd->urx - pd->llx);

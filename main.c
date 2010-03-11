@@ -9,10 +9,11 @@
 #include <unistd.h>
 #include "symbol.h"
 
+// now that I'm running on x86-ia64 this next line isn't needed anymore
+// int isblank(int c);	// for some reason, this was missing in ctype.h...
+
 #define BUF_SIZE 1000
 char *progname;
-
-int isblank(int c);	// for some reason, this is missing in ctype.h...
 
 // get a line of no more than n chars
 // return 0 on success, EOF on end of file
@@ -56,7 +57,7 @@ char **argv;
 	// com_ci(optarg); // open rawfile 
 	// break;
 	default:	/* '?' */
-	   fprintf(stderr, "usage: %s [-r <rawfile>] <script>\n", argv[0]);
+	   fprintf(stderr, "usage: %s [-p <psfile>] [-g <pngfile>] [-r <rawfile>] <script>\n", argv[0]);
 	   exit(1);
 	}
     }

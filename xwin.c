@@ -150,7 +150,7 @@ void initX() {
     class_hints->res_class = "pdp";
 
     XSetWMProperties(dpy, win, &windowName, &iconName,
-             (char **) NULL, (int) NULL, size_hints, wm_hints, class_hints);
+             (char **) NULL, (int) 0, size_hints, wm_hints, class_hints);
 
     /* Select event types wanted */
     XSelectInput(dpy, win, ExposureMask | KeyPressMask |
@@ -488,7 +488,7 @@ void xwin_draw_point(double x, double y)
 void xwin_draw_line(x1, y1, x2, y2)
 double x1,y1,x2,y2;
 {
-    double xold, yold;
+    static double xold, yold;
     if (displayon) {
 	if (dd!=NULL) {
 	    XDrawLine(dpy, *dd, gc, 
