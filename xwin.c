@@ -658,6 +658,10 @@ int xwin_dump_graphics(char *cmd)
     pixmap = XCreatePixmap(dpy, RootWindow(dpy,screen_num), width, 
     	height, DefaultDepth(dpy, DefaultScreen(dpy)));
     dd=&pixmap;
+
+    XSetForeground(dpy, gc, BlackPixel(dpy, screen_num));
+    XFillRectangle (dpy, pixmap, gc, 0, 0, width, height);
+
     render();
     xi = XGetImage(dpy, pixmap, 0,0, width, height, AllPlanes, ZPixmap);
 
