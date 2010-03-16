@@ -142,7 +142,9 @@ a few nanoseconds, you might use:
 
 	xscale 1e-9 TIME (ns)
 
-The label must have fewer than 150 characters.
+The label must have fewer than 150 characters.  Note that xset and yset
+min/max commands operate on the scaled data rather than the original data
+values.
 .TP
 .B nextygraph [graph_number]
 .PD 1
@@ -226,7 +228,8 @@ each command, or automatic scaling is enabled.
 If only one of the two axes is specified,
 automatic scaling of the other axis will
 only consider data points that are within the specified range on the first
-axis.
+axis.  The min/max values operate on the data after any scaling applied by
+xscale and yscale commands.
 .B maxxdiv \fIn
 .PD 0
 .TP

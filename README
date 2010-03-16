@@ -9,7 +9,7 @@ To build Pdplot, do:
 
     make depend
     make
-    make install
+    sudo make install
 
 The binary (pdplot) and launching script (pd) will be put in
 /usr/local/bin/ and the font files with go to /usr/local/lib/pdplot
@@ -18,7 +18,7 @@ Pdplot uses a fifo file for input.  The location for the fifo is
 specified in the pd script and defaults to /var/spool/sockets/pdplot/. 
 Pd will attempt to create this directory the first time it runs, but if
 there is a permission problem, you may have to make this directory by
-hand. 
+hand as superuser. 
 
 See the pd.1 man page for details (man pd). 
 

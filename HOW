@@ -1,0 +1,61 @@
+How does it work?
+
+main() and procXevent are co-routines.  main() calls xwin::procXevent()
+for input characters.  procXevent() uses select() to read standard input
+and to process X events without blocking. 
+
+main() reads lines and classifies them as either data or command.
+Immediate commands are processed, but deferred commands are stored
+in a linked list with data.
+
+there can be up to 10 plots, organized in following array structure
+(see: points.c, points.h)
+
+	#define MAXPLOTS 10
+	PLOTDAT plots[MAXPLOTS];
+
+PLOTDAT is a structure that holds some globals for each plot
+frame and a linked list of commands and data points.
+
+    typedef struct datum {
+	char *cmd;		// either NULL or cmd string.  If str, then x,y unused.
+	double x;
+	double y;
+	struct datum *next;
+	struct datum *prev;
+    } DATUM;
+
+    typedef struct plotdat {
+	 DATUM  *data;
+	 double llx;	// raw screen coords for this plot
+	 double lly;
+	 double urx;
+	 double ury;
+	 double xmin;	// computed bounds 
+	 double xmax;
+	 double ymin;
+	 double ymax;
+	 double xsetmin;	// xset command
+	 double xsetmax;
+	 double ysetmin;	// yset command
+	 double ysetmax;
+	 int    xlogmode;	// log/lin scale mode
+	 int    ylogmode;
+	 double xscale;	// xscale multiplying factor
+	 double yscale;	// yscale multiplying factor
+	 char * title;	// plot title (only stored in plots[0])
+	 char * xaxis;	// xscale label
+	 char * yaxis;	// yscale label
+    } PLOTDAT;
+
+FILES:
+
+    main.c		; main routine, setup, readin of data and parse loop
+    xwin.c		; create X11 window and handle events, drawing routines
+    clip.c		; clip lines to fit within graph boundaries
+    label.c		; compute reasonable scales for the graph, draw ticks, grids
+    points.c		; storage of the 10 graphs, rendering of graph
+    postscript.c	; postscript output code
+    readfont.c		; read the font files and draw text/symbols
+    symbol.c		; a table to keep track of symbol names
+
