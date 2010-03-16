@@ -1159,7 +1159,7 @@ void draw(PLOTDAT *pd, double x, double y) {
     double xs, ys;	// screen coords
     xs =(pd->urx-pd->llx)*(x-xmin)/(xmax-xmin)+pd->llx;
     ys =(pd->ury-pd->lly)*(y-pd->ymin)/(pd->ymax-pd->ymin)+pd->lly; 
-    if (!backstat && (nsegs > 1) && x<xold) {
+    if (!backstat && (nsegs >= 1) && x<xold) {
        nsegs=0;
        if (autopenflag)	 pen(++pennum);
        if (autolineflag) line(++linenum);

@@ -59,3 +59,28 @@ FILES:
     readfont.c		; read the font files and draw text/symbols
     symbol.c		; a table to keep track of symbol names
 
+Here's how we do graphical dumping:
+
+given a routine like:
+
+    render(Display * dpy, Drawable d, int width, int height);
+
+    and a call such as
+
+    Display * dpy;
+    Window w;
+    render(dpy, w, width, height);
+
+    Pixmap pixmap = XCreatePixmap(
+	dpy, w, width, height, DefaultDepth(dpy, DefaultScreen(dpy)));
+    render(dpy, pixmap, width, height);
+
+    You can now splot copies of pixmap anywhere you want using XCopyArea(),
+    or create an XImage using code such as:
+
+    XImage * img = XGetImage(dpy, pixmap, 0, 0, width, height, ~0, ZPixMap);
+
+Basically, we have a drawable pointed to by dd.  Most of the time we draw
+directly to the screen by pointing dd to our window.  When we want to dump
+the image, we change dd to point at a pixmap and then do render().  After
+that we can use XGetImage to snarf the bits.
