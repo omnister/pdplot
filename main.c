@@ -305,7 +305,7 @@ char **argv;
 	   }
        }
     }
-    sleep(1);
+    usleep(500);
   }
   exit(1);
 }
