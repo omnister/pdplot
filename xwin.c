@@ -596,7 +596,7 @@ void xwin_draw_box(double x1, double y1, double x2, double y2)
 void xwin_annotate(char *buf) {
    double size;
    size = (double) ((width+height)/80);
-   XClearArea(dpy, win, 0, height-(int)(size*1.5), width, 20, False);
+   XClearArea(dpy, win, 0, height-(int)(size*1.5), width, 1.5*size, False);
     do_note(buf, (double) width/2, (double) 5, MIRROR_OFF,
                     size, 1.0, 0.0, 0.0, 0, 1);
 
