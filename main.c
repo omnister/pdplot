@@ -208,19 +208,19 @@ char **argv;
 	       initplot();	
 	   } else if (strncmp(sp,"xscaletol",9)==0) {
 	       if (sscanf(sp,"%*s %lg", &tmp) != 1 || tmp >= 0.4 || tmp < -1.0) {
-	          fprintf(stderr, "bad xscaletol values: sp\n");
+	          fprintf(stderr, "bad xscaletol values: %s\n",sp);
 	       } else {
 		  xscaletol(tmp);	
 	       }
 	   } else if (strncmp(sp,"yscaletol",9)==0) {
 	       if (sscanf(sp,"%*s %lg", &tmp) != 1 || tmp >= 0.4 || tmp < -1.0) {
-	          fprintf(stderr, "bad yscaletol values: sp\n");
+	          fprintf(stderr, "bad yscaletol values: %s\n",sp);
 	       } else {
 		  yscaletol(tmp);	
 	       }
 	   } else if (strncmp(sp,"scaletol",8)==0) {
 	       if (sscanf(sp,"%*s %lg", &tmp) != 1 || tmp >= 0.4 || tmp < -1.0) {
-	          fprintf(stderr, "bad scaletol values: sp\n");
+	          fprintf(stderr, "bad scaletol values: %s\n",sp);
 	       } else {
 		  scaletol(tmp);	
 	       }
@@ -232,14 +232,14 @@ char **argv;
 	       }
 	   } else if (strncmp(sp,"xset",4)==0) {
 	       if (sscanf(sp+4,"%lg %lg", &xmin, &xmax ) != 2 || xmin > xmax) {
-	          fprintf(stderr, "bad xset values: sp\n");
+	          fprintf(stderr, "bad xset values: %s\n",sp);
 	       } else {
 	           // fprintf(stderr, "xset values: %g %g\n", xmin, xmax);
 		   xset(xmin, xmax);	
 	       }
 	   } else if (strncmp(sp,"yset",4)==0) {
 	       if (sscanf(sp+4,"%lg %lg", &ymin, &ymax ) != 2 || ymin > ymax) {
-	          fprintf(stderr, "bad yset values: sp\n");
+	          fprintf(stderr, "bad yset values: %s\n",sp);
 	       } else {
 	           // fprintf(stderr, "yset values: %g %g\n", ymin, ymax);
 		   yset(ymin, ymax);	
