@@ -1,4 +1,4 @@
-#! /bin/ksh
+#! /bin/bash
 #
 # pd --- user script to send data to pdplot daemon
 #
