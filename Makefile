@@ -25,17 +25,18 @@ install: pd pdplot pd.1 ${FONTS}
 	-/bin/mv -f ${BINDIR}/pdplot ${BINDIR}/pdplot.old
 	-/bin/cp pdplot $(BINDIR)/pdplot
 	if [ ! -d ${LIBDIR} ] ; \
-            then mkdir ${LIBDIR} || exit 1 ; \
+            then /bin/mkdir ${LIBDIR} || exit 1 ; \
 	else \
              exit 0 ; \
 	fi
 	-/bin/cp ${FONTS} ${LIBDIR}
 	if [ ! -d ${MANDIR} ] ; \
-            then mkdir ${MANDIR} || exit 1 ; \
+            then /bin/mkdir ${MANDIR} || exit 1 ; \
 	else \
              exit 0 ; \
 	fi
 	-/bin/cp ${MANPAGE} ${MANDIR}
+	-/bin/mkdir /var/spool/sockets
 
 tar: $(TARS)
 	(  d=`date +%F`;\
