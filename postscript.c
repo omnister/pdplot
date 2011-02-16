@@ -53,9 +53,37 @@ void ps_set_line(int line)
     linetype=line;
 }
 
+int dxf_penmap[] = {		// input is pen called, output is dxf pen
+    0,0,1,3,
+    5,4,6,2,
+    1,3,5,4,
+    6,3,9,8
+};
+
+// 0 blk           0
+// 1 wht           0
+// 2 red           1
+// 3 green         3
+// 4 blue          5
+// 5 aqua          4
+// 6 mag           6
+// 7 yellow        2
+// 8 pink          1
+// 9 lime          3
+// 10 pale blue    5
+// 11 blue-green   4
+// 12 purple       6
+// 13 khaki        3
+// 14 light grey   9
+// 15 dark grey    8
+
 void ps_set_pen(int pen) 
 {
-    pennum=pen;
+    if (outputtype==DXF) {
+        pennum=dxf_penmap[pen%16];
+    } else {
+	pennum=pen;
+    }
 }
 
 /*
@@ -83,9 +111,7 @@ double llx, lly, urx, ury;  /* drawing bounding box in user coords */
     double xmax, ymax;
     int landscape;
     double tmp;
-    int debug=1;
-
-    if (debug) printf("ps_preamble:\n");
+    int debug=0;
 
     if ( outputtype == AUTOPLOT) {
        fprintf(fp,"back\n");
@@ -411,7 +437,6 @@ void ps_end_poly()
 
 void ps_postamble()
 {
-    if (debug) printf("ps_postamble:\n");
     if (in_line) {
     	ps_end_line(fp);
 	in_line=0;
