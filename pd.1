@@ -6,7 +6,7 @@ pdplot \- plot ascii data to an X window
 .B Pdplot 
 .br
 .B pd 
-[-n] [-k] [-g <pngfile>] [-p<psfile>] [-r] [file1 file2...]
+[-n] [-k] [-g<pngfile>] [-p<psfile>] [-r] [file1 file2...]
 .br
 .SH DESCRIPTION
 .B Pdplot
@@ -466,7 +466,13 @@ command may be used to do annotation.
 The box around the data region will be suppressed.
 Scale labels, grids and titles are not affected.
 .TP
-.B graph <file>
+.B "dxf <file>"
+Write a dxf of the existing window to <file>.dxf.  
+The dxf data is dumped at the point that it appears
+in the file, so the command should be placed at the very end of
+the data file.
+.TP
+.B "graph <file>"
 Write a bitdump of the existing window to <file>.png.  This function
 requires the program pnmtopng(1) (from the Netpbm package) to be present
 in the search path.  The bitmap is dumped at the point that it appears
@@ -567,7 +573,7 @@ and is released under the GNU General Public License version 2.
 .PP
 Autoplot is a general pen-plotter driver with an emphasis on HPGL
 output.  Pdplot is primarily an X11 plot program and does not produce
-HPGL but has support for PNG and Postscript output.
+HPGL but has support for PNG, DXF and Postscript output.
 .PP
 Autoplot referenced the entire Hershey font database. Pdplot uses Piglet-style
 font definition files for characters and symbols.  Tools for creating custom

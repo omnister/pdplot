@@ -243,6 +243,8 @@ void loadfont(char *file, int id)
     int index=0;	/* index into font table */
     int debug=0;
 
+    if (debug) printf("opening %s\n", file);
+
     /* initialize font table */
     for (i=0; i<MAXPOINT; i++) {
 	xdef[id][i] = ydef[id][i] = -64;
@@ -252,7 +254,7 @@ void loadfont(char *file, int id)
     }
 
     if((fp=fopen(file,"r")) == NULL) {
-	fprintf(stderr, "error: could not fopen %s\n",file);
+	fprintf(stderr, "readfont error: could not fopen %s\n",file);
 	exit(1);
     } else {
     	// printf("loading %s\n",file);
@@ -264,7 +266,7 @@ void loadfont(char *file, int id)
     /* note reversed order of arguments */
 
     next=getxy(fp,&dy[id],&dx[id]);
-    /* printf("got %d, %d next=%x id=%d\n", dx[id],dy[id],next, id); */
+    if (debug) printf("got %d, %d next=%x id=%d\n", dx[id],dy[id],next, id); 
 
     /* make first line look properly terminated */
     x=-64;
@@ -276,7 +278,7 @@ void loadfont(char *file, int id)
 	    getc(fp);
 	    if (x==-64 && y==-64) {
 		if ((lit=eatwhite(fp)) != EOF) {
-		    /* printf("lit=%c\n",lit); */
+		    if (debug) printf("lit=%c\n",lit);
 		    getc(fp);
 		    fonttab[id][(int) lit] = index;
 		} else {
@@ -289,7 +291,7 @@ void loadfont(char *file, int id)
 
 	if (!done) {
 	    next=getxy(fp,&x,&y);
-	    /* printf("line %d: got %d, %d next=%c\n", linecnt, x,y,next);  */
+	    if (debug) printf("line %d: got %d, %d next=%c\n", linecnt, x,y,next); 
 	    xdef[id][index] = x;
 	    ydef[id][index] = y;
 	    index++;
@@ -310,7 +312,7 @@ int *py;
     c=eatwhite(fp);
     /* printf("eating white, next=%c\n",c); */
     if(getint(fp,px) != 1) {
-	fprintf(stderr,"error at line %d: expected a digit\n", linecnt);
+	fprintf(stderr,"readfont error at line %d: expected a digit\n", linecnt);
 	exit(3);
     };		
 
@@ -318,12 +320,12 @@ int *py;
     if ((c=getc(fp)) != ',') {
 	ungetc(c,fp);
 	/* make comma optional to read graffy fonts */
-	/* fprintf(stderr,"error at line %d: expected a comma\n", linecnt); exit(2); */
+	/* fprintf(stderr,"readfont error at line %d: expected a comma\n", linecnt); exit(2); */
     }
 
     eatwhite(fp);
     if(getint(fp,py) != 1) {
-	fprintf(stderr,"error at line %d: expected a digit\n", linecnt);
+	fprintf(stderr,"readfont error at line %d: expected a digit\n", linecnt);
 	exit(3);
     };		
 

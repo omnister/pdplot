@@ -14,7 +14,7 @@
 #include "postscript.h"
 
 void load_font(XFontStruct **font_info);
-void debug(char *s, int dbug);
+void dbug(char *s, int dbug);
 int init_colors();
 void getGC(Window win, GC *gc, XFontStruct *font_info);
 void doXevent(char *s);
@@ -349,12 +349,12 @@ void doXevent(char *s) {
     double x,y;
     XEvent xe;
     unsigned long all = 0xffffffff;
-    int dbug=0;
+    int debug=0;
 
     while (XCheckMaskEvent(dpy, all, &xe)) { /* pending X Event */
         switch (xe.type) {
         case Expose:
-            debug("got Expose",dbug);
+            dbug("got Expose",debug);
             if (xe.xexpose.count != 0)
                 break;
             if (xe.xexpose.window == win) {
@@ -370,7 +370,7 @@ void doXevent(char *s) {
 	    need_redraw++;
 	    break;
         case ConfigureNotify:
-            debug("got Configure Notify",dbug);
+            dbug("got Configure Notify",debug);
 	    width = xe.xconfigure.width;
 	    height = xe.xconfigure.height;
 	    if (XEventsQueued(dpy, QueuedAfterFlush) == 0) {
@@ -379,7 +379,7 @@ void doXevent(char *s) {
 	    }
             break;
         case MotionNotify:
-            debug("got Motion",dbug);
+            dbug("got Motion",debug);
             // x = (double) xe.xmotion.x;
             // y = (double) xe.xmotion.y;
             break;
@@ -387,16 +387,16 @@ void doXevent(char *s) {
             x = (double) xe.xmotion.x;
             y = (double) xe.xmotion.y;
 	    button(x,y,xe.xbutton.button,0);
-            debug("got ButtonRelease",dbug);
+            dbug("got ButtonRelease",debug);
             break;
         case ButtonPress:
             x= (double) xe.xmotion.x;
             y= (double) xe.xmotion.y;
 	    button(x,y,xe.xbutton.button,1);
-            debug("got ButtonPress",dbug);
+            dbug("got ButtonPress",debug);
             break;
         case KeyPress:
-            debug("got KeyPress",dbug);
+            dbug("got KeyPress",debug);
             break;
         default:
             fprintf(stderr,"got unexpected default event: %s\n",
@@ -607,9 +607,9 @@ void xwin_display(int mode) {
    displayon = mode;
 }
 
-void debug(char *s, int dbug)
+void dbug(char *s, int debug)
 {
-    if (dbug) {
+    if (debug) {
 	fprintf(stderr,"%s\n",s);
     }
 }
@@ -771,7 +771,8 @@ int xwin_dump_postscript(char *cmd)
 	return(0);
     }
 
-    ps_preamble(fp, "title", "Pdplot", 8.5, 11.0, 0, 0, width, height);
+    ps_set_file(fp);
+    ps_preamble("title", "Pdplot", 8.5, 11.0, 0, 0, width, height);
 
     dd=NULL;
     render();

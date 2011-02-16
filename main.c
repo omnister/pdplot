@@ -8,6 +8,7 @@
 #include "readfont.h"
 #include <unistd.h>
 #include "symbol.h"
+#include "postscript.h"
 
 // now that I'm running on x86-ia64 this next line isn't needed anymore
 // int isblank(int c);	// for some reason, this was missing in ctype.h...
@@ -75,7 +76,7 @@ char **argv;
     initsym();
     initplot();
 
-    if (access("./NOTEDATA.F", R_OK) == 0) {
+    if (0 && access("./NOTEDATA.F", R_OK) == 0) {
 	loadfont("./NOTEDATA.F", 0);
     } else if (access("/usr/local/lib/pdplot/NOTEDATA.F", R_OK) == 0) {
 	loadfont("/usr/local/lib/pdplot/NOTEDATA.F", 0);
@@ -84,7 +85,7 @@ char **argv;
 	exit(0);
     }
 
-    if (access("./SYMBOL.F", R_OK) == 0) {
+    if (0 && access("./SYMBOL.F", R_OK) == 0) {
 	loadfont("./SYMBOL.F", 1);
     } else if (access("/usr/local/lib/pdplot/SYMBOL.F", R_OK) == 0) {
 	loadfont("/usr/local/lib/pdplot/SYMBOL.F", 1);
@@ -281,11 +282,20 @@ char **argv;
 		   xwin_dump_graphics("pnmtopng > pddump.png");
 	       }
 	   } else if (strncmp(sp,"post",4)==0) {
+	       ps_set_outputtype(POSTSCRIPT);
 	       if (sscanf(sp,"post %s", scratch) == 1) {
 		   sprintf(scratch2, "cat > %s.ps", scratch);
 		   xwin_dump_postscript(scratch2);
 	       } else {
 		   xwin_dump_postscript("cat > pddump.ps");
+	       }
+	   } else if (strncmp(sp,"dxf",3)==0) {
+	       ps_set_outputtype(DXF);
+	       if (sscanf(sp,"dxf %s", scratch) == 1) {
+		   sprintf(scratch2, "cat > %s.dxf", scratch);
+		   xwin_dump_postscript(scratch2);
+	       } else {
+		   xwin_dump_postscript("cat > pddump.dxf");
 	       }
 	   } else if (strncmp(sp,"exit",4)==0) {
 	       exit(2);
