@@ -173,13 +173,13 @@ setting landscape
 
     xmax=pdx*72.0;
     ymax=pdy*72.0;
-    printf("aspect is xdel: %g, ydel: %g\n", xdel, ydel);
+    // printf("aspect is xdel: %g, ydel: %g\n", xdel, ydel);
     if (xdel > ydel) { /* flip aspect */
 	landscape=1;
-    	printf("setting landscape\n");
+    	// printf("setting landscape\n");
 	tmp=xmax;  xmax=ymax; ymax=tmp;
     } else {
-    	printf("setting portrait\n");
+    	// printf("setting portrait\n");
 	landscape=0;
     }
 
@@ -235,6 +235,16 @@ setting landscape
     fprintf(fp,"/c7 {0.000 0.000 0.000 srgb} bind def\n");
     fprintf(fp,"/c8 {0.300 0.300 0.300 srgb} bind def\n");
     fprintf(fp,"/c9 {0.600 0.600 0.600 srgb} bind def\n");
+    fprintf(fp,"/c10 {0.000 0.000 0.000 srgb} bind def\n");
+    fprintf(fp,"/c11 {1.000 0.000 0.000 srgb} bind def\n");
+    fprintf(fp,"/c12 {0.000 1.000 0.000 srgb} bind def\n");
+    fprintf(fp,"/c13 {0.000 0.000 1.000 srgb} bind def\n");
+    fprintf(fp,"/c14 {0.000 1.000 1.000 srgb} bind def\n");
+    fprintf(fp,"/c15 {1.000 0.000 1.000 srgb} bind def\n");
+    fprintf(fp,"/c16 {1.000 1.000 0.000 srgb} bind def\n");
+    fprintf(fp,"/c17 {0.000 0.000 0.000 srgb} bind def\n");
+    fprintf(fp,"/c18 {0.300 0.300 0.300 srgb} bind def\n");
+    fprintf(fp,"/c19 {0.600 0.600 0.600 srgb} bind def\n");
     fprintf(fp,"end\n");
     fprintf(fp,"save\n");
     fprintf(fp,"newpath\n");
@@ -356,7 +366,7 @@ double x1, y1;
     if (outputtype == POSTSCRIPT) {
 	fprintf(fp, "n\n");
         // flip y coordinate from Xwin coords
-        y1 = bblly-(y1-bbury);
+        // y1 = bblly-(y1-bbury);
 	fprintf(fp, "%g %g m\n",x1, y1);
     } else if (outputtype == AUTOPLOT) {		// AUTOPLOT
 	fprintf(fp, "jump\n");
@@ -387,7 +397,7 @@ double x1, y1;
 
     if (outputtype == POSTSCRIPT) {
 	// flip y coordinate from Xwin coords
-	y1 = bblly-(y1-bbury);
+	// y1 = bblly-(y1-bbury);
 	fprintf(fp, "%g %g l\n",x1, y1);
     } else if (outputtype == AUTOPLOT) {		// AUTOPLOT
 	fprintf(fp, "%g %g\n",x1, y1);

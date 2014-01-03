@@ -514,6 +514,7 @@ void xwin_set_pen_line(int pen, int line)
     int dash_n;
     int dash_offset;
     int line_style;
+    int line_width;
     char dash_list[5];
 
     /* FIXME: should avoid accessing out of bounds of colors[]
@@ -577,7 +578,14 @@ void xwin_set_pen_line(int pen, int line)
 	}
 
 	dash_offset=0;
-	XSetLineAttributes(dpy, gc, 0, line_style, CapButt, JoinRound); 
+
+	if (width + height > 1500) {
+	   line_width=2;
+	} else {
+	   line_width=0;
+	}
+
+	XSetLineAttributes(dpy, gc, line_width, line_style, CapButt, JoinRound); 
 	XSetDashes(dpy, gc, dash_offset, dash_list, dash_n);
     } else {
 	ps_set_pen(pen);
@@ -772,7 +780,8 @@ int xwin_dump_postscript(char *cmd)
     }
 
     ps_set_file(fp);
-    ps_preamble("title", "Pdplot", 8.5, 11.0, 0, 0, width, height);
+    // printf("%d %d\n", width, height);
+    ps_preamble("title", "Pdplot", 8.5, 11.0, (double) 0, (double) 0, (double) width, (double) height);
 
     dd=NULL;
     render();

@@ -2,8 +2,9 @@ OBJS=main.o points.o readfont.o xwin.o label.o clip.o symbol.o postscript.o
 
 FONTS=SYMBOL.F NOTEDATA.F
 
-TARS=main.c points.c readfont.c xwin.c label.c clip.c points.h symbol.c symbol.h \
-xwin.h readfont.h eventnames.h postscript.c postscript.h ${FONTS} pd pd.1
+TARS=Makefile main.c points.c readfont.c xwin.c label.c clip.c points.h \
+symbol.c symbol.h xwin.h readfont.h eventnames.h postscript.c \
+postscript.h ${FONTS} pd pd.1
 
 CC=cc -ggdb -Wall
 #CC=cc -pg -Wall
