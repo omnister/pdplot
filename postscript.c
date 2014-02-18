@@ -210,50 +210,43 @@ setting landscape
     fprintf(fp,"%%%%BoundingBox: 0 0 %d %d\n", 
     	(int) (pdx*72.0), (int) (pdy*72.0));
     fprintf(fp,"%%%%DocumentPaperSizes: custom\n");
+    fprintf(fp,"%%%%Magnification: 1.0000\n");
+    fprintf(fp,"%%%%EndComments\n");
     fprintf(fp,"%%%%BeginSetup\n");
-    fprintf(fp,"[{\n");
+    fprintf(fp,"mark {\n");
     fprintf(fp,"%%BeginFeature: *PageRegion custom\n");
-    fprintf(fp,"<</PageSize [%d %d]>> setpagedevice\n",
+    fprintf(fp,"<</PageSize [ %d %d ] /ImagingBBox null >> setpagedevice\n",
     	(int)( pdx*72.0), (int) (pdy*72.0));
     fprintf(fp,"%%EndFeature\n");
     fprintf(fp,"} stopped cleartomark\n");
     fprintf(fp,"%%%%EndSetup\n");
-    fprintf(fp,"%%%%Magnification: 1.0000\n");
-    fprintf(fp,"%%%%EndComments\n");
     fprintf(fp,"%%%%BeginProlog\n");
+
     fprintf(fp,"/$Pig2psDict 200 dict def\n");
     fprintf(fp,"$Pig2psDict begin\n");
     fprintf(fp,"$Pig2psDict /mtrx matrix put\n");
     fprintf(fp,"/c-1 {0 setgray} bind def\n");
-    fprintf(fp,"/c0 {0.000 0.000 0.000 srgb} bind def\n");
-    fprintf(fp,"/c1 {1.000 0.000 0.000 srgb} bind def\n");
-    fprintf(fp,"/c2 {0.000 1.000 0.000 srgb} bind def\n");
-    fprintf(fp,"/c3 {0.000 0.000 1.000 srgb} bind def\n");
-    fprintf(fp,"/c4 {0.000 1.000 1.000 srgb} bind def\n");
-    fprintf(fp,"/c5 {1.000 0.000 1.000 srgb} bind def\n");
-    fprintf(fp,"/c6 {1.000 1.000 0.000 srgb} bind def\n");
-    fprintf(fp,"/c7 {0.000 0.000 0.000 srgb} bind def\n");
-    fprintf(fp,"/c8 {0.300 0.300 0.300 srgb} bind def\n");
-    fprintf(fp,"/c9 {0.600 0.600 0.600 srgb} bind def\n");
-    fprintf(fp,"/c10 {0.000 0.000 0.000 srgb} bind def\n");
-    fprintf(fp,"/c11 {1.000 0.000 0.000 srgb} bind def\n");
-    fprintf(fp,"/c12 {0.000 1.000 0.000 srgb} bind def\n");
-    fprintf(fp,"/c13 {0.000 0.000 1.000 srgb} bind def\n");
-    fprintf(fp,"/c14 {0.000 1.000 1.000 srgb} bind def\n");
-    fprintf(fp,"/c15 {1.000 0.000 1.000 srgb} bind def\n");
-    fprintf(fp,"/c16 {1.000 1.000 0.000 srgb} bind def\n");
-    fprintf(fp,"/c17 {0.000 0.000 0.000 srgb} bind def\n");
-    fprintf(fp,"/c18 {0.300 0.300 0.300 srgb} bind def\n");
-    fprintf(fp,"/c19 {0.600 0.600 0.600 srgb} bind def\n");
-    fprintf(fp,"end\n");
-    fprintf(fp,"save\n");
-    fprintf(fp,"newpath\n");
-    fprintf(fp,"0 %d moveto\n", (int) (pdy*72.0));
-    fprintf(fp,"0 0 lineto\n");
-    fprintf(fp,"%d 0 lineto\n", (int) (pdx*72.0));
-    fprintf(fp,"%d %d lineto closepath clip newpath\n", 
-    	(int) (pdx*72.0), (int) (pdy*72.0));
-    /* fprintf(fp,"%%39.9 49.0 translate\n"); */
+    fprintf(fp,"/c0 {0.000 0.000 0.000 srgb} bind def\n");  	// blk
+    fprintf(fp,"/c1 {0.000 0.000 0.000 srgb} bind def\n");  	// blk
+    fprintf(fp,"/c2 {1.000 0.000 0.000 srgb} bind def\n");	// red
+    fprintf(fp,"/c3 {0.000 1.000 0.000 srgb} bind def\n");	// grn
+    fprintf(fp,"/c4 {0.000 0.000 1.000 srgb} bind def\n");	// blu
+    fprintf(fp,"/c5 {0.000 1.000 1.000 srgb} bind def\n");	// aqu
+    fprintf(fp,"/c6 {1.000 0.000 1.000 srgb} bind def\n");	// mag
+    fprintf(fp,"/c7 {1.000 1.000 0.000 srgb} bind def\n");	// yel
+    fprintf(fp,"/c8 {1.000 0.500 0.500 srgb} bind def\n");	// pnk
+    fprintf(fp,"/c9 {0.500 1.000 0.500 srgb} bind def\n");	// lime
+    fprintf(fp,"/c10 {0.500 0.500 1.000 srgb} bind def\n");	// pale blu
+    fprintf(fp,"/c11 {0.000 0.500 0.500 srgb} bind def\n");	// blu-grn
+    fprintf(fp,"/c12 {0.500 0.000 0.500 srgb} bind def\n");	// pur
+    fprintf(fp,"/c13 {0.500 0.500 0.000 srgb} bind def\n");	// khaki
+    fprintf(fp,"/c14 {0.700 0.700 0.700 srgb} bind def\n");	// lt gr
+    fprintf(fp,"/c15 {0.400 0.400 0.400 srgb} bind def\n");	// dk gr
+    fprintf(fp,"/c16 {1.000 0.000 1.000 srgb} bind def\n");
+    fprintf(fp,"/c17 {1.000 1.000 0.000 srgb} bind def\n");
+    fprintf(fp,"/c18 {0.000 0.000 0.000 srgb} bind def\n");
+    fprintf(fp,"/c19 {0.300 0.300 0.300 srgb} bind def\n");
+    fprintf(fp,"/c20 {0.600 0.600 0.600 srgb} bind def\n");
     fprintf(fp,"/cp {closepath} bind def\n");
     fprintf(fp,"/ef {eofill} bind def\n");
     fprintf(fp,"/gr {grestore} bind def\n");
@@ -279,9 +272,35 @@ setting landscape
     fprintf(fp,"/scf {scalefont} bind def\n");
     fprintf(fp,"/sw {stringwidth} bind def\n");
     fprintf(fp,"/tr {translate} bind def\n");
+    fprintf(fp,"end\n");
+    fprintf(fp,"save\n");
+
+    // fprintf(fp,"newpath\n");
+    // fprintf(fp,"0 %d moveto\n", (int) (pdy*72.0));
+    // fprintf(fp,"0 0 lineto\n");
+    // fprintf(fp,"%d 0 lineto\n", (int) (pdx*72.0));
+    // fprintf(fp,"%d %d lineto closepath clip newpath\n", 
+    // 	(int) (pdx*72.0), (int) (pdy*72.0));
+    // /* fprintf(fp,"%%39.9 49.0 translate\n"); */
+
     fprintf(fp,"/$Pig2psBegin\n");
     fprintf(fp,"{$Pig2psDict begin /$Pig2psEnteredState save def}def\n");
     fprintf(fp,"/$Pig2psEnd {$Pig2psEnteredState restore end} def\n");
+
+    fprintf(fp,"%%BeginPageSetup\n");
+    fprintf(fp,"%%BB is %g,%g %g,%g\n", llx, lly, urx, ury);	
+    if (landscape) {
+    	fprintf(fp,"%g %g scale\n", scale, scale);
+	fprintf(fp,"%g %g translate\n", 
+	    (ymax/(2.0*scale))+ymid, (xmax/(2.0*scale))-xmid);
+	fprintf(fp,"90 rotate\n");
+    } else {
+    	fprintf(fp,"%g %g scale\n", scale, scale);
+	fprintf(fp,"%g %g translate\n",
+	    (xmax/(2.0*scale))-xmid,  (ymax/(2.0*scale))-ymid);
+    }
+    fprintf(fp,"%%EndPageSetup\n");
+    fprintf(fp,"%%%%EndProlog\n");
     fprintf(fp,"$Pig2psBegin\n");
     fprintf(fp,"10 setmiterlimit\n");
     fprintf(fp,"1 slj 1 slc\n");
@@ -309,21 +328,7 @@ setting landscape
 //   }
 //  fprintf(fp,"%% end stipple patterns\n");
 
-    fprintf(fp,"%%%%EndProlog\n");
 
-    fprintf(fp,"%%BeginPageSetup\n");
-    fprintf(fp,"%%BB is %g,%g %g,%g\n", llx, lly, urx, ury);	
-    if (landscape) {
-    	fprintf(fp,"%g %g scale\n", scale, scale);
-	fprintf(fp,"%g %g translate\n", 
-	    (ymax/(2.0*scale))+ymid, (xmax/(2.0*scale))-xmid);
-	fprintf(fp,"90 rotate\n");
-    } else {
-    	fprintf(fp,"%g %g scale\n", scale, scale);
-	fprintf(fp,"%g %g translate\n",
-	    (xmax/(2.0*scale))-xmid,  (ymax/(2.0*scale))-ymid);
-    }
-    fprintf(fp,"%%EndPageSetup\n");
     fprintf(fp,"%% here starts figure;\n");
 }
 
