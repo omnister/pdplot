@@ -52,11 +52,14 @@ char **argv;
 
     setvbuf(stdin, NULL, _IONBF, 0);  // make stdin unbuffered 
 
-    while ((opt=getopt(argc, argv, "")) != -1) {
+    while ((opt=getopt(argc, argv, "D:")) != -1) {
         switch (opt) {
+	case 'D':
+	    // DISPLAY string is in optarg;
+	    break;
 	//case 'r':
-	// com_ci(optarg); // open rawfile 
-	// break;
+	    // com_ci(optarg); // open rawfile 
+	    // break;
 	default:	/* '?' */
 	   fprintf(stderr, "usage: %s [-p <psfile>] [-g <pngfile>] [-r <rawfile>] <script>\n", argv[0]);
 	   exit(1);

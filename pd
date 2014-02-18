@@ -2,13 +2,14 @@
 #
 # pd --- user script to send data to pdplot daemon
 #
-usage="usage:  pd [-n] [-k] [-r] [-d N] [-w window_name] [file...]"
-gopts='knp:rd:w:g:'
+usage="usage:  pd [-k][-n][-p][-d N] [-w window_name] [file...]"
+gopts='knp:rd:f:w:g:'
 #
 #   -n	      don't clear the existing data
 #   -k	      kill the pdplot daemon, remove the pipe
 #   -g <file> dump plot to <file>.png
 #   -p <file> dump the plot to <file>.ps
+#   -f <file> dump the plot to <file>.dxf
 #   -r	      refresh the window
 #   -d N      debug level N (default 0)
 #   -w name   specify the name of the window
@@ -33,6 +34,7 @@ while [ $# -gt 0 ] ; do
 	-k )	kill=1; shift ;;
 	-d )	debug="-d $2"; shift 2 ;;
 	-p )    cmd="post $wd/$2"; shift 2 ;;
+	-f )    cmd="dxf $wd/$2"; shift 2 ;;
 	-g )    cmd="graph $wd/$2"; shift 2 ;;
 	-w )	given_name=$2; shift 2 ;;
 	-- )	shift; break ;;
@@ -62,7 +64,7 @@ pipedir=/var/spool/sockets/pdplot
 pipe=$pipedir/$window.$DISPLAY
 function psgrep
 {
-    ps -ef | sed '/grep/d' | grep "$pdplot"
+    ps -ef | sed '/grep/d' | grep "$pdplot *$displayarg"
 }
 
 if [ "$DISPLAY" = "" ] ; then	
@@ -100,7 +102,8 @@ if psgrep >/dev/null ; then
 else
     echo "pd: starting pd daemon" 1>&2
     #$pdplot $displayarg -X $window $debug <$pipe & 
-    $pdplot <$pipe & 
+    #$pdplot <$pipe & 
+    $pdplot $displayarg <$pipe &
 fi
 
 if [ "$cmd" != "" ] ; then
@@ -109,6 +112,7 @@ else
     {
     echo "$clear"
     cat $files
+    echo "" # the file might not have a newline...
     echo "plot"
     } >$pipe
 fi

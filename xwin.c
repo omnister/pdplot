@@ -185,7 +185,7 @@ static char *visual_class[] = {
 int init_colors() 
 {
     int default_depth;
-    Visual *default_visual;
+    // Visual *default_visual;
     static char *name[] = {
 	"#000000", // blk
 	"#ffffff", // wht
@@ -218,7 +218,7 @@ int init_colors()
      * for StaticGray and GrayScale */
 
     default_depth = DefaultDepth(dpy, screen_num);
-    default_visual = DefaultVisual(dpy, screen_num);
+    // default_visual = DefaultVisual(dpy, screen_num);
     default_cmap = DefaultColormap(dpy, screen_num);
     if (default_depth == 1) {
 	/* Must be StaticGray, use black and white */
@@ -658,7 +658,7 @@ int xwin_dump_graphics(char *cmd)
     int i;
     int debug=0;
     int rshift, gshift, bshift;
-    int err=0;
+    // int err=0;
     int status;
     Visual *default_visual;
 
@@ -759,7 +759,8 @@ int xwin_dump_graphics(char *cmd)
 	   B = B>>bshift;
 	   buf[2] = (unsigned char) B;
 
-	   err=fwrite(buf, 3, 1, fd);
+	   fwrite(buf, 3, 1, fd);
+	   // err=fwrite(buf, 3, 1, fd);
 	}
     }
     printf("done \n");
