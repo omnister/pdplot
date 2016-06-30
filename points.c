@@ -484,12 +484,12 @@ void axislabel(PLOTDAT *pd, char *str, int x) {
 	if (x) { 			// xaxis label
 	    tmp = pd->lly-pad-xfontsize;
 	    mid = (pd->llx+pd->urx)/2.0;
-	    do_note(str, mid, tmp, MIRROR_OFF, 
+	    do_note(pd, str, mid, tmp, MIRROR_OFF, 
 	    	scalesize*charsize*xfontsize*.6, 1.0, 0.0, 0.0, 0, 4);
 	} else { 			// yaxis label
 	    tmp = pd->llx-pad-2.0*yfontsize;
 	    mid = (pd->lly+pd->ury)/2.0;
-	    do_note(str, tmp, mid , MIRROR_OFF, 
+	    do_note(pd, str, tmp, mid , MIRROR_OFF, 
 	    	scalesize*charsize*yfontsize*.6, 1.0, 0.0, 90.0, 0, 4);
 	}
     }
@@ -501,11 +501,11 @@ void gridlabel(PLOTDAT *pd, char *str, double alpha, int x) {
     if (scalemode) {
 	if (x) { 			// xaxis label
 	    tmp = alpha*pd->urx+(1.0-alpha)*pd->llx;
-	    do_note(str, tmp, pd->lly-pad, MIRROR_OFF,
+	    do_note(pd, str, tmp, pd->lly-pad, MIRROR_OFF,
 	    	xfontsize*.6*charsize*tagsize, 1.0, 0.0, 0.0, 0, 7);
 	} else { 			// yaxis label
 	    tmp = alpha*pd->ury+(1.0-alpha)*pd->lly;
-	    do_note(str, pd->llx-pad, tmp, MIRROR_OFF,
+	    do_note(pd, str, pd->llx-pad, tmp, MIRROR_OFF,
 	    	yfontsize*.6*charsize*tagsize, 1.0, 0.0, 0.0, 0, 5);
 	}
     }
@@ -737,10 +737,12 @@ void render() 	// this is where the image gets drawn
     // we allow each graph to be 5 units tall, and spacing between
     // graphs is one unit...
 
+    pd = &(plots[0]); 
+
     // place for a title
     if (plots[0].title != NULL && scalemode) {
 	xwin_set_pen_line(1,1);
-	do_note(plots[0].title, (llx+urx)/2.0, 
+	do_note(pd, plots[0].title, (llx+urx)/2.0, 
 	   pad+ury, MIRROR_OFF, fontsize*charsize*titlesize,
 	   1.28, 0.0, 0.0, 0, 1);
     }
@@ -918,12 +920,12 @@ void render() 	// this is where the image gets drawn
 	     if (sscanf(p->cmd, "%*s %lg%% %lg%% %[^#]", &x, &y, buf)==3) {
 	        xx=(pd->urx-pd->llx)*(x/100.0)+pd->llx;
 		yy=(pd->ury-pd->lly)*(y/100.0)+pd->lly; 
-		do_note(buf, xx, yy, MIRROR_OFF , 0.6*fontsize*charsize*labelsize,
+		do_note(pd, buf, xx, yy, MIRROR_OFF , 0.6*fontsize*charsize*labelsize,
 		   1.0, 0.0, labelangle, 0, 3);
 	     } else if (sscanf(p->cmd, "%*s %lg %lg %[^#]", &x, &y, buf)==3) {
 		xx=(pd->urx-pd->llx)*(logscale(x,0)-xmin)/(xmax-xmin)+pd->llx;
 		yy=(pd->ury-pd->lly)*(logscale(y,1)-pd->ymin)/(pd->ymax-pd->ymin)+pd->lly; 
-		do_note(buf, xx, yy, MIRROR_OFF , 0.6*fontsize*charsize*labelsize,
+		do_note(pd, buf, xx, yy, MIRROR_OFF , 0.6*fontsize*charsize*labelsize,
 		    1.0, 0.0, labelangle, 0, 3);
 	     } else { 
 	        fprintf(stderr,"bad argument to label cmd: %s\n", p->cmd);
@@ -1035,7 +1037,8 @@ double theta;
     if (debug) mat_print(xp);
 }
 
-void do_symbol(c, x, y, size)
+void do_symbol(pd, c, x, y, size)
+PLOTDAT *pd;
 int c;
 double x, y;
 double size;
@@ -1044,11 +1047,12 @@ double size;
     s[0]=(char) ((c%55)+32);
     s[1]='\0';
     fontclip(1);	// turn on clipping
-    do_note(s, x, y, MIRROR_OFF , size, 1.0, 0.0, 0.0, 1, 4);
+    do_note(pd, s, x, y, MIRROR_OFF , size, 1.0, 0.0, 0.0, 1, 4);
     fontclip(0);	// turn off clipping
 }
 
-void do_note(string, x, y, mirror, size, aspect, slant, rotation, id, jf)
+void do_note(pd, string, x, y, mirror, size, aspect, slant, rotation, id, jf)
+PLOTDAT *pd;
 char *string;
 double x, y;
 int mirror;
@@ -1096,7 +1100,7 @@ int jf;
     xp->dx += x;
     xp->dy += y;
 
-    writestring(string, xp, id, jf);
+    writestring(pd, string, xp, id, jf);
     free(xp);
 }
 
@@ -1136,16 +1140,16 @@ void fontclip(int mode) {
    clipmode=mode;
 };
 
-void fontdraw(double x, double y) {
+void fontdraw(PLOTDAT *pd, double x, double y) {
     static double xxold, yyold;
     extern int clipmode;
     fontnsegs++;
     if (fontnsegs > 1) {
-	//if (clipmode) {
-	//    clip(xxold, yyold, x, y);
-	//} else {
+	if (clipmode) {
+	    clip(pd, xxold, yyold, x, y);
+	} else {
 	    xwin_draw_line(xxold, yyold, x, y);
-	//}
+	}
     }
     xxold=x; yyold=y;
 }
@@ -1165,7 +1169,7 @@ void draw(PLOTDAT *pd, double x, double y) {
        if (autolineflag) line(++linenum);
     }
     if (symbolmode) {
-      do_symbol(symnum, xs, ys, fontsize*symbolsize);
+      do_symbol(pd, symnum, xs, ys, fontsize*symbolsize);
     } 
     if (nsegs==0) {
        if (autosymflag) symbol(++symnum);

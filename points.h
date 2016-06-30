@@ -56,13 +56,13 @@ extern void xscale(char *, double scale);
 extern void yscale(char *, double scale);
 extern void draw(PLOTDAT *pd, double x, double y);
 extern void jump(void);
-extern void fontdraw(double x, double y);
+extern void fontdraw(PLOTDAT *pd, double x, double y);
 extern void fontjump(void);
 extern void pen(int penno);
 extern void line(int lineno);
 extern void symbol(int symno);
 extern void do_note();
-void do_symbol(int c, double x, double y, double size);
+void do_symbol(PLOTDAT *pd, int c, double x, double y, double size);
 extern void back(int backstat);
 extern void loose_label(PLOTDAT *pd, double *min, double *max, int nticks, int axis,\
 	int dolabel, int logmode, int dryrun);

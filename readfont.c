@@ -43,7 +43,7 @@ int ydef[2][MAXPOINT];
 
 int fillable[2] = {0,1};
 
-void writechar(int c,double x,double y,XFORM *xf,int id)
+void writechar(PLOTDAT *pd, int c,double x,double y,XFORM *xf,int id)
 {
     int i;
     double xp,yp,xt,yt;
@@ -64,7 +64,7 @@ void writechar(int c,double x,double y,XFORM *xf,int id)
 	    if (id) yp+=.1;	// correct baseline between two fonts
 	    xt = xp*xf->r11 + yp*xf->r21 + xf->dx;
 	    yt = xp*xf->r12 + yp*xf->r22 + xf->dy;
-	    fontdraw(xt,yt); 
+	    fontdraw(pd, xt,yt); 
 	} else {
 	    fontjump();
 	}
@@ -116,7 +116,7 @@ int chartoindex(int c) {
    };
 }
 
-void writestring(char *s, XFORM *xf, int id, int jf)
+void writestring(PLOTDAT *pd, char *s, XFORM *xf, int id, int jf)
 {
     double yoffset=0.0;
     int debug=0;
@@ -206,20 +206,20 @@ void writestring(char *s, XFORM *xf, int id, int jf)
 	    yoffset-=0.5;
 	    ++s;
 	} else if (*s == '\\' && *(s+1) == '\\') {	// literal backslash
-	    writechar('\\',
+	    writechar(pd, '\\',
 	        (((double)(dx[id]))*0.80*xoffset)/((double)(dy[id]))+xoff,
 		-yoffset+yoff,xf,id);
 	    xoffset+=1.0;
 	    ++s;
 	} else if (*s == '\\' && *(s+1)!='\0') {	// possible greek
 	    // printf("inside greek, char = %c, index=%d\n", *(s+1), chartoindex(*(s+1)));
-	    writechar(chartoindex(*(s+1)),
+	    writechar(pd, chartoindex(*(s+1)),
 	        (((double)(dx[0]))*0.80*xoffset)/((double)(dy[0]))+xoff,
 		-yoffset+yoff,xf,1);
 	    xoffset+=1.0;
 	    ++s;
 	} else {
-	    writechar(*s,
+	    writechar(pd, *s,
 	        (((double)(dx[id]))*0.80*xoffset)/((double)(dy[id]))+xoff,
 		-yoffset+yoff,xf,id);
 	    if (debug) printf("writing %c, dx:%d dy:%d id:%d\n",
