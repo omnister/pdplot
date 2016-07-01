@@ -1,6 +1,6 @@
 #include <stdio.h>
-#include "xwin.h"
 #include "points.h"
+#include "xwin.h"
 
 double xmin = 0.0;
 double xmax = 0.0;

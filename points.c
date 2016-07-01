@@ -190,7 +190,7 @@ void button(double x, double y, int buttonno, int pressdown) {
 		      }
 		   }
 		   xwin_set_pen_line(1,1);
-		   xwin_annotate(buf);
+		   xwin_annotate(pd, buf);
 		   if (debug) printf("plot %d: (%g,%g)->(%g,%g) %d %d\n", i,
 			x, y, x1, y1,
 			buttonno, pressdown);
@@ -1145,11 +1145,13 @@ void fontdraw(PLOTDAT *pd, double x, double y) {
     extern int clipmode;
     fontnsegs++;
     if (fontnsegs > 1) {
-	if (clipmode) {
-	    clip(pd, xxold, yyold, x, y);
-	} else {
+	// FIXME:  drawing circles doesn't clip properly
+	// putting this code back in causes coredump
+	// if (clipmode) {
+	//     clip(pd, xxold, yyold, x, y);
+	// } else {
 	    xwin_draw_line(xxold, yyold, x, y);
-	}
+	// }
     }
     xxold=x; yyold=y;
 }

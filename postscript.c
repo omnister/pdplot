@@ -6,6 +6,7 @@
 #include <math.h>
 #include <string.h>
 
+#include "points.h"
 #include "xwin.h"
 #include "postscript.h"
 

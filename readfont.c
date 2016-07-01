@@ -122,6 +122,10 @@ void writestring(PLOTDAT *pd, char *s, XFORM *xf, int id, int jf)
     int debug=0;
     double xoffset=0.0;
     double xoff, yoff;
+
+    if (s==NULL) {
+       return;
+    }
     
     double width=(((double)(dx[id]))*0.80*strlen(s))/((double)(dy[id]));
     double height=0.8;

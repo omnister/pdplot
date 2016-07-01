@@ -3,8 +3,8 @@
 #include <ctype.h>
 #include <string.h>
 #include <math.h>
-#include "xwin.h"
 #include "points.h"
+#include "xwin.h"
 #include "readfont.h"
 #include <unistd.h>
 #include "symbol.h"

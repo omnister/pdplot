@@ -9,8 +9,8 @@
 #include <sys/wait.h>
 #include <math.h>
 #include "eventnames.h"
-#include "xwin.h"
 #include "points.h"
+#include "xwin.h"
 #include "postscript.h"
 
 void load_font(XFontStruct **font_info);
@@ -601,11 +601,11 @@ void xwin_draw_box(double x1, double y1, double x2, double y2)
     xwin_draw_line(x2, y1, x1, y1);
 }
 
-void xwin_annotate(char *buf) {
+void xwin_annotate(PLOTDAT *pd, char *buf) {
    double size;
    size = (double) ((width+height)/80);
    XClearArea(dpy, win, 0, height-(int)(size*1.5), width, 1.5*size, False);
-    do_note(buf, (double) width/2, (double) 5, MIRROR_OFF,
+   do_note(pd, buf, (double) width/2, (double) 5, MIRROR_OFF,
                     size, 1.0, 0.0, 0.0, 0, 1);
 
    // XDrawImageString(dpy, win, gc, 20, height-5, buf, strlen(buf));
