@@ -22,11 +22,11 @@ int logmode, int dryrun) {
     // int nfrac;
     double d;	/* tick mark spacing */
     double graphmin, graphmax;
-    double range, x;
+    double range, x,y;
 
     if (logmode != 1) {	// just do linear scaling
 
-	range = nicenum(*max-*min, 0); 	/* we expect min!=max */
+	range = nicenum(*max-*min, 1); 	/* we expect min!=max */
 	d = nicenum(range/(double)(nticks),1);
 	if (dryrun) {
 	    graphmin = floor(*min/d)*d;
@@ -41,13 +41,15 @@ int logmode, int dryrun) {
 
 	if (!dryrun) {
 	    // printf("graphmin=%g graphmax=%g increment=%g\n", graphmin, graphmax, d);
-	    for (x=graphmin+d; x<graphmax-0.5*d; x+=d) {
+	    for (x=graphmin+d; x<graphmax-0.50*d; x+=d) {
+		// printf("line at %g\n", (x-graphmin)/(graphmax-graphmin));
 		gridline(pd, (x-graphmin)/(graphmax-graphmin), axis);
 	    }
-	    for (x=graphmin; x<graphmax+0.5*d; x+=d) {
-		x  = (d/100.0)*rint(x/(d/100.0));
-		sprintf(temp, str, x);
+	    for (x=graphmin; x<graphmax+0.50*d; x+=d) {
+		y  = (d/100.0)*rint(x/(d/100.0));
+		sprintf(temp, str, y);
 		if (dolabel) {
+		    // printf("label at %g\n", (x-graphmin)/(graphmax-graphmin));
 		    gridlabel(pd, temp, (x-graphmin)/(graphmax-graphmin), axis);
 		}
 	    }

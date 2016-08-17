@@ -267,6 +267,7 @@ void linkit(DATUM *d) // add a datum to the current list
 void savepoint(double x, double y)
 {
     // scale the points as they are read
+    // printf("linking %g %g\n", x/plots[0].xscale, y/plots[numplots].yscale);
     linkit(datum_new( x/plots[0].xscale,
 	y/plots[numplots].yscale));
 }
@@ -477,6 +478,23 @@ void gridline(PLOTDAT *pd, double alpha, int x) {
     }
 }
 
+void gridlabel(PLOTDAT *pd, char *str, double alpha, int x) {
+    double tmp;
+    xwin_set_pen_line(framepen,1);
+    if (scalemode) {
+	if (x) { 			// xaxis label
+	    tmp = alpha*pd->urx+(1.0-alpha)*pd->llx;
+	    do_note(pd, str, tmp, pd->lly-pad, MIRROR_OFF,
+	    	xfontsize*.6*charsize*tagsize, 1.0, 0.0, 0.0, 0, 7);
+	} else { 			// yaxis label
+	    tmp = alpha*pd->ury+(1.0-alpha)*pd->lly;
+	    do_note(pd, str, pd->llx-pad, tmp, MIRROR_OFF,
+	    	yfontsize*.6*charsize*tagsize, 1.0, 0.0, 0.0, 0, 5);
+	}
+    }
+}
+
+
 void axislabel(PLOTDAT *pd, char *str, int x) {
     double tmp,mid;
     xwin_set_pen_line(framepen,1);
@@ -491,22 +509,6 @@ void axislabel(PLOTDAT *pd, char *str, int x) {
 	    mid = (pd->lly+pd->ury)/2.0;
 	    do_note(pd, str, tmp, mid , MIRROR_OFF, 
 	    	scalesize*charsize*yfontsize*.6, 1.0, 0.0, 90.0, 0, 4);
-	}
-    }
-}
-
-void gridlabel(PLOTDAT *pd, char *str, double alpha, int x) {
-    double tmp;
-    xwin_set_pen_line(framepen,1);
-    if (scalemode) {
-	if (x) { 			// xaxis label
-	    tmp = alpha*pd->urx+(1.0-alpha)*pd->llx;
-	    do_note(pd, str, tmp, pd->lly-pad, MIRROR_OFF,
-	    	xfontsize*.6*charsize*tagsize, 1.0, 0.0, 0.0, 0, 7);
-	} else { 			// yaxis label
-	    tmp = alpha*pd->ury+(1.0-alpha)*pd->lly;
-	    do_note(pd, str, pd->llx-pad, tmp, MIRROR_OFF,
-	    	yfontsize*.6*charsize*tagsize, 1.0, 0.0, 0.0, 0, 5);
 	}
     }
 }
