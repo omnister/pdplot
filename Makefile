@@ -38,6 +38,8 @@ install: pd pdplot pd.1 ${FONTS}
 	fi
 	-/bin/cp ${MANPAGE} ${MANDIR}
 	-/bin/mkdir /var/spool/sockets
+	-/bin/mkdir /var/spool/sockets/pdplot
+	-/bin/chmod 777 /var/spool/sockets/pdplot
 
 tar: $(TARS)
 	(  d=`date +%F`;\

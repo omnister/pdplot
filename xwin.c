@@ -418,7 +418,7 @@ XFontStruct *font_info;
     unsigned long valuemask = 0;
 
     XGCValues values;
-    unsigned int line_width = 0;
+    unsigned int line_width = 1;
     /* int line_style = LineOnOffDash; */
     int line_style = LineSolid;
     int cap_style = CapButt;
@@ -582,11 +582,12 @@ void xwin_set_pen_line(int pen, int line)
 	if (width + height > 1500) {
 	   line_width=2;
 	} else {
-	   line_width=0;
+	   line_width=1;
 	}
 
 	XSetLineAttributes(dpy, gc, line_width, line_style, CapButt, JoinRound); 
 	XSetDashes(dpy, gc, dash_offset, dash_list, dash_n);
+
     } else {
 	ps_set_pen(pen);
 	ps_set_line(line);
