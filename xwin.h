@@ -14,3 +14,11 @@ int xwin_dump_postscript(char *command);
 
 extern char *progname;
 extern int need_redraw;		// setting TRUE causes redraw
+
+extern void init_stipples();
+extern int get_stipple_index(int fill, int pen);
+extern char *get_stipple_bits(int i);
+extern const char * xwin_ps_dashes(int line);
+extern const char * xwin_svg_dashes(int line);
+extern const char * get_hpgl_fill(int line);
+

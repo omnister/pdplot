@@ -292,6 +292,14 @@ char **argv;
 	       } else {
 		   xwin_dump_postscript("cat > pddump.ps");
 	       }
+	   } else if (strncmp(sp,"svg",3)==0) {
+	       ps_set_outputtype(SVG);
+	       if (sscanf(sp,"svg %s", scratch) == 1) {
+		   sprintf(scratch2, "cat > %s.svg", scratch);
+		   xwin_dump_postscript(scratch2);
+	       } else {
+		   xwin_dump_postscript("cat > pddump.svg");
+	       }
 	   } else if (strncmp(sp,"dxf",3)==0) {
 	       ps_set_outputtype(DXF);
 	       if (sscanf(sp,"dxf %s", scratch) == 1) {

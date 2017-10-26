@@ -594,6 +594,68 @@ void xwin_set_pen_line(int pen, int line)
     }
 }
 
+// any changes to this routine need to be harmonized with xwin_set_pen_line_fill() above
+// we assume here that "sd" is a defined alias of "setdash" in the preamble
+
+const char * xwin_ps_dashes(int line)
+{
+    switch (line % 7) {
+    case 0:
+        return ("[] 0 sd");
+        break;
+    case 1:
+        return ("[] 0 sd");
+        break;
+    case 2:
+        return ("[7 5] 0 sd");
+        break;
+    case 3:
+        return ("[7 2 1 2] 0 sd");
+        break;
+    case 4:
+        return ("[7 2 3 2] 0 sd");
+        break;
+    case 5:
+        return ("[9 5] 0 sd");
+        break;
+    case 6:
+        return ("[4 4] 0 sd");
+        break;
+    }
+    return NULL;
+}
+
+// any changes to this routine need to be harmonized with xwin_set_pen_line_fill() above
+
+const char * xwin_svg_dashes(int line)
+{
+    switch (line % 7) {
+    case 0:
+        return NULL;
+        break;
+    case 1:
+        return NULL;
+        break;
+    case 2:
+        return ("7,5");
+        break;
+    case 3:
+        return ("3,2");		// grid 
+        break;
+    case 4:
+        return ("7,2,3,2");
+        break;
+    case 5:
+        return ("9,5");
+        break;
+    case 6:
+        return ("4,4");
+        break;
+    }
+    return NULL;
+}
+
+
 void xwin_draw_box(double x1, double y1, double x2, double y2)
 {
     xwin_draw_line(x1, y1, x1, y2);

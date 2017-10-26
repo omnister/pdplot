@@ -189,7 +189,7 @@ void button(double x, double y, int buttonno, int pressdown) {
 			    x1, y1, x1-x2, y1-y2,1.0/(x1-x2), (y1-y2)/(x1-x2));
 		      }
 		   }
-		   xwin_set_pen_line(1,1);
+		   xwin_set_pen_line(1,0);
 		   xwin_annotate(pd, buf);
 		   if (debug) printf("plot %d: (%g,%g)->(%g,%g) %d %d\n", i,
 			x, y, x1, y1,
@@ -446,7 +446,7 @@ void logmode(int axis, int mode) {
 
 void gridtick(PLOTDAT *pd, double alpha, int x) {
     double tmp;
-    xwin_set_pen_line(1,1);
+    xwin_set_pen_line(1,0);
     if (tickmode && ticklen>0) {
 	if (x) { 			// xaxis grid lines
 	    tmp = alpha*pd->urx+(1.0-alpha)*pd->llx;
@@ -480,7 +480,7 @@ void gridline(PLOTDAT *pd, double alpha, int x) {
 
 void gridlabel(PLOTDAT *pd, char *str, double alpha, int x) {
     double tmp;
-    xwin_set_pen_line(framepen,1);
+    xwin_set_pen_line(framepen,0);
     if (scalemode) {
 	if (x) { 			// xaxis label
 	    tmp = alpha*pd->urx+(1.0-alpha)*pd->llx;
@@ -497,7 +497,7 @@ void gridlabel(PLOTDAT *pd, char *str, double alpha, int x) {
 
 void axislabel(PLOTDAT *pd, char *str, int x) {
     double tmp,mid;
-    xwin_set_pen_line(framepen,1);
+    xwin_set_pen_line(framepen,0);
     if (scalemode) {
 	if (x) { 			// xaxis label
 	    tmp = pd->lly-pad-xfontsize;
@@ -743,13 +743,13 @@ void render() 	// this is where the image gets drawn
 
     // place for a title
     if (plots[0].title != NULL && scalemode) {
-	xwin_set_pen_line(1,1);
+	xwin_set_pen_line(1,0);
 	do_note(pd, plots[0].title, (llx+urx)/2.0, 
 	   pad+ury, MIRROR_OFF, fontsize*charsize*titlesize,
 	   1.28, 0.0, 0.0, 0, 1);
     }
     if (plots[0].xaxis != NULL) {
-       xwin_set_pen_line(1,1);
+       xwin_set_pen_line(1,0);
        axislabel(&plots[numplots],plots[0].xaxis,1);
     }
 
@@ -891,14 +891,14 @@ void render() 	// this is where the image gets drawn
       }
 
       if (pd->yaxis != NULL) {
-  	  xwin_set_pen_line(1,1);
+  	  xwin_set_pen_line(1,0);
           axislabel(pd,pd->yaxis,0);
       }
 
       back(0);		// defaults on a per graph basis...		
       pen(2);		// select red pen
       symbol(1);	// select first symbol
-      line(1);
+      line(1);		
       autopenflag=1;
       autosymflag=1;
       // gridpenx=1;
@@ -937,7 +937,7 @@ void render() 	// this is where the image gets drawn
 	 }
       }
 
-      xwin_set_pen_line(framepen,1);
+      xwin_set_pen_line(framepen,0);
       if (boxmode) {
 	  xwin_draw_box(pd->llx, pd->lly, pd->urx, pd->ury);	// plot boundary
       }

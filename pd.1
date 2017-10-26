@@ -6,7 +6,7 @@ pdplot \- plot ascii data to an X window
 .B Pdplot 
 .br
 .B pd 
-[-n] [-k] [-g<pngfile>] [-p<psfile>] [-r] [file1 file2...]
+[-n] [-k] [-g<pngfile>] [-p<psfile>] [-s<svgfile>] [-r] [file1 file2...]
 .br
 .SH DESCRIPTION
 .B Pdplot
@@ -54,10 +54,17 @@ to putting a
 .B post <file>
 formatting command in the input data file.
 .TP
+.B "\-s <file>"
+Write an svg dump of the existing window to <file>.ps.   This is equivalent
+to putting an 
+.B svg <file>
+formatting command in the input data file.
+.TP
 .B "\-k"
 Kill any existing 
 .I 
-pdplot daemon and close the graphics window.
+pdplot
+daemon and close the graphics window.
 .TP
 .B "\-r"
 Force a refresh of the screen.
@@ -484,6 +491,11 @@ Write a postcript dump of the existing window to <file>.ps.  The resulting
 file is in a fairly organized format.  In particular, you may wish to 
 search for the color definitions c1, c2, ... c15 to make modifications.  The
 postscript file is autoscaled and rotated to fit the page as well as possible.
+.TP
+.B "svg <file>"
+Write an svg dump of the existing window to <file>.svg. This file
+will display directly in firefox with "firefox <file>.svg".  It
+will also import nicely into powerpoint and openoffice.
 .SH "SPECIAL CHARACTERS"
 The following special command characters are allowed
 in titles and labels.
