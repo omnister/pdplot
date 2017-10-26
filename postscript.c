@@ -92,11 +92,44 @@ int hpgl_penmap[] = {
     6,4,1,2
 };
 
+/*
+// colors displayed in open office for dxf
+0 blk
+1 red
+2 yellow
+3 green
+4 cyanc
+5 blue
+6 magenta
+7 black
+8 mid grey
+9 light grey
+
+xcolors         dxf map
+0 blk           7  blk
+1 wht           7  blk
+2 red           1  red
+3 green         3  green
+4 blue          5  blue
+5 aqua          4  cyan
+6 mag           6  magenta
+7 yellow        2  yellow
+8 pink          6  magenta
+9 lime          9  lgrey
+10 pale blue    4  cyan
+11 blue-green   5  blue
+12 purple       6  magenta
+13 khaki        9  lgrey (grid)
+14 light grey   8  mgrey
+15 dark grey    7  black
+
+*/
+
 int dxf_penmap[] = {
-    7,1,3,5,
-    4,6,2,7,
-    9,8,7,1,
-    3,5,4,6
+    7,7,1,3,
+    5,4,6,2,
+    6,9,4,5,
+    6,9,8,7
 };
 
 
@@ -193,7 +226,7 @@ void ps_preamble(
     double xmax, ymax;
     int landscape;
     double tmp;
-    int debug=1;
+    int debug=0;
 
     if (debug) printf("ps_preamble:\n");
 
@@ -222,10 +255,10 @@ void ps_preamble(
 	xmax=pdx*72.0;
 	ymax=pdy*72.0;
 
-	printf("aspect is xdel: %f, ydel: %f\n", xdel, ydel);
+	if (debug) printf("aspect is xdel: %f, ydel: %f\n", xdel, ydel);
 	if (xdel > ydel) { /* flip aspect */
 	    landscape=1;
-	    printf("setting landscape\n");
+	    if (debug) printf("setting landscape\n");
 	    tmp=xmax;  xmax=ymax; ymax=tmp;
 	} else {
 	    printf("setting portrait\n");
