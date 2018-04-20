@@ -196,6 +196,11 @@ void button(double x, double y, int buttonno, int pressdown) {
 			buttonno, pressdown);
 		   x2=x1; y2=y1;
 		   return;
+	      } else if (buttonno == 2) {
+		  xset(0.0,0.0);	// zoom out
+		  yset(0.0,0.0);
+		  need_redraw++;
+		  npts3=0;
 	      } else if (buttonno == 3) {
 		  if ((fabs(x3-x1) < fabs(pd->xmax-pd->xmin)/100.0) && 
 		  	(fabs(y3-y1) < fabs(pd->ymax-pd->ymin)/100.0)) {

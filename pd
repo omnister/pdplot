@@ -3,10 +3,12 @@
 # pd --- user script to send data to pdplot daemon
 #
 usage="usage:  pd [-k][-n][-p][-d N] [-w window_name] [file...]"
-gopts='knp:rd:f:w:g:s:'
+gopts='knp:rd:f:w:g:h:s:a:'
 #
 #   -n	      don't clear the existing data
 #   -k	      kill the pdplot daemon, remove the pipe
+#   -a <file> dump plot to <file>.ap
+#   -h <file> dump plot to <file>.hpgl
 #   -g <file> dump plot to <file>.png
 #   -p <file> dump the plot to <file>.ps
 #   -f <file> dump the plot to <file>.dxf
@@ -34,10 +36,12 @@ while [ $# -gt 0 ] ; do
 	-r )	cmd="plot"; shift ;;
 	-k )	kill=1; shift ;;
 	-d )	debug="-d $2"; shift 2 ;;
+	-a )    cmd="autoplot $wd/$2"; shift 2 ;;
 	-p )    cmd="post $wd/$2"; shift 2 ;;
 	-f )    cmd="dxf $wd/$2"; shift 2 ;;
 	-s )    cmd="svg $wd/$2"; shift 2 ;;
 	-g )    cmd="graph $wd/$2"; shift 2 ;;
+	-h )    cmd="hpgl $wd/$2"; shift 2 ;;
 	-w )	given_name=$2; shift 2 ;;
 	-- )	shift; break ;;
 	#### These cases should never be executed:

@@ -284,6 +284,22 @@ char **argv;
 	       } else {
 		   xwin_dump_graphics("pnmtopng > pddump.png");
 	       }
+	   } else if (strncmp(sp,"autoplot",8)==0) {
+	       ps_set_outputtype(AUTOPLOT);
+	       if (sscanf(sp,"autoplot %s", scratch) == 1) {
+		   sprintf(scratch2, "cat > %s.ap", scratch);
+		   xwin_dump_postscript(scratch2);
+	       } else {
+		   xwin_dump_postscript("cat > pddump.ap");
+	       }
+	   } else if (strncmp(sp,"hpgl",4)==0) {
+	       ps_set_outputtype(HPGL);
+	       if (sscanf(sp,"hpgl %s", scratch) == 1) {
+		   sprintf(scratch2, "cat > %s.hpgl", scratch);
+		   xwin_dump_postscript(scratch2);
+	       } else {
+		   xwin_dump_postscript("cat > pddump.hpgl");
+	       }
 	   } else if (strncmp(sp,"post",4)==0) {
 	       ps_set_outputtype(POSTSCRIPT);
 	       if (sscanf(sp,"post %s", scratch) == 1) {
