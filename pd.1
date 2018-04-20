@@ -5,8 +5,7 @@ pdplot \- plot ascii data to an X window
 .SH SYNOPSIS
 .B Pdplot 
 .br
-.B pd 
-[-n] [-k] [-g<pngfile>] [-p<psfile>] [-s<svgfile>] [-r] [file1 file2...]
+.B pd [-n] [-k] [-a<apfile>] [-f<dxf>] [-g<pngfile>] [-h<hpgl>] [-p<ps>] [-s<svg>] [-w<windowname>] [-r] [file1 file2...]
 .br
 .SH DESCRIPTION
 .B Pdplot
@@ -41,11 +40,33 @@ daemon if none already exists, clear the window and plot the data.
 Do not clear the plot window before plotting new data.  New data will be merged
 with the old dataset and the data will be rescaled if necessary.
 .TP
+.B "\-w <windowname>"
+Decorate the pdplot window with the given window name.
+.TP
+.B "\-a <file>"
+Write an pdplot (autoplot) dump of the existing window to <file>.ap. 
+This is a simple file of x,y pairs,
+interspersed with pen and jump commands. This is equivalent to giving the 
+.B autoplot <file>
+formatting command in the plot data file.
+.TP
+.B "\-f <file>"
+Write an dxf dump of the existing window to <file>.ap. 
+This is a nice format for including plots into powerpoint or
+openoffice presenter.
+.B dxf <file>
+formatting command in the plot data file.
+.TP
 .B "\-g <file>"
 Write a bitdump of the existing window to <file>.png.  This function
 requires the program pnmtopng(1) (from the Netpbm package) to be present
 in the search path.  This is equivalent to giving the 
 .B graph <file>
+formatting command in the plot data file.
+.TP
+.B "\-h <file>"
+Write a hpgl dump the existing window to <file>.hpgl.
+.B hpgl <file>
 formatting command in the plot data file.
 .TP
 .B "\-p <file>"
@@ -473,6 +494,14 @@ command may be used to do annotation.
 The box around the data region will be suppressed.
 Scale labels, grids and titles are not affected.
 .TP
+.B "autoplot <file>"
+Write an autoplot formatted version of the existing window to <file>.ap.  
+The ap data is dumped at the point that it appears
+in the file, so the command should be placed at the very end of
+the data file.  The autoplot format is suitable for rereading
+back into pdplot, perhaps with the grids turned off.  It is also
+the simplest format for translating into another graphics format.
+.TP
 .B "dxf <file>"
 Write a dxf of the existing window to <file>.dxf.  
 The dxf data is dumped at the point that it appears
@@ -483,6 +512,12 @@ the data file.
 Write a bitdump of the existing window to <file>.png.  This function
 requires the program pnmtopng(1) (from the Netpbm package) to be present
 in the search path.  The bitmap is dumped at the point that it appears
+in the file, so the command should be placed at the very end of
+the data file.
+.TP
+.B "hpgl <file>"
+Write an hpgl plot of the existing window to <file>.hpgl.
+The file is dumped at the point that it appears
 in the file, so the command should be placed at the very end of
 the data file.
 .TP
