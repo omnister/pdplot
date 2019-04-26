@@ -33,16 +33,13 @@ int getz(char *s, int n) {
 // return a pointer to the first 
 // non-blank character in s
 char *skipblanks(char *s) {
-   while (isblank(*s) && s!='\0') {
+   while (isblank(*s) && (*s != '\0')) {
       s++;
    }
-   return(s);
+   return s;
 }
 
-int main(argc,argv)
-int argc;
-char **argv;
-{
+int main(int argc, char *argv[]) {
     int n;
     double x,y;
     char s[BUF_SIZE];
@@ -50,12 +47,12 @@ char **argv;
     char scratch2[BUF_SIZE];
     char *sp;
     int line=0;
-    progname = argv[0];
     double xmin,xmax,ymin,ymax;
     double tmp;
     int itmp;
     int opt;
 
+    progname = argv[0];
     setvbuf(stdin, NULL, _IONBF, 0);  // make stdin unbuffered 
 
     while ((opt=getopt(argc, argv, "D:")) != -1) {
