@@ -88,7 +88,7 @@ int main(int argc, char *argv[]) {
 	loadfont("/usr/local/lib/pdplot/NOTEDATA.F", 0);
     } else {
         fprintf(stderr,"can't find NOTEDATA.F font file\n");
-	exit(0);
+	exit(2);
     }
 
 #ifdef DEBUG
@@ -100,7 +100,7 @@ int main(int argc, char *argv[]) {
 	loadfont("/usr/local/lib/pdplot/SYMBOL.F", 1);
     } else {
         fprintf(stderr,"can't find SYMBOL.F font file\n");
-	exit(0);
+	exit(3);
     }
 
   while (1) {
@@ -315,7 +315,7 @@ int main(int argc, char *argv[]) {
 		   xwin_dump_postscript("cat > pddump.dxf");
 	       }
 	   } else if (strncmp(sp,"exit",4)==0) {
-	       exit(2);
+	       exit(0);
 	   } else {
 	       savecmd(sp);
 	   }
@@ -334,5 +334,5 @@ int main(int argc, char *argv[]) {
     }
     usleep(500);
   }
-  exit(1);
+  exit(0);
 }
