@@ -13,7 +13,6 @@
 #include "points.h"
 #include "xwin.h"
 #include "readfont.h"
-#include <unistd.h>
 #include "symbol.h"
 #include "postscript.h"
 
