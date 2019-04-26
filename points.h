@@ -1,3 +1,6 @@
+#ifndef __PDP_POINTS_H
+#define __PGP_POINTS_H
+
 typedef struct datum {
     char *cmd;		// either NULL or cmd string.  If str, then x,y unused.
     double x;
@@ -105,3 +108,4 @@ extern double xmin, xmax, ymin, ymax;
 #define MIRROR_Y   2
 #define MIRROR_XY  3
 
+#endif
