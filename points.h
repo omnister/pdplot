@@ -1,5 +1,5 @@
 #ifndef __PDP_POINTS_H
-#define __PGP_POINTS_H
+#define __PDP_POINTS_H
 
 typedef struct datum {
     char *cmd;		// either NULL or cmd string.  If str, then x,y unused.
