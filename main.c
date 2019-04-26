@@ -1,8 +1,15 @@
+#ifndef _DEFAULT_SOURCE
+#define _DEFAULT_SOURCE
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
 #include <string.h>
 #include <math.h>
+#include <unistd.h>
+#include <getopt.h>
+
 #include "points.h"
 #include "xwin.h"
 #include "readfont.h"
@@ -79,7 +86,7 @@ char **argv;
     initsym();
     initplot();
 
-    if (0 && access("./NOTEDATA.F", R_OK) == 0) {
+    if (access("./NOTEDATA.F", R_OK) == 0) {
 	loadfont("./NOTEDATA.F", 0);
     } else if (access("/usr/local/lib/pdplot/NOTEDATA.F", R_OK) == 0) {
 	loadfont("/usr/local/lib/pdplot/NOTEDATA.F", 0);
@@ -88,9 +95,12 @@ char **argv;
 	exit(0);
     }
 
-    if (0 && access("./SYMBOL.F", R_OK) == 0) {
+#ifdef DEBUG
+    if (access("./SYMBOL.F", R_OK) == 0) {
 	loadfont("./SYMBOL.F", 1);
-    } else if (access("/usr/local/lib/pdplot/SYMBOL.F", R_OK) == 0) {
+    } else
+#endif
+    if (access("/usr/local/lib/pdplot/SYMBOL.F", R_OK) == 0) {
 	loadfont("/usr/local/lib/pdplot/SYMBOL.F", 1);
     } else {
         fprintf(stderr,"can't find SYMBOL.F font file\n");

@@ -1,3 +1,4 @@
+#include "points.h"
 
 void initX(void);
 int procXevent(char *s, int n); 
