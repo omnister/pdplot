@@ -64,7 +64,7 @@ int main(int argc, char *argv[]) {
 	    // com_ci(optarg); // open rawfile 
 	    // break;
 	default:	/* '?' */
-	   fprintf(stderr, "usage: %s [-p <psfile>] [-g <pngfile>] [-r <rawfile>] <script>\n", argv[0]);
+	   fprintf(stderr, "usage: %s [-D display] <script>\n", argv[0]);
 	   exit(1);
 	}
     }
