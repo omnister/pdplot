@@ -591,11 +591,12 @@ void ps_end_line()
 	   fprintf(fp, "G37*\n");
        }
     } else if (outputtype == SVG || outputtype == WEB) {			// SVG
-       fprintf(fp, "  \"\n  fill=\"none\" stroke=\"%s\" ", pen_to_svg_color(this_pen));
+       fprintf(fp,
+       "\"\nstyle=\"fill:none;stroke:%s;stroke-width:%g;stroke-linejoin:round;\"/>\n",
+	  pen_to_svg_color(this_pen),linewidth);
        if (xwin_svg_dashes(this_line) != NULL) {
 	   fprintf(fp, "stroke-dasharray=\"%s\" ", xwin_svg_dashes(this_line));
        }
-       fprintf(fp, "stroke-width=\"2.0\"\n/>\n");
     } else if (outputtype == HPGL) {			// HPGL
        if (in_poly) {
 	   fprintf(fp, "PM2;\n");
