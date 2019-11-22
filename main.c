@@ -27,7 +27,7 @@ int getz(char *s, int n) {
 // return a pointer to the first 
 // non-blank character in s
 char *skipblanks(char *s) {
-   while (isblank(*s) && s!='\0') {
+   while (isblank(*s) && *s!='\0') {
       s++;
    }
    return(s);
@@ -41,7 +41,7 @@ char **argv;
     double x,y;
     char s[BUF_SIZE];
     char scratch[BUF_SIZE];
-    char scratch2[BUF_SIZE];
+    char scratch2[BUF_SIZE*2];
     char *sp;
     int line=0;
     progname = argv[0];

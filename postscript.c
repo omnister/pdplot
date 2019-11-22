@@ -6,7 +6,7 @@
 #include <math.h>
 #include <string.h>
 
-#include "db.h"
+// #include "db.h"
 #include "postscript.h"
 
 #include "points.h"
