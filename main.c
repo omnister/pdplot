@@ -342,7 +342,8 @@ char **argv;
 	   }
        }
     }
-    usleep(500);
+    usleep(500); 	// don't hog CPU
+    clearerr(stdin);	// recover from EOF on input pipe file
   }
   exit(1);
 }
