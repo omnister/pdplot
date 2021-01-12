@@ -255,9 +255,12 @@ Both the minimum and the maximum must be specified with
 each command, or automatic scaling is enabled.
 If only one of the two axes is specified,
 automatic scaling of the other axis will
-only consider data points that are within the specified range on the first
+only consider data points that are within the specified range of the first
 axis.  The min/max values operate on the data after any scaling applied by
-xscale and yscale commands.
+xscale and yscale commands. Prior to 2021, the xset, yset commands could only be
+used to shrink size of an axis. Now xset and yset commands are no longer followed by a fit but are obeyed without further
+processing.  This is helpful for animations where multiple plots need to have exactly the same
+axes when plotting noisy data.
 .B maxxdiv \fIn
 .PD 0
 .TP
