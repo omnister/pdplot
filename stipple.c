@@ -3,10 +3,9 @@
 #include <X11/Xutil.h>
 #include <X11/Xos.h>
 #include <X11/Xatom.h>
-#include "db.h"
+
 #include "points.h"
 #include "xwin.h"
-#include <stdlib.h>
 
 #define STIPW 8
 #define STIPH 8 
