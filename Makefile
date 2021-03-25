@@ -4,7 +4,7 @@ FONTS=SYMBOL.F NOTEDATA.F
 
 TARS=Makefile main.c points.c readfont.c xwin.c label.c clip.c points.h \
 symbol.c symbol.h xwin.h readfont.h eventnames.h postscript.c stipple.c \
-postscript.h ${FONTS} pd pd.1
+postscript.h ${FONTS} pd pd.1 README
 
 CC=cc -ggdb -Wall -Werror
 #CC=cc -pg -Wall
@@ -48,10 +48,6 @@ tar: $(TARS)
 	   rm -rf $$p$$d;\
 	   mkdir $$p$$d;\
 	   cp -rp $(TARS) $$p$$d;\
-	   mkdir $$p$$d/cells;\
-	   cp -rp $(CELLS) $$p$$d/cells;\
-	   mkdir $$p$$d/man;\
-	   cp -rp $(MANS) $$p$$d/man;\
 	   tar czvf - $$p$$d >$$p$$d.tar.gz;\
 	)
 

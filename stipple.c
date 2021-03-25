@@ -4,7 +4,9 @@
 #include <X11/Xos.h>
 #include <X11/Xatom.h>
 #include "db.h"
+#include "points.h"
 #include "xwin.h"
+#include <stdlib.h>
 
 #define STIPW 8
 #define STIPH 8 
@@ -101,7 +103,7 @@ void init_stipples() {
     int i,j;
     unsigned char a;
     for (i=0; i<50; i++) {	/* deterministic stipples */
-	stipple[i] = XCreateBitmapFromData(dpy, win, (const char *)stip_src[i], 
+	stipple[i] = XCreateBitmapFromData(dpy, win, stip_src[i], 
 	    (unsigned int) STIPW, (unsigned int) STIPH);
     }
     for (; i<MAXSTIP; i++) {	/* make random stipples */
@@ -113,7 +115,7 @@ void init_stipples() {
 	    /* a &= (unsigned char) (drand48()*255.0); */
 	    stip_src[i][j] = (unsigned char) a;
 	}
-	stipple[i] = XCreateBitmapFromData(dpy, win, (const char *)stip_src[i],
+	stipple[i] = XCreateBitmapFromData(dpy, win, stip_src[i],
 	    (unsigned int) STIPW, (unsigned int) STIPH);
     }
 }
