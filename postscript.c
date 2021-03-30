@@ -593,7 +593,7 @@ void ps_end_line()
     } else if (outputtype == SVG || outputtype == WEB) {			// SVG
        fprintf(fp,
        "\"\nstyle=\"fill:none;stroke:%s;stroke-width:%g;stroke-linejoin:round;\"/>\n",
-	  pen_to_svg_color(this_pen),linewidth);
+	  pen_to_svg_color(this_pen),linewidth*2.0);	// wider lines for power point
        if (xwin_svg_dashes(this_line) != NULL) {
 	   fprintf(fp, "stroke-dasharray=\"%s\" ", xwin_svg_dashes(this_line));
        }

@@ -23,18 +23,19 @@ int logmode, int dryrun) {
     double d;	/* tick mark spacing */
     double graphmin, graphmax;
     double range, x,y;
+    int debug=0;
+
+    if (debug) printf("min %g max %g ntick %d axis %d dolable %d dryrun %d\n", *min, *max, nticks, axis, dolabel, dryrun);
 
     if (logmode != 1) {	// just do linear scaling
 
 	range = nicenum(*max-*min, 1); 	/* we expect min!=max */
 	d = nicenum(range/(double)(nticks),1);
-	if (dryrun) {
-	    graphmin = floor(*min/d)*d;
-	    graphmax = ceil(*max/d)*d;
-	} else {
-	    graphmin = *min;
-	    graphmax = *max;
-	}
+	if (debug) printf("d = %g\n", d);
+
+	graphmin = floor(*min/d)*d;
+	graphmax = ceil(*max/d)*d;
+
 	// nfrac = MAX(-floor(log10(d)),0);	/* # frac digits to show */
 	// sprintf(str,"%%.%df", nfrac); 	/* simplest axis labels */
 	sprintf(str,"%%g"); 	
@@ -49,7 +50,7 @@ int logmode, int dryrun) {
 		y  = (d/100.0)*rint(x/(d/100.0));
 		sprintf(temp, str, y);
 		if (dolabel) {
-		    // printf("label at %g\n", (x-graphmin)/(graphmax-graphmin));
+		    if (debug) printf("label at %g\n", (x-graphmin)/(graphmax-graphmin));
 		    gridlabel(pd, temp, (x-graphmin)/(graphmax-graphmin), axis);
 		}
 	    }
