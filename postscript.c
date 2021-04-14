@@ -294,9 +294,10 @@ void ps_preamble(
 	fprintf(fp,"<svg xmlns=\"http://www.w3.org/2000/svg\"\n");
 	if (outputtype == SVG) {
 	    fprintf(fp,"width=\"100%%\" viewBox=\"%g %g %g %g\" preserveAspectRatio=\"xMinYMin meet\">\n", 
-		llx, lly, urx-llx, ury-lly);
-	    fprintf(fp,"<rect x=\"%g\" y=\"%g\" width=\"%g\" height=\"%g\" />\n",
-		llx, ury-lly, urx-llx, 2*lly-ury);
+		0.0, 0.0, urx-llx, lly-ury);
+		// llx, lly, urx-llx, ury-lly);
+	    fprintf(fp,"<rect x=\"0\" y=\"0\" width=\"100%%\" height=\"100%%\" />\n");
+		//llx, ury-lly, urx-llx, 2*lly-ury);
 	}
 	if (outputtype == WEB) {
 	    fprintf(fp,"width=\"100%%\" viewBox=\"%g %g %g %g\" preserveAspectRatio=\"xMinYMin meet\">\n", 
