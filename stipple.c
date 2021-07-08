@@ -1,11 +1,11 @@
+#include <stdlib.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/Xos.h>
 #include <X11/Xatom.h>
-// #include "db.h"
+
 #include "points.h"
 #include "xwin.h"
-#include <stdlib.h>
 
 #define STIPW 8
 #define STIPH 8 
@@ -128,11 +128,10 @@ int get_stipple_index(int fill, int pen) {
 }
 
 char *get_stipple_bits(int i) {
-
    if (i >= MAXSTIP-1) {
       return NULL;
    } else {
-       return(&stip_src[i][0]);
+       return (&stip_src[i][0]);
    }
 }
 
