@@ -305,7 +305,9 @@ void dumppoints() {
 
 void freedata(DATUM *dp) {
     DATUM *p;
-    for (p=dp; p!=(DATUM *)0; p=p->next) {
+    DATUM *next;
+    for (p=dp; p!=(DATUM *)0; p=next) {
+	next = p->next;
         free(p);
 	// FIXME: make sure and free cmd strings
     }

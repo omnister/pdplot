@@ -42,7 +42,6 @@ Display *dpy;
 int screen_num;
 
 int need_redraw=0;
-char *progname;
 
 #define BUF_SIZE 2000
 
