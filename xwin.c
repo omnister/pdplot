@@ -42,6 +42,7 @@ Display *dpy;
 int screen_num;
 
 int need_redraw=0;
+extern char *progname;
 
 #define BUF_SIZE 2000
 
@@ -510,9 +511,9 @@ double x1,y1,x2,y2;
 
 void xwin_set_pen_line(int pen, int line) 
 {
-    int dash_n;
+    int dash_n = 2;
     int dash_offset;
-    int line_style;
+    int line_style = LineSolid;
     int line_width;
     char dash_list[5];
 

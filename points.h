@@ -1,3 +1,5 @@
+#pragma once
+
 typedef struct datum {
     char *cmd;		// either NULL or cmd string.  If str, then x,y unused.
     double x;

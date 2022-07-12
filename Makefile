@@ -6,7 +6,7 @@ TARS=Makefile main.c points.c readfont.c xwin.c label.c clip.c points.h \
 symbol.c symbol.h xwin.h readfont.h eventnames.h postscript.c stipple.c \
 postscript.h ${FONTS} pd pd.1 README
 
-CC=cc -ggdb -Wall
+CC=cc -ggdb -Wall -Werror
 #CC=cc -pg -Wall
 
 BINDIR = /usr/local/bin

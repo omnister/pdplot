@@ -6,6 +6,7 @@
 #include "points.h"
 #include "xwin.h"
 #include "readfont.h"
+#include <getopt.h>
 #include <unistd.h>
 #include "symbol.h"
 #include "postscript.h"
@@ -27,15 +28,13 @@ int getz(char *s, int n) {
 // return a pointer to the first 
 // non-blank character in s
 char *skipblanks(char *s) {
-   while (isblank(*s) && *s!='\0') {
+   while (isblank(*s) && (*s!='\0')) {
       s++;
    }
    return(s);
 }
 
-int main(argc,argv)
-int argc;
-char **argv;
+int main(int argc, char *argv[])
 {
     int n;
     double x,y;
@@ -44,11 +43,12 @@ char **argv;
     char scratch2[BUF_SIZE*2];
     char *sp;
     int line=0;
-    progname = argv[0];
     double xmin,xmax,ymin,ymax;
     double tmp;
     int itmp;
     int opt;
+
+    progname = argv[0];
 
     setvbuf(stdin, NULL, _IONBF, 0);  // make stdin unbuffered 
 
@@ -61,7 +61,7 @@ char **argv;
 	    // com_ci(optarg); // open rawfile 
 	    // break;
 	default:	/* '?' */
-	   fprintf(stderr, "usage: %s [-p <psfile>] [-g <pngfile>] [-r <rawfile>] <script>\n", argv[0]);
+	   fprintf(stderr, "usage: %s [-D display] <script>\n", argv[0]);
 	   exit(1);
 	}
     }
@@ -79,22 +79,22 @@ char **argv;
     initsym();
     initplot();
 
-    if (0 && access("./NOTEDATA.F", R_OK) == 0) {
+    if (access("./NOTEDATA.F", R_OK) == 0) {
 	loadfont("./NOTEDATA.F", 0);
     } else if (access("/usr/local/lib/pdplot/NOTEDATA.F", R_OK) == 0) {
 	loadfont("/usr/local/lib/pdplot/NOTEDATA.F", 0);
     } else {
         fprintf(stderr,"can't find NOTEDATA.F font file\n");
-	exit(0);
+	exit(2);
     }
 
-    if (0 && access("./SYMBOL.F", R_OK) == 0) {
+    if (access("./SYMBOL.F", R_OK) == 0) {
 	loadfont("./SYMBOL.F", 1);
     } else if (access("/usr/local/lib/pdplot/SYMBOL.F", R_OK) == 0) {
 	loadfont("/usr/local/lib/pdplot/SYMBOL.F", 1);
     } else {
         fprintf(stderr,"can't find SYMBOL.F font file\n");
-	exit(0);
+	exit(3);
     }
 
   while (1) {
@@ -325,7 +325,7 @@ char **argv;
 		   xwin_dump_postscript("cat > pddump.dxf");
 	       }
 	   } else if (strncmp(sp,"exit",4)==0) {
-	       exit(2);
+	       exit(0);
 	   } else {
 	       savecmd(sp);
 	   }
@@ -345,5 +345,5 @@ char **argv;
     usleep(500); 	// don't hog CPU
     clearerr(stdin);	// recover from EOF on input pipe file
   }
-  exit(1);
+  exit(0);
 }
