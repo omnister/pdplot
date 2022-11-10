@@ -19,38 +19,35 @@ static double nicenum();
 void loose_label(PLOTDAT *pd, double *min, double *max, int nticks, int axis, int dolabel,
 int logmode, int dryrun) {
     char str[6], temp[20];
-    // int nfrac;
+    int nfrac;
     double d;	/* tick mark spacing */
     double graphmin, graphmax;
-    double range, x,y;
-    int debug=0;
-
-    if (debug) printf("min %g max %g ntick %d axis %d dolable %d dryrun %d\n", *min, *max, nticks, axis, dolabel, dryrun);
+    double range, x;
 
     if (logmode != 1) {	// just do linear scaling
 
-	range = nicenum(*max-*min, 1); 	/* we expect min!=max */
-	d = nicenum(range/(double)(nticks),1);
-	if (debug) printf("d = %g\n", d);
-
-	graphmin = floor(*min/d)*d;
-	graphmax = ceil(*max/d)*d;
-
-	// nfrac = MAX(-floor(log10(d)),0);	/* # frac digits to show */
-	// sprintf(str,"%%.%df", nfrac); 	/* simplest axis labels */
-	sprintf(str,"%%g"); 	
+	range = nicenum(*max-*min, 0); 	/* we expect min!=max */
+	d = nicenum(range/(double)(nticks+4),1);
+	if (dryrun) {
+	    graphmin = floor(*min/d)*d;
+	    graphmax = ceil(*max/d)*d;
+	} else {
+	    graphmin = *min;
+	    graphmax = *max;
+	}
+	nfrac = MAX(-floor(log10(d)),0);	/* # frac digits to show */
+	sprintf(str,"%%.%df", nfrac); 	/* simplest axis labels */
+	// sprintf(str,"%%g"); 	
 
 	if (!dryrun) {
 	    // printf("graphmin=%g graphmax=%g increment=%g\n", graphmin, graphmax, d);
-	    for (x=graphmin+d; x<graphmax-0.50*d; x+=d) {
-		// printf("line at %g\n", (x-graphmin)/(graphmax-graphmin));
+	    for (x=graphmin+d; x<graphmax-0.5*d; x+=d) {
 		gridline(pd, (x-graphmin)/(graphmax-graphmin), axis);
 	    }
-	    for (x=graphmin; x<graphmax+0.50*d; x+=d) {
-		y  = (d/100.0)*rint(x/(d/100.0));
-		sprintf(temp, str, y);
+	    for (x=graphmin; x<graphmax+0.5*d; x+=d) {
+		x  = (d/100.0)*rint(x/(d/100.0));
+		sprintf(temp, str, x);
 		if (dolabel) {
-		    if (debug) printf("label at %g\n", (x-graphmin)/(graphmax-graphmin));
 		    gridlabel(pd, temp, (x-graphmin)/(graphmax-graphmin), axis);
 		}
 	    }

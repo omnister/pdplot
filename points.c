@@ -726,6 +726,7 @@ void render() 	// this is where the image gets drawn
     extern double ticklen;
     extern double ticksize;
     double x,y;
+    double xold,yold;
     double xmin, xmax, ymin, ymax;
     char buf[128];
     double xx,yy;
@@ -778,26 +779,54 @@ void render() 	// this is where the image gets drawn
       if (plots[0].xsetmin != plots[0].xsetmax) {	// xset was used	
          xmin = plots[0].xsetmin;
 	 xmax = plots[0].xsetmax;
-	 pd->xmin = xmin;
-	 pd->xmax = xmax;
       }
       if (pd->ysetmin != pd->ysetmax) {			// yset was used
          ymin = pd->ysetmin;
 	 ymax = pd->ysetmax;
-         pd->ymin = ymin;
-         pd->ymax = ymax;
       }
       pd->boundsflag=0;
       nsegs=0;
 
-      if (plots[0].xsetmin != plots[0].xsetmax) {	// xset was used	
+      // FIXME: only need to do this next loop through the
+      // data if either xset or yset is used.  Otherwise,
+      // just use the data bounds...
+
+      // printf("graph %d: setting clip ymin/max = %g %g\n", numplots-i, ymin, ymax); // RCW
+
+      for (p=pd->data; p!=(DATUM *)0; p=p->next) {
+          clip_set(xmin, xmax, ymin, ymax);
+          if (p->cmd == NULL) {
+             x=logscale(p->x,0);
+             y=logscale(p->y,1);
+             if (!backstat && nsegs > 1 && x<xold) nsegs=0;
+             nsegs++;
+             if (linemode && nsegs > 1) {
+                 clip(pd, xold, yold, x, y);
+             }
+             if (symbolmode) {
+                 clip(pd, x, y, x, y);
+             }
+             xold=x; yold=y;
+             // draw(pd, logscale(p->x,0),logscale(p->y,1));
+          } else {
+                do_command(pd, p->cmd);
+          }
+       }
+       pd->xmin = pd->bbxmin;
+       pd->xmax = pd->bbxmax;
+       pd->ymin = pd->bbymin;
+       pd->ymax = pd->bbymax;
+
+      if (plots[0].xsetmin != plots[0].xsetmax) {       // xset was used
          pd->xmin = plots[0].xsetmin;
-	 pd->xmax = plots[0].xsetmax;
+         pd->xmax = plots[0].xsetmax;
       }
-      if (pd->ysetmin != pd->ysetmax) {			// yset was used
+      if (pd->ysetmin != pd->ysetmax) {                 // yset was used
          pd->ymin = pd->ysetmin;
-	 ymax = pd->ysetmax;
+         ymax = pd->ysetmax;
       }
+
+
 
 	double a,b;
 	if (xtolerance>=0.0) {
