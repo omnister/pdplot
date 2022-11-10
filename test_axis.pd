@@ -1,0 +1,11 @@
+# this plot should have
+# both top and bottom plots
+# starting and ending at same point
+
+yscale 1 M-Vm /V
+-348 -0.36936
+350 0.12415
+nextygraph
+#yscale 1 M-Vlens
+-348 0.05911
+350 -0.07322
