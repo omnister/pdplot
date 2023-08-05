@@ -27,7 +27,8 @@ int logmode, int dryrun) {
     if (logmode != 1) {	// just do linear scaling
 
 	range = nicenum(*max-*min, 0); 	/* we expect min!=max */
-	d = nicenum(range/(double)(nticks+4),1);
+	// d = nicenum(range/(double)(nticks+4),1);
+	d = nicenum(range/(double)(nticks),1);
 	if (dryrun) {
 	    graphmin = floor(*min/d)*d;
 	    graphmax = ceil(*max/d)*d;
@@ -35,9 +36,12 @@ int logmode, int dryrun) {
 	    graphmin = *min;
 	    graphmax = *max;
 	}
-	nfrac = MAX(-floor(log10(d)),0);	/* # frac digits to show */
-	sprintf(str,"%%.%df", nfrac); 	/* simplest axis labels */
+
+	nfrac = MAX(-floor(log10(range/d)),0);	/* # frac digits to show */
+	sprintf(str,"%%.%dg", nfrac); 	/* simplest axis labels */
 	// sprintf(str,"%%g"); 	
+
+	// printf("range = %g d = %g, nfrac=%d\n", range, d, nfrac);
 
 	if (!dryrun) {
 	    // printf("graphmin=%g graphmax=%g increment=%g\n", graphmin, graphmax, d);
