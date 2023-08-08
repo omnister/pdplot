@@ -450,11 +450,18 @@ XFontStruct *font_info;
 void load_font(font_info)
 XFontStruct **font_info;
 {
-    char *fontname = "9x15";
-
     /* Load font and get font information structure */
-    if ((*font_info = XLoadQueryFont(dpy, fontname)) == NULL) {
-        fprintf(stderr, "%s: can't open %s font.\n", progname, fontname);
+    *font_info = NULL;
+
+    if (*font_info == NULL)
+        *font_info = XLoadQueryFont(dpy, "9x15");
+    if (*font_info == NULL)
+        *font_info = XLoadQueryFont(dpy, "10x20");
+    if (*font_info == NULL)
+        *font_info = XLoadQueryFont(dpy, "fixed");
+    if (*font_info == NULL) {
+        fprintf(stderr,"can't find any usable X11 font.  You might\n");
+        fprintf(stderr,"try running \"xlsfonts to see what is available.\"\n");
         exit(-1);
     }
 }
