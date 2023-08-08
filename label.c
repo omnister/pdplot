@@ -120,14 +120,14 @@ int round;
 
 #define NTICK 9	/* desired number of tick marks */
 
-void testmain(int ac, char ** av) {
+void testmain(int argc, char ** argv) {
     double min, max;
     PLOTDAT foo;
-    if (ac!=3) {
+    if (argc!=3) {
     	fprintf(stderr,"usage: label <min> <max>\n");
 	exit(1);
     }
-    min = atof(av[1]);
-    max = atof(av[2]);
+    min = atof(argv[1]);
+    max = atof(argv[2]);
     loose_label(&foo, &min,&max,NTICK,1,1,0,0);
 }

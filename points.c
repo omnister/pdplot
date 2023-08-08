@@ -739,7 +739,7 @@ void render() 	// this is where the image gets drawn
     ury=0.9*height;
     fontsize  = (height+width)/50.0;
     xfontsize = (height)/20.0;
-    yfontsize = (width)/30.0;
+    yfontsize = (width)/40.0;
     ticklen = ticksize*(height+width)/200.0;
     pad=fontsize/4.0;
 
@@ -781,8 +781,10 @@ void render() 	// this is where the image gets drawn
 	 xmax = plots[0].xsetmax;
       }
       if (pd->ysetmin != pd->ysetmax) {			// yset was used
-         ymin = pd->ysetmin;
-	 ymax = pd->ysetmax;
+         pd->ymin = plots[i].ysetmin;
+         pd->ymax = plots[i].ysetmax;
+         // ymin = pd->ysetmin;
+	 // ymax = pd->ysetmax;
       }
       pd->boundsflag=0;
       nsegs=0;
@@ -822,8 +824,11 @@ void render() 	// this is where the image gets drawn
          pd->xmax = plots[0].xsetmax;
       }
       if (pd->ysetmin != pd->ysetmax) {                 // yset was used
-         pd->ymin = pd->ysetmin;
-         ymax = pd->ysetmax;
+         pd->ymin = plots[i].ysetmin;
+         pd->ymax = plots[i].ysetmax;
+         // pd->ymin = pd->ysetmin;
+         // pd->ymax = pd->ysetmin;
+         // ymax = pd->ysetmax;
       }
 
 
