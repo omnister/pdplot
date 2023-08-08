@@ -37,7 +37,7 @@ int logmode, int dryrun) {
 	    graphmax = *max;
 	}
 
-	nfrac = MAX(-floor(log10(range/d)),0);	/* # frac digits to show */
+	nfrac = MAX(3-floor(log10(range/d)),0);	/* # frac digits to show */
 	sprintf(str,"%%.%dg", nfrac); 	/* simplest axis labels */
 	// sprintf(str,"%%g"); 	
 
