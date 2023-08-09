@@ -23,6 +23,7 @@ clean:
 install: pd pdplot pd.1 ${FONTS}
 	-/bin/mv -f ${BINDIR}/pd ${BINDIR}/pd.old
 	-/bin/cp pd $(BINDIR)/pd 
+	-/bin/cp multiplot $(BINDIR)/multiplot
 	-/bin/mv -f ${BINDIR}/pdplot ${BINDIR}/pdplot.old
 	-/bin/cp pdplot $(BINDIR)/pdplot
 	if [ ! -d ${LIBDIR} ] ; \
