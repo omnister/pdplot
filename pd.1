@@ -1,7 +1,7 @@
 .TH PDPLOT 1:LOCAL
 .ad b
 .SH NAME
-pdplot \- plot ascii data to an X window 
+pdplot \- plot ASCII data to an X window 
 .SH SYNOPSIS
 .B Pdplot 
 .br
@@ -9,7 +9,7 @@ pdplot \- plot ascii data to an X window
 .br
 .SH DESCRIPTION
 .B Pdplot
-reads ascii x-y pairs and commands from standard input 
+reads ASCII x-y pairs and commands from standard input 
 to create a formatted plot of the data in an X11 window.
 The input lines should consist of either an x-y pair or a
 formatting command, one per line.
@@ -34,6 +34,16 @@ accepts input from either a list of files from the command line, or from stdin
 will start a 
 .I pdplot
 daemon if none already exists, clear the window and plot the data.
+.PP
+When dealing with multiple waveforms, a common paradigm is to store each ASCII line as a single x coordinate followed by multiple y columns like "x y1 y2 y3 y4 ... <newline>".  
+.B Pdplot \^
+installs a helper script called
+.B multiplot \^
+which makes plotting such files easier.  
+.B multiplot \^
+accepts a list of column numbers or a range of column numbers to be plotted against the shared x variable.  
+For example, "multiplot 2-4 6 < datafile | pd" would generate four plots: x vs column 2, x vs column 3, 
+x vs column 4, and x vs column 6.  Multiplot converts the multivalued datafile lines into a succession of single valued streams to be plotted on the same graph.  
 .SH OPTIONS
 .TP
 .B "\-n"
