@@ -19,7 +19,6 @@ static double nicenum();
 void loose_label(PLOTDAT *pd, double *min, double *max, int nticks, int axis, int dolabel,
 int logmode, int dryrun) {
     char str[6], temp[20];
-    int nfrac;
     double d;	/* tick mark spacing */
     double graphmin, graphmax;
     double range, x;
@@ -37,9 +36,10 @@ int logmode, int dryrun) {
 	    graphmax = *max;
 	}
 
-	nfrac = MAX(3-floor(log10(range/d)),0);	/* # frac digits to show */
-	sprintf(str,"%%.%dg", nfrac); 	/* simplest axis labels */
-	// sprintf(str,"%%g"); 	
+	// int nfrac;
+	// nfrac = MAX(3-floor(log10(range/d)),0);	/* # frac digits to show */
+	// sprintf(str,"%%.%dg", nfrac); 	/* simplest axis labels */
+	sprintf(str,"%%g"); 	
 
 	// printf("range = %g d = %g, nfrac=%d\n", range, d, nfrac);
 
