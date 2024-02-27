@@ -292,6 +292,14 @@ int main(int argc, char *argv[])
 	       } else {
 		   xwin_dump_postscript("cat > pddump.ap");
 	       }
+	   } else if (strncmp(sp,"pig",3)==0) {
+	       ps_set_outputtype(PIG);
+	       if (sscanf(sp,"pig %s", scratch) == 1) {
+		   sprintf(scratch2, "cat > %s.d", scratch);
+		   xwin_dump_postscript(scratch2);
+	       } else {
+		   xwin_dump_postscript("cat > pddump.d");
+	       }
 	   } else if (strncmp(sp,"hpgl",4)==0) {
 	       ps_set_outputtype(HPGL);
 	       if (sscanf(sp,"hpgl %s", scratch) == 1) {

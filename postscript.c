@@ -246,7 +246,7 @@ void ps_preamble(
     xdel = 1.05*fabs(urx-llx);
     ydel = 1.05*fabs(ury-lly);
 
-    if ( outputtype == HPGL) {
+    if ( outputtype == HPGL || outputtype == PIG) {
 	// 0.0025mm per step = 1016 ticks/in
 	xmax=pdx*1016.0;
 	ymax=pdy*1016.0;
@@ -359,6 +359,10 @@ void ps_preamble(
 	//}
 
        return;
+    } else if (outputtype == PIG) {	// piglet .d output
+	fprintf(fp, "LOCK 0;\n");
+	fprintf(fp, "LEVEL 1;\n");
+	fprintf(fp, "GRID :c3 10 10 1 1 0 0;\n");
     } else if (outputtype == POSTSCRIPT) {
 	fprintf(fp,"%%!PS-Adobe-2.0\n");
 	fprintf(fp,"%%%%Title: %s\n", dev);
@@ -560,6 +564,8 @@ void ps_comment(char *comment)
     if ((fp != NULL)) {
 	if (outputtype == GERBER) {		// GERBER
 	    ;
+	} else if (outputtype == PIG) {		// Piglet
+	    fprintf(fp, "$$%s\n",comment);
 	} else if (outputtype == HPGL) {	// HPGL
 	    ;
 	} else if (outputtype == DXF) {		// DXF
@@ -598,6 +604,8 @@ void ps_end_line()
        if (xwin_svg_dashes(this_line) != NULL) {
 	   fprintf(fp, "stroke-dasharray=\"%s\" ", xwin_svg_dashes(this_line));
        }
+    } else if (outputtype == PIG) {			// Piglet
+	   fprintf(fp, ";\n");
     } else if (outputtype == HPGL) {			// HPGL
        if (in_poly) {
 	   fprintf(fp, "PM2;\n");
@@ -695,6 +703,8 @@ void ps_start_line(double x1, double y1, int filled)
 	xold=x1;
 	yold=y1;
 	in_progress=0;
+    } else if (outputtype == PIG) {
+	fprintf(fp, "ADD L%d %.4f, %.4f\n", this_line, x1,y1);
     } else if (outputtype == HPGL) {
 	if (!filled) {
 	   if (this_line == 0) {
@@ -754,6 +764,8 @@ void ps_continue_line(double x1, double y1)
 	}
 	xold = x1;
 	yold = y1;
+    } else if (outputtype == PIG) {			// Piglet
+        fprintf(fp, "%.4f,%.4f\n",x1,y1);
     } else if (outputtype == HPGL) {			// HPGL
         fprintf(fp, "PD %.4f,%.4f;\n",x1,y1);
     }
@@ -781,6 +793,8 @@ void ps_postamble()
     } else if (outputtype == DXF) {
         fprintf(fp,"  0\nENDSEC\n");
         fprintf(fp,"  0\nEOF\n");
+    } else if (outputtype == PIG) {
+	fprintf(fp,"$$ here ends figure;\n");
     } else if (outputtype == HPGL) {
         fprintf(fp,"PU;\n");
         fprintf(fp,"SP;\n");
