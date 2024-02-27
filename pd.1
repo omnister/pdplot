@@ -5,7 +5,7 @@ pdplot \- plot ASCII data to an X window
 .SH SYNOPSIS
 .B Pdplot 
 .br
-.B pd [-n] [-k] [-a<apfile>] [-f<dxf>] [-g<pngfile>] [-h<hpgl>] [-p<ps>] [-s<svg>] [-w<windowname>] [-r] [file1 file2...]
+.B pd [-n] [-k] [-a<apfile>] [-c<pigletfile>] [-f<dxf>] [-g<pngfile>] [-h<hpgl>] [-p<ps>] [-s<svg>] [-w<windowname>] [-r] [file1 file2...]
 .br
 .SH DESCRIPTION
 .B Pdplot
@@ -52,6 +52,11 @@ with the old dataset and the data will be rescaled if necessary.
 .TP
 .B "\-w <windowname>"
 Decorate the pdplot window with the given window name.
+.TP
+.B "\-c <file>"
+Write a piglet dump of the existing window to <file>.d. 
+This will include a sequence of piglet "ADD L<layer> x,y...;" lines
+which can be read in to piglet using the "INPut <file.d>" command.
 .TP
 .B "\-a <file>"
 Write an pdplot (autoplot) dump of the existing window to <file>.ap. 
