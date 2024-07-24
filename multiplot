@@ -35,14 +35,14 @@ awk '
      if (nodes=="") {
 	 nnodes=nf
 	 for (i=2; i<=nnodes; i++) {
-	     for (j=1; j<lines; j++) {
+	     for (j=1; j<=lines; j++) {
 		print F[1,j], F[i,j]
 	     }
 	 }
      } else {
 	 nnodes=split(expand(nodes),aa);
 	 for (i=1; i<=nnodes; i++) {
-	    for (j=1; j<lines; j++) {
+	    for (j=1; j<=lines; j++) {
 	       print F[1,j], F[aa[i],j]
 	    }
 	 }
