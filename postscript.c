@@ -25,6 +25,7 @@ int newfill=1;
 int in_line=0;		/* set to 1 when working on a line */
 int in_poly=0;
 int colorflag=1;	// 0=black; 1=color; 2=greyscale
+int blackfill=0;	// set to one for SVG with black backgroun
 double linewidth=1.5;
 
 int this_pen=0;		// we need to save state at start of line
@@ -165,7 +166,11 @@ char *pen_to_svg_color(int pen) {
 	return("#606000"); 
 	break;
        case 1:
-	return("white");
+	if (blackfill) {		// plot on black
+	    return("white");		// so use white for grids
+	} else {
+	    return("black");		// otherwise use black
+	}
 	break;
        case 2:
 	return("red");
@@ -296,8 +301,10 @@ void ps_preamble(
 	    fprintf(fp,"width=\"100%%\" viewBox=\"%g %g %g %g\" preserveAspectRatio=\"xMinYMin meet\">\n", 
 		0.0, 0.0, urx-llx, lly-ury);
 		// llx, lly, urx-llx, ury-lly);
-	    fprintf(fp,"<rect x=\"0\" y=\"0\" width=\"100%%\" height=\"100%%\" />\n");
+	    if (blackfill)  {
+		fprintf(fp,"<rect x=\"0\" y=\"0\" width=\"100%%\" height=\"100%%\" />\n");
 		//llx, ury-lly, urx-llx, 2*lly-ury);
+	    }
 	}
 	if (outputtype == WEB) {
 	    fprintf(fp,"width=\"100%%\" viewBox=\"%g %g %g %g\" preserveAspectRatio=\"xMinYMin meet\">\n", 

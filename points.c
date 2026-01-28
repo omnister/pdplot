@@ -939,8 +939,8 @@ void render() 	// this is where the image gets drawn
 		do_note(pd, buf, xx, yy, MIRROR_OFF , 0.6*fontsize*charsize*labelsize,
 		   1.0, 0.0, labelangle, 0, 3);
 	     } else if (sscanf(p->cmd, "%*s %lg %lg %[^#]", &x, &y, buf)==3) {
-		xx=(pd->urx-pd->llx)*(logscale(x,0)-xmin)/(xmax-xmin)+pd->llx;
-		yy=(pd->ury-pd->lly)*(logscale(y,1)-pd->ymin)/(pd->ymax-pd->ymin)+pd->lly; 
+		xx=(pd->urx-pd->llx)*(logscale(x/pd->xscale,0)-xmin)/(xmax-xmin)+pd->llx;
+		yy=(pd->ury-pd->lly)*(logscale(y/pd->yscale,1)-pd->ymin)/(pd->ymax-pd->ymin)+pd->lly; 
 		do_note(pd, buf, xx, yy, MIRROR_OFF , 0.6*fontsize*charsize*labelsize,
 		    1.0, 0.0, labelangle, 0, 3);
 	     } else { 
