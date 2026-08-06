@@ -231,6 +231,13 @@ void button(double x, double y, int buttonno, int pressdown) {
     }
 }
 
+// called instead of clear() when doing "pd -n"
+// this allows the new plot to reuse the multiple
+// plots created by nextygraph...
+void replot() {
+   numplots=0;
+}
+
 void nextygraph() {
    if (numplots < MAXPLOTS-1) {
        numplots++;

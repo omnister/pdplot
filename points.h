@@ -97,6 +97,7 @@ extern void xscaletol(double tolerance);
 extern void yscaletol(double tolerance);
 extern void scaletol(double tolerance);
 extern void labelrotation(double angle);
+extern void replot(void);
 extern int linenum;
 
 extern double xmin, xmax, ymin, ymax;

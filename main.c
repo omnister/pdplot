@@ -104,6 +104,8 @@ int main(int argc, char *argv[])
        if (isalpha(*sp)) {		// first non-white char is alpha, so a cmd
 	   if (strncmp(sp,"nextygraph",10)==0) {
 	       nextygraph();
+	   } else if (strncmp(sp,"replot",6)==0) {
+	       replot();
 	   } else if (strncmp(sp,"noframe",7)==0) {
 	       gridstate(0);
 	       box(0);
