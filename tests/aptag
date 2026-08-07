@@ -1,0 +1,9 @@
+title aptag
+scalesize 1.5
+tagsize 0.6
+xscale 1 Large text, small tags
+scalesize 0.6
+tagsize 1.5
+yscale 1 Small text, large tags
+0 0
+1 1

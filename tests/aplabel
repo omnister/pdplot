@@ -1,0 +1,13 @@
+title aplabel
+xscale 1 xaxis
+yscale 1 yaxis
+0 0
+1 1
+
+label 0.5 0.5 midway data
+label 25% 25% quarter percent
+
+labeldir 45
+label 10% 10% 45 degrees
+labeldir 22
+label 10% 20% 22 degrees

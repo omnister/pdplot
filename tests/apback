@@ -1,0 +1,22 @@
+title apback
+#back
+symbol+line
+symbol circle
+#0 0
+#1 1
+4 4
+
+3 3
+3.5 3.5
+2 2
+2.5 2
+1 1
+0 0
+
+-1 -1
+
+#6 6
+#9 4
+#10 2
+#2 9
+#7 9

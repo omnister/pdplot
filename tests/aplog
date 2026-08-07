@@ -1,0 +1,14 @@
+title loggraph (aplog)
+loglog
+symbol+line
+-1 -2
+0 -1
+1 1
+2 2
+3 4
+4 8
+5 16
+10 100
+20 1000
+30 8888
+100 999

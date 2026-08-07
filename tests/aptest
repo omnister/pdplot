@@ -1,0 +1,42 @@
+title A titled plot (aptest)
+xscale 1 time
+yscale 1 first graph
+symbol+line
+symbolsize 1
+#nogrid
+xset 0 2
+0 0
+1 0.1
+0.1 0.2
+0.9 0.3
+0.1 0.4
+0.9 0.5
+-1 5
+4 -5
+.5 2
+1.5 0
+nextygraph
+#symbol+line
+yscale 1 second graph
+noautosymbol
+noautopen
+0 0
+1 0.1
+0.1 0.2
+0.9 0.3
+0.1 0.4
+0.9 0.5
+
+nextygraph
+#symbol+line
+yscale 1 third one
+autopen
+symbol 1
+#back
+0 0
+1 0.1
+0.1 0.2
+0.9 0.3
+0.1 0.4
+0.9 0.5
+plot

@@ -2,6 +2,7 @@
 # both top and bottom plots
 # starting and ending at same point
 
+title apaxis
 yscale 1 M-Vm /V
 -348 -0.36936
 350 0.12415

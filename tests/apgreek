@@ -1,0 +1,14 @@
+title 250\W resistor @ 120\mwatt distortion (apgreek)
+0 -.3
+0.4 1
+labelsize 2.0
+titlesize 1.2
+label 0.0 0.5 \G\D\H\L\C
+label 0.0 0.4 \P\S\Y\F\X
+label 0.0 0.3 \Q\W\O\a\b
+label 0.0 0.2 \g\d\e\z\y
+label 0.0 0.1 \@\i\k\l\m
+label 0.0 0.0 \u\n\c\p\r
+label 0.0 -0.1 \s\t\f\x\q
+label 0.0 -0.2 \w\o
+label 0.0 0.6 hello \G foobar

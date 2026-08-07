@@ -1,0 +1,7 @@
+title apjust
+0 0
+1 1
+label 0.1 0.1 foo\{up\}back
+label 0.2 0.2 foo\[down\]back
+label 0.3 0.3 foo\[down\[lower\]back\]moreback
+label 0.4 0.4 foo\}out\]of\]order\]moreback
