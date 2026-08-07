@@ -1,5 +1,6 @@
 for file in tests/ap*
 do
     pd $file
+    echo "hit <cr> to continue"
     read x
 done
