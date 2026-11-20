@@ -276,6 +276,7 @@ xscale and yscale commands. Prior to 2021, the xset, yset commands could only be
 used to shrink size of an axis. Now xset and yset commands are no longer followed by a fit but are obeyed without further
 processing.  This is helpful for animations where multiple plots need to have exactly the same
 axes when plotting noisy data.
+.TP
 .B maxxdiv \fIn
 .PD 0
 .TP
@@ -283,7 +284,7 @@ axes when plotting noisy data.
 .PD 1
 .I N
 is the maximum number of divisions along the axis.
-The default is 7.
+The default is 9.
 For example, if the data ranged from 0 to 100,
 the scale would normally be 5 divisions of
 20, but if max?div were set to 10, there would be 10
@@ -695,9 +696,8 @@ This version of Pdplot does not implement the following Autoplot commands:
 .SH BUGS
 
 .PP
-Cursor coordinate picking probably doesn't yet work on log scales.  Maxxdiv and Maxydiv
-commands are handled by the code, but not parsed yet.  Multiple commands cannot yet be
-entered by using ";;" delimiters on a givein line.  Log scales only have ticks at decade
+Cursor coordinate picking probably doesn't yet work on log scales.  Multiple commands cannot yet be
+entered by using ";;" delimiters on a given line.  Log scales only have ticks at decade
 intervals and do not yet use metric prefixes (10k 100k 1M 10M 100M 1G...).  No provision has
 yet been made to handle two title lines.
 

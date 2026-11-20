@@ -21,6 +21,7 @@ clean:
 	rm -f *.o pdplot
 
 install: pd pdplot pd.1 ${FONTS}
+	-pd -k
 	-/bin/mv -f ${BINDIR}/pd ${BINDIR}/pd.old
 	-/bin/cp pd $(BINDIR)/pd 
 	-/bin/cp multiplot $(BINDIR)/multiplot

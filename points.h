@@ -98,9 +98,12 @@ extern void yscaletol(double tolerance);
 extern void scaletol(double tolerance);
 extern void labelrotation(double angle);
 extern void replot(void);
+extern void maxxdiv(double n);
+extern void maxydiv(double n);
 extern int linenum;
 
 extern double xmin, xmax, ymin, ymax;
+extern int nxticks, nyticks;
 
 
 #define MIRROR_OFF 0

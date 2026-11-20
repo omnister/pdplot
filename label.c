@@ -14,7 +14,13 @@
 
 static double nicenum();
 
-// nticks corresponds to maxxdiv, maxydiv in autoplot
+void maxxdiv(double nticks)  {
+    nxticks=(int) nticks;
+}
+
+void maxydiv(double nticks)  {
+    nyticks=(int) nticks;
+}
 
 void loose_label(PLOTDAT *pd, double *min, double *max, int nticks, int axis, int dolabel,
 int logmode, int dryrun) {
@@ -22,6 +28,8 @@ int logmode, int dryrun) {
     double d;	/* tick mark spacing */
     double graphmin, graphmax;
     double range, x;
+    int k, ntick;
+    double tick_value, label_value;
 
     if (logmode != 1) {	// just do linear scaling
 
@@ -44,17 +52,21 @@ int logmode, int dryrun) {
 	// printf("range = %g d = %g, nfrac=%d\n", range, d, nfrac);
 
 	if (!dryrun) {
-	    // printf("graphmin=%g graphmax=%g increment=%g\n", graphmin, graphmax, d);
-	    for (x=graphmin+d; x<graphmax-0.5*d; x+=d) {
-		gridline(pd, (x-graphmin)/(graphmax-graphmin), axis);
-	    }
-	    for (x=graphmin; x<graphmax+0.5*d; x+=d) {
-		x  = (d/100.0)*rint(x/(d/100.0));
-		sprintf(temp, str, x);
+	    ntick = (int)rint((graphmax - graphmin) / d);
+	    for (k = 0; k <= ntick; ++k) {
+		tick_value = graphmin + k * d;
+
+		/* Draw interior graticules only, as the original first loop did. */
+		if (k > 0 && k < ntick) {
+		    gridline(pd, (tick_value - graphmin) / (graphmax - graphmin), axis);
+                }
+
 		if (dolabel) {
-		    gridlabel(pd, temp, (x-graphmin)/(graphmax-graphmin), axis);
+		    label_value = (d / 100.0) * rint(tick_value / (d / 100.0));
+		    sprintf(temp, str, label_value);
+		    gridlabel(pd, temp, (tick_value - graphmin) / (graphmax - graphmin), axis);
 		}
-	    }
+            }
 	}
 	*min  = graphmin;
 	*max  = graphmax;

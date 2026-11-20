@@ -215,6 +215,18 @@ int main(int argc, char *argv[])
 	   xwin_top();
        } else if (strncmp(sp,"clear",5)==0) {
 	   initplot();	
+       } else if (strncmp(sp,"maxxdiv",7)==0) {
+	   if (sscanf(sp,"%*s %lg", &tmp) != 1 || tmp >= 50.0 || tmp < 2.0) {
+	      fprintf(stderr, "bad maxxdiv values: %s\n",sp);
+	   } else {
+	      maxxdiv(tmp);
+	   }
+       } else if (strncmp(sp,"maxydiv",7)==0) {
+	   if (sscanf(sp,"%*s %lg", &tmp) != 1 || tmp >= 50.0 || tmp < 2.0) {
+	      fprintf(stderr, "bad maxydiv values: %s\n",sp);
+	   } else {
+	      maxydiv(tmp);
+	   }
        } else if (strncmp(sp,"xscaletol",9)==0) {
 	   if (sscanf(sp,"%*s %lg", &tmp) != 1 || tmp >= 0.4 || tmp < -1.0) {
 	      fprintf(stderr, "bad xscaletol values: %s\n",sp);

@@ -41,6 +41,8 @@ static int autosymflag=1;
 static int isotropic=0;
 static double isoscale=1.0;
 static int symline=0;
+int nxticks=9;
+int nyticks=9;
 
 static double fontsize;
 static double xfontsize;
@@ -55,6 +57,8 @@ static double labelsize=1.0;    // scales label
 static double xtolerance=0.0;
 static double ytolerance=0.0;
 static double labelangle=0.0;
+
+static void yset_plot(PLOTDAT *pd, double ymin, double ymax);
 
 DATUM *datum_new(x,y)
 double x,y;
@@ -163,6 +167,12 @@ void button(double x, double y, int buttonno, int pressdown) {
     static int npts1=0;		// FIXME, need a way to reset state when plotting second graph
     static int npts3=0;
     char buf[256];
+
+    // pixels count down in Xwin!!, reverse the coordinates
+    double winw, winh;
+    xwin_size(&winw, &winh);
+    y = winh-y;
+
     if (pressdown) {	// 1=button_down, 0_button_up
 	for (i=0; i<=numplots; i++) {
 	  pd = &(plots[numplots-i]); 		// compute bounding box for each graph 
@@ -176,7 +186,8 @@ void button(double x, double y, int buttonno, int pressdown) {
 
 	  if (x >= pd->llx && x <= pd->urx && y >= pd->lly && y <= pd->ury) {
 	       x1= plots[0].xmin+(plots[0].xmax-plots[0].xmin)*(x-pd->llx)/(pd->urx-pd->llx);
-	       y1= pd->ymin+(pd->ymax-pd->ymin)*(pd->ury-y)/(pd->ury-pd->lly);
+	       // y1= pd->ymin+(pd->ymax-pd->ymin)*(pd->ury-y)/(pd->ury-pd->lly);
+	       y1 = pd->ymin + (pd->ymax - pd->ymin) * (y - pd->lly) / (pd->ury - pd->lly);
 	       if (buttonno == 1) {
 		   if ((x2-x1) == 0.0  && (y2-y1) == 0.0) npts1=0;
 		   if (npts1++ < 1) {
@@ -198,21 +209,25 @@ void button(double x, double y, int buttonno, int pressdown) {
 		   return;
 	      } else if (buttonno == 2) {
 		  xset(0.0,0.0);	// zoom out
-		  yset(0.0,0.0);
+		  // yset(0.0,0.0);
+		  yset_plot(pd, 0.0, 0.0);
 		  need_redraw++;
 		  npts3=0;
 	      } else if (buttonno == 3) {
 		  if ((fabs(x3-x1) < fabs(pd->xmax-pd->xmin)/100.0) && 
 		  	(fabs(y3-y1) < fabs(pd->ymax-pd->ymin)/100.0)) {
 		      xset(0.0,0.0);	// zoom out
-		      yset(0.0,0.0);
+		      // yset(0.0,0.0);
+		      yset_plot(pd, 0.0, 0.0);
 		      need_redraw++;
 		      npts3=0;
 		  } else if (++npts3 ==2) {
 		      if (x3<x1) xset(x3,x1);	// zoom in
 		      if (x1<x3) xset(x1,x3);
-		      if (y3<y1) yset(y3,y1);	// zoom in
-		      if (y1<y3) yset(y1,y3);
+		      // if (y3<y1) yset(y3,y1);	// zoom in
+		      // if (y1<y3) yset(y1,y3);
+		      if (y3<y1) yset_plot(pd, y3,y1);	// zoom in
+		      if (y1<y3) yset_plot(pd, y1,y3);
 		      need_redraw++;
 		      npts3=0;
 		  }
@@ -385,6 +400,9 @@ void initplot(void) {
    tagsize=1.0;      // scales grid tick values
    titlesize=1.0;    // scales title
    labelsize=1.0;    // scales label
+   nxticks=9;
+   nyticks=9;
+   
 }
 
 void main2() {
@@ -553,6 +571,13 @@ void setbounds(PLOTDAT *pd) {		// simply set pd->[yx]minmax to bounds
 void xset(double xmin, double xmax) {
     plots[0].xsetmin = xmin;
     plots[0].xsetmax = xmax;
+}
+
+// helper function
+static void yset_plot(PLOTDAT *pd, double ymin, double ymax)
+{
+    pd->ysetmin = ymin;
+    pd->ysetmax = ymax;
 }
 
 void yset(double ymin, double ymax) {
@@ -788,8 +813,10 @@ void render() 	// this is where the image gets drawn
 	 xmax = plots[0].xsetmax;
       }
       if (pd->ysetmin != pd->ysetmax) {			// yset was used
-         pd->ymin = plots[i].ysetmin;
-         pd->ymax = plots[i].ysetmax;
+         // pd->ymin = plots[i].ysetmin;
+         // pd->ymax = plots[i].ysetmax;
+         pd->ymin = pd->ysetmin;
+         pd->ymax = pd->ysetmax;
          // ymin = pd->ysetmin;
 	 // ymax = pd->ysetmax;
       }
@@ -871,6 +898,11 @@ void render() 	// this is where the image gets drawn
 
       // printf("graph %d: ymin/max = %g %g\n", numplots-i, pd->ymin, pd->ymax); // RCW
 
+     if (pd->ysetmin != pd->ysetmax) {
+         pd->ymin = pd->ysetmin;
+         pd->ymax = pd->ysetmax;
+      }
+
       pd->llx = llx;
       pd->lly = (lly+6.0*del*(double)i);
       pd->urx = urx;
@@ -885,11 +917,15 @@ void render() 	// this is where the image gets drawn
       // do a dry run on labels to get exact scales
 
       if (debug) printf("calling ll: %g %g %g %g\n", xmin, pd->ymin, xmax, pd->ymax);
-      loose_label(pd,&(pd->ymin),&(pd->ymax),20/(numplots+2),0, 1, pd->ylogmode, 1); 
-      loose_label(pd,&(xmin),&(xmax),8, 1, (i==0), plots[0].xlogmode, 1);		   
+      //loose_label(pd,&(pd->ymin),&(pd->ymax),nyticks/(numplots+2),0, 1, pd->ylogmode, 1); 
+      loose_label(pd,&(pd->ymin),&(pd->ymax),nyticks,0, 1, pd->ylogmode, 1); 
+      loose_label(pd,&(xmin),&(xmax),nxticks, 1, (i==0), plots[0].xlogmode, 1);		   
       if (debug) printf("bounds %g %g %g %g\n", xmin, pd->ymin, xmax, pd->ymax);
+
       plots[0].xmin = xmin;
       plots[0].xmax = xmax;
+
+
 
       if (isotropic) {
 	  uppx=(xmax - xmin)/(pd->urx - pd->llx);
@@ -965,8 +1001,9 @@ void render() 	// this is where the image gets drawn
 
       // now run labels with possibly tweaked urxy, llxy for isotropic plot
       if (debug) printf("calling ll: %g %g %g %g\n", xmin, pd->ymin, xmax, pd->ymax);
-      loose_label(pd,&(pd->ymin),&(pd->ymax),20/(numplots+2),0, 1, pd->ylogmode, 0); 
-      loose_label(pd,&(xmin),&(xmax),8, 1, (i==0), plots[0].xlogmode, 0);		   
+      //loose_label(pd,&(pd->ymin),&(pd->ymax),nyticks/(numplots+2),0, 1, pd->ylogmode, 0); 
+      loose_label(pd,&(pd->ymin),&(pd->ymax),nyticks,0, 1, pd->ylogmode, 0); 
+      loose_label(pd,&(xmin),&(xmax),nxticks, 1, (i==0), plots[0].xlogmode, 0);		   
       if (debug) printf("%g %g %g %g\n", xmin, pd->ymin, xmax, pd->ymax);
     }
 }
