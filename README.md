@@ -1,4 +1,4 @@
-#Pdplot
+# Pdplot 
 
 This is the source to Pdplot, an X11 graphing tool for ASCII data
 streams.  Pdplot duplicates the command set of the Agilent/HP graphing
