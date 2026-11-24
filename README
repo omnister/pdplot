@@ -37,6 +37,8 @@ yscale 1 price
 
 Save as stock.pd and run "pd stock.pd" or "pd < stock.pd"
 
+![XYZ stock plot](images/demo.png)
+
 Here's a little awk script to plot a sinewave:
 
 ----------- cut here -------------
