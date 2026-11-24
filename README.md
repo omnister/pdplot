@@ -1,3 +1,4 @@
+#Pdplot
 
 This is the source to Pdplot, an X11 graphing tool for ASCII data
 streams.  Pdplot duplicates the command set of the Agilent/HP graphing
@@ -25,15 +26,15 @@ See the pd.1 man page for details (man pd).
 
 Here's a simple plot to try:
 
------------ cut here -------------
-title XYZ stock price
-xscale 1 year
-yscale 1 price
-1999 50
-2000 52
-2001 55
-2004 60
------------ cut here -------------
+    ----------- cut here -------------
+    title XYZ stock price
+    xscale 1 year
+    yscale 1 price
+    1999 50
+    2000 52
+    2001 55
+    2004 60
+    ----------- cut here -------------
 
 Save as stock.pd and run "pd stock.pd" or "pd < stock.pd"
 
@@ -41,18 +42,18 @@ Save as stock.pd and run "pd stock.pd" or "pd < stock.pd"
 
 Here's a little awk script to plot a sinewave:
 
------------ cut here -------------
-awk '
-   BEGIN {
-     print "sine wave"
-     print "xscale 1 value"
-     print "yscale 1 time"
-     for (i=0; i<=3; i+=.02) {
-        print i, sin(2*3.14159*i)
-     }
-   }
-'
------------ cut here -------------
+    ----------- cut here -------------
+    awk '
+       BEGIN {
+         print "sine wave"
+         print "xscale 1 value"
+         print "yscale 1 time"
+         for (i=0; i<=3; i+=.02) {
+            print i, sin(2*3.14159*i)
+         }
+       }
+    '
+    ----------- cut here -------------
 
 Save as sine.awk, do "chmod -x sine.awk", and then run "sine.awk | pd". 
 
