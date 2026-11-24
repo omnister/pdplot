@@ -45,7 +45,7 @@ Here's a little awk script to plot a sinewave:
     ----------- cut here -------------
     awk '
        BEGIN {
-         print "sine wave"
+         print "title sine wave"
          print "xscale 1 value"
          print "yscale 1 time"
          for (i=0; i<=3; i+=.02) {
@@ -57,10 +57,13 @@ Here's a little awk script to plot a sinewave:
 
 Save as sine.awk, do "chmod -x sine.awk", and then run "sine.awk | pd". 
 
+
 If you make the obvious modification to sine.awk to create cosine.awk,
 then you can add the cosine plot to the *existing* graph by doing
 "cosine.awk | pd -n".   The -n option adds the new data to the existing
 data, rescales the axes and updates the graph.
+
+![sine/cosine plot](images/sine.png)
 	
 --
 Rick Walker
